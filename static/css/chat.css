@@ -1,0 +1,975 @@
+/* Modern CSS Reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Color variables */
+  --bg-primary: #0f0f1a;
+  --bg-secondary: #141425;
+  --bg-tertiary: #1c1c30;
+  --accent-primary: #7c3aed;
+  --accent-secondary: #6d28d9;
+  --text-primary: #ffffff;
+  --text-secondary: #e0e0e0;
+  --text-tertiary: #a0a0a0;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --message-sent: #7c3aed;
+  --message-received: #1c1c30;
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  --transition: all 0.3s ease;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow: hidden;
+  height: 100vh;
+}
+
+.app-container {
+  height: 100vh;
+  position: relative;
+}
+
+/* Mobile navigation */
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  z-index: 999;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.mobile-nav button {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 24px;
+  padding: 8px;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.mobile-nav button.active {
+  color: var(--accent-primary);
+  background-color: rgba(124, 58, 237, 0.1);
+}
+
+/* Chat container */
+.chat-container {
+  display: flex;
+  height: 100vh;
+  position: relative;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 350px;
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  transform: translateX(-100%);
+  transition: var(--transition);
+  position: absolute;
+  z-index: 10;
+  overflow: hidden;
+}
+
+.sidebar.active {
+  transform: translateX(0);
+}
+
+/* Fix header alignment */
+.sidebar-header, .chat-header, .profile-header {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar-header h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.search-container {
+  padding: 15px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.search-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+}
+
+#searchChats {
+  width: 100%;
+  padding: 10px 10px 10px 40px;
+  border: none;
+  background-color: var(--bg-tertiary);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: var(--transition);
+}
+
+#searchChats:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-secondary);
+}
+
+/* Chat list */
+.chat-list {
+  list-style: none;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.chat-list li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  cursor: pointer;
+  transition: var(--transition);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.chat-list li:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.chat-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: var(--shadow);
+}
+
+.chat-text {
+  margin-left: 15px;
+  flex: 1;
+  width: calc(100% - 65px); /* Account for avatar size + padding */
+  overflow: hidden;
+}
+
+.chat-text b {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  width: calc(100% - 60px); /* Leave room for timestamp */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.last-message {
+  display: block;
+  font-size: 13px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Timestamp in upper right corner */
+.last-message-time {
+  position: absolute;
+  top: 18px;
+  right: 15px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+/* Main chat area */
+.main-chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+  position: relative;
+  width: 100%;
+  transform: translateX(100%);
+  transition: var(--transition);
+  position: absolute;
+  z-index: 5;
+  height: 100%;
+}
+
+.main-chat.active {
+  transform: translateX(0);
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  z-index: 5;
+  min-height: 70px;
+  max-height: 70px;
+}
+
+.back-button {
+  display: none;
+  margin-right: 15px;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--text-tertiary);
+}
+
+.chat-header-info {
+  margin-left: 15px;
+  flex: 1;
+}
+
+.chat-header-info h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.online-status {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.chat-actions button {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+.chat-actions button:hover {
+  background-color: var(--bg-tertiary);
+}
+
+/* Messages container */
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 140px); /* 70px header + 70px input */
+}
+
+.welcome-message {
+  text-align: center;
+  margin: auto;
+  padding: 40px;
+  color: var(--text-tertiary);
+}
+
+.welcome-icon {
+  font-size: 50px;
+  margin-bottom: 20px;
+  color: var(--accent-primary);
+  opacity: 0.7;
+}
+
+.welcome-message h3 {
+  font-size: 22px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.welcome-message p {
+  font-size: 16px;
+}
+
+/* Increased message width and improved spacing */
+.message {
+  min-width: 200px;
+  max-width: 70%;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  word-wrap: break-word;
+  animation: fadeIn 0.3s ease;
+  position: relative;
+  padding-top: 22px; /* Увеличен отступ для кнопок действий */
+}
+
+/* CSS для подсветки сообщений при клике на цитату */
+.message.highlighted {
+  animation: highlight-pulse 2s ease;
+  box-shadow: 0 0 0 2px var(--accent-primary);
+  z-index: 1;
+}
+
+@keyframes highlight-pulse {
+  0% { 
+    box-shadow: 0 0 0 2px var(--accent-primary);
+    transform: scale(1);
+  }
+  50% { 
+    box-shadow: 0 0 0 4px var(--accent-primary); 
+    transform: scale(1.02);
+  }
+  100% { 
+    box-shadow: 0 0 0 2px var(--accent-primary);
+    transform: scale(1);
+  }
+}
+
+.message.sent {
+  align-self: flex-end;
+  background-color: var(--message-sent);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.message.received {
+  align-self: flex-start;
+  background-color: var(--message-received);
+  color: var(--text-primary);
+  border-bottom-left-radius: 4px;
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 15px; /* Added gap between sender name and timestamp */
+}
+
+.sender {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Fixing contrast for sender names */
+.message.sent .sender {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.message.received .sender {
+  color: var(--accent-primary) !important;
+}
+
+.timestamp {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.message.sent .timestamp {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Обновленный стиль текста сообщения */
+.text {
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap; /* Сохраняем пробелы и переносы строк */
+}
+
+/* Message input - заменяем на textarea */
+.message-input {
+  display: flex; /* Всегда отображаем на десктопе */
+  align-items: center;
+  padding: 15px 20px;
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  position: relative;
+  min-height: 70px;
+  max-height: 140px; /* Увеличиваем для поддержки нескольких строк */
+  transition: max-height 0.3s ease;
+}
+
+.attachment-btn {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 18px;
+  padding: 8px;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.attachment-btn:hover {
+  color: var(--accent-primary);
+}
+
+/* Стиль для textarea вместо input */
+#messageInput {
+  flex: 1;
+  padding: 12px 15px;
+  background-color: var(--bg-tertiary);
+  border: none;
+  border-radius: 20px;
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: var(--transition);
+  min-height: 40px;
+  max-height: 120px;
+  resize: none; /* Отключаем ручное изменение размера */
+  overflow-y: auto; /* Добавляем прокрутку */
+  font-family: 'Inter', sans-serif; /* Сохраняем шрифт как у всей страницы */
+  line-height: 1.5;
+}
+
+#messageInput:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-secondary);
+}
+
+#sendMessageBtn {
+  background-color: var(--accent-primary);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+#sendMessageBtn:hover {
+  background-color: var(--accent-secondary);
+}
+
+#sendMessageBtn i {
+  font-size: 16px;
+}
+
+/* User profile sidebar */
+.profile-sidebar {
+  width: 300px;
+  background-color: var(--bg-secondary);
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  right: 0;
+  height: 100%;
+  transform: translateX(100%);
+  transition: var(--transition);
+  z-index: 10;
+}
+
+.profile-sidebar.active {
+  transform: translateX(0);
+}
+
+.profile-header {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.profile-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.close-profile {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.profile-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+}
+
+.profile-picture {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 20px;
+  border: 4px solid var(--bg-tertiary);
+}
+
+.profile-picture img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#profileName {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.profile-info {
+  width: 100%;
+  padding: 15px;
+  background-color: var(--bg-tertiary);
+  border-radius: 10px;
+  margin-top: 15px;
+}
+
+.profile-info p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-secondary);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
+
+/* Loading placeholder */
+.loading-placeholder {
+  text-align: center;
+  color: var(--text-tertiary);
+  padding: 15px;
+  font-style: italic;
+}
+
+/* Error message */
+.error-message {
+  color: #f44336;
+  text-align: center;
+  padding: 20px;
+  background-color: rgba(244, 67, 54, 0.1);
+  border-radius: 8px;
+  margin: 20px auto;
+  max-width: 80%;
+}
+
+/* Стили для функционала ответов */
+/* Стили для кнопок действий с сообщением */
+.message-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  opacity: 0;
+  display: flex;
+  transition: opacity 0.2s ease;
+  padding: 5px;
+}
+
+.message:hover .message-actions {
+  opacity: 1;
+}
+
+.message.sent .message-actions {
+  left: 0;
+  right: auto;
+}
+
+.reply-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.message.sent .reply-btn {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.reply-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.message.sent .reply-btn:hover {
+  color: white;
+}
+
+/* Стили для блока ответа */
+.reply-container {
+  padding: 8px 15px;
+  background-color: var(--bg-tertiary);
+  border-radius: 8px 8px 0 0;
+  margin-bottom: -1px;
+  animation: slideDown 0.2s ease;
+}
+
+.reply-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.reply-info {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.reply-to-sender {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--accent-primary);
+  margin-bottom: 2px;
+}
+
+.reply-to-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cancel-reply {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.cancel-reply:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+/* Стили для отображения ответа в сообщении */
+.reply-to {
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  position: relative;
+  border-left: 3px solid var(--accent-primary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.message.sent .reply-to {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.message.sent .reply-to:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Добавляем иконку для перехода */
+.reply-to::after {
+  content: "\f062"; /* Код иконки стрелки вверх из Font Awesome */
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.reply-to:hover::after {
+  opacity: 1;
+}
+
+/* Стили для ответов без оригинальных сообщений */
+.reply-orphaned {
+  border-left-color: #777 !important;
+  position: relative;
+}
+
+.reply-orphaned::before {
+  content: "Исходное сообщение недоступно";
+  position: absolute;
+  top: -18px;
+  left: 0;
+  font-size: 9px;
+  color: var(--text-tertiary);
+  background-color: var(--bg-secondary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  opacity: 0.8;
+}
+
+.reply-orphaned::after {
+  content: "\f057"; /* Значок "не найдено" из Font Awesome */
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  opacity: 0.5;
+}
+
+.reply-sender {
+  font-weight: 600;
+  color: var(--accent-primary);
+  margin-bottom: 2px;
+}
+
+.message.sent .reply-sender {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.reply-text {
+  color: var(--text-secondary);
+}
+
+.message.sent .reply-text {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Стили для ответов внутри сообщений */
+.reply-sent {
+  border-left-color: var(--message-sent);
+}
+
+.reply-received {
+  border-left-color: var(--text-secondary);
+}
+
+/* Анимация для появления блока ответа */
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Media queries for responsiveness */
+@media (min-width: 768px) {
+  .mobile-nav {
+    display: none;
+  }
+  
+  .chat-container {
+    display: grid;
+    grid-template-columns: 350px 1fr 300px;
+    height: 100vh;
+  }
+  
+  .sidebar, .main-chat, .profile-sidebar {
+    position: relative;
+    transform: translateX(0) !important;
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  .sidebar {
+    width: 100%;
+    max-width: 350px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .main-chat {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .profile-sidebar {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .back-button {
+    display: none;
+  }
+  
+  /* Фиксированные высоты элементов для корректной прокрутки */
+  .chat-header {
+    flex-shrink: 0;
+  }
+  
+  .messages-container {
+    flex: 1;
+    overflow-y: auto;
+  }
+  
+  .message-input {
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .mobile-nav {
+    display: flex;
+  }
+  
+  .sidebar, .main-chat, .profile-sidebar {
+    width: 100%;
+    position: absolute;
+  }
+  
+  .back-button {
+    display: block;
+  }
+  
+  .app-container {
+    padding-bottom: 60px; /* Space for mobile nav */
+  }
+  
+  .messages-container {
+    height: calc(100vh - 130px - 60px); /* Account for header, input, and nav */
+    max-height: calc(100vh - 130px - 60px - 70px);
+    transition: max-height 0.3s ease;
+  }
+  
+  /* На мобильных показываем поле ввода только при активном чате */
+  .message-input {
+    display: none;
+    min-height: 70px;
+    max-height: 140px;
+  }
+  
+  .message-input.active {
+    display: flex;
+  }
+
+  /* Уменьшаем размер элементов интерфейса ответа на мобильных */
+  .reply-to {
+    padding: 6px 10px;
+  }
+
+  .reply-to:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+
+  .reply-container {
+    padding: 6px 12px;
+  }
+
+  .reply-info {
+    max-width: 75%;
+  }
+}
+
+/* Стиль для статуса онлайн */
+.status-online {
+  color: #4CAF50 !important;
+  font-weight: 600;
+}
+
+/* Обновленный стиль для статуса в заголовке чата */
+.online-status {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  transition: color 0.3s ease;
+}
+
+@media (max-width: 480px) {
+  .message {
+    max-width: 85%;
+  }
+  
+  .chat-header-info h3 {
+    font-size: 15px;
+  }
+  
+  .online-status {
+    font-size: 11px;
+  }
+
+  /* Увеличиваем размер кнопок на мобильных для удобства */
+  .reply-btn {
+    width: 28px;
+    height: 28px;
+  }
+
+  .cancel-reply {
+    width: 28px;
+    height: 28px;
+  }
+}

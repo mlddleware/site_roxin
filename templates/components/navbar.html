@@ -1,0 +1,85 @@
+<!-- Навигационная панель -->
+<nav class="navbar">
+    <div class="navbar-container">
+        <div class="navbar-left">
+            <a href="/">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="navbar-logo">
+            </a>
+        </div>
+        
+        <div class="navbar-right">
+            <div class="user-dropdown">
+                <button class="user-dropdown-button" onclick="toggleDropdown()">
+                    {% if user_status or status %}
+                    <img src="{{ url_for('static', filename='images/' + avatar) }}" alt="Avatar" class="navbar-avatar">
+                    {% else %}
+                    <a href="{{ url_for('login.login') }}" class="login-button">
+                        <i data-lucide="log-in" class="icon"></i>
+                        <span>Войти</span>
+                    </a>
+                    {% endif %}
+                    <i class="dropdown-icon" data-lucide="chevron-down"></i>
+                </button>
+                
+                {% if user_status or status %}
+                <div class="dropdown-menu" id="userDropdown">
+                    <a href="/profile" class="dropdown-profile">
+                        <img src="{{ url_for('static', filename='images/' + avatar) }}" alt="Avatar" class="dropdown-avatar">
+                        <div class="dropdown-profile-info">
+                            <span class="dropdown-username">{{ username }}</span>
+                            <span class="dropdown-role">
+                                {% if user_status %}
+                                    {% if user_status == "admin" %}CEO{% elif user_status == "user" %}Пользователь{% elif user_status == "coder" %}Разработчик{% endif %}
+                                {% elif status %}
+                                    {% if status == "admin" %}CEO{% elif status == "user" %}Пользователь{% elif status == "coder" %}Разработчик{% endif %}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </a>
+                    
+                    <div class="dropdown-items">
+                        <a href="/profile" class="dropdown-item">
+                            <i data-lucide="user"></i>
+                            Профиль
+                        </a>
+                        <a href="/settings" class="dropdown-item">
+                            <i data-lucide="settings"></i>
+                            Настройки
+                        </a>
+                        <a href="/help" class="dropdown-item">
+                            <i data-lucide="help-circle"></i>
+                            Помощь
+                        </a>
+                        
+                        <div class="dropdown-divider"></div>
+                        
+                        <a href="/logout" class="dropdown-item danger">
+                            <i data-lucide="log-out"></i>
+                            Выйти
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<script>
+    // Toggle dropdown menu
+    window.toggleDropdown = function() {
+        const dropdown = document.getElementById('userDropdown');
+        if (dropdown) {
+            dropdown.classList.toggle('show');
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                const dropdown = document.getElementById('userDropdown');
+                const button = document.querySelector('.user-dropdown-button');
+                if (dropdown && button && !button.contains(event.target) && !dropdown.contains(event.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+        }
+    }
+</script>

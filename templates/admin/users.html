@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление пользователями | ROXIN Studio</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .admin-sidebar {
+            background: linear-gradient(135deg, #6366F1, #8B5CF6);
+            transition: transform 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+                z-index: 50;
+            }
+            
+            .admin-sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Mobile Menu Button -->
+    <div class="fixed top-4 left-4 z-50 md:hidden">
+        <button id="menuToggle" class="bg-indigo-600 text-white rounded-md p-2 focus:outline-none">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+    
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 bg-gradient-to-b from-indigo-600 to-purple-600 w-64 text-white transition-all duration-300 transform admin-sidebar shadow-lg overflow-y-auto">
+        <div class="p-6">
+            <div class="flex items-center space-x-3">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="ROXIN Studio" class="w-10 h-10 rounded-full">
+                <span class="text-xl font-bold">ROXIN Admin</span>
+            </div>
+        </div>
+        
+        <nav class="mt-6">
+            <div class="px-6 py-4 border-t border-indigo-800">
+                <p class="text-xs text-indigo-200 uppercase tracking-wider">Основное</p>
+            </div>
+            <a href="{{ url_for('admin.admin_dashboard') }}" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-chart-line mr-3"></i>
+                <span>Панель управления</span>
+            </a>
+            <a href="{{ url_for('admin.admin_users') }}" class="flex items-center px-6 py-3 text-white bg-indigo-800 bg-opacity-50">
+                <i class="fas fa-users mr-3"></i>
+                <span>Пользователи</span>
+            </a>
+            <a href="{{ url_for('admin.admin_logs') }}" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-clipboard-list mr-3"></i>
+                <span>Логи системы</span>
+            </a>
+            
+            <div class="px-6 py-4 border-t border-indigo-800">
+                <p class="text-xs text-indigo-200 uppercase tracking-wider">Коммуникации</p>
+            </div>
+            <a href="{{ url_for('admin.admin_notifications') }}" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-bell mr-3"></i>
+                <span>Уведомления</span>
+            </a>
+                
+            <div class="px-6 py-4 border-t border-indigo-800">
+                <p class="text-xs text-indigo-200 uppercase tracking-wider">Система</p>
+            </div>
+            <a href="#" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-cog mr-3"></i>
+                <span>Настройки</span>
+            </a>
+            <a href="{{ url_for('logout.logout') }}" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-sign-out-alt mr-3"></i>
+                <span>Выйти</span>
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="ml-64 p-4 md:p-8 main-content">
+        <!-- Top Navigation -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+            <h1 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-0">Управление пользователями</h1>
+            
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <img src="{{ url_for('static', filename='images/' + current_user_avatar) }}" alt="{{ current_user_username }}" class="w-8 h-8 rounded-full">
+                </div>
+                <span class="text-sm font-medium text-gray-700">{{ current_user_username }}</span>
+            </div>
+        </div>
+        
+        <!-- Users Content -->
+        <div class="bg-white rounded-lg shadow-md p-4 md:p-6 mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3 md:mb-0">Список пользователей</h3>
+                
+                <div class="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
+                    <input type="text" id="userSearch" placeholder="Поиск по имени или email" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <div class="relative">
+                        <select id="userFilter" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            <option value="all">Все пользователи</option>
+                            <option value="user">Пользователи</option>
+                            <option value="coder">Разработчики</option>
+                            <option value="admin">Администраторы</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filters -->
+            <div class="mt-6 flex flex-wrap gap-4">
+                <div class="w-full md:w-64">
+                    <label for="statusFilter" class="block text-sm font-medium text-gray-700 mb-1">Статус</label>
+                    <select id="statusFilter" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        <option value="">Все</option>
+                        <option value="user">Пользователи</option>
+                        <option value="coder">Исполнители</option>
+                        <option value="admin">Администраторы</option>
+                    </select>
+                </div>
+                <div class="w-full md:w-64">
+                    <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-1">Поиск</label>
+                    <input type="text" id="searchInput" placeholder="Имя пользователя или Email" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                </div>
+                <div class="w-full md:w-64">
+                    <label for="sortBy" class="block text-sm font-medium text-gray-700 mb-1">Сортировка</label>
+                    <select id="sortBy" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        <option value="username">По имени</option>
+                        <option value="created_at">По дате регистрации</option>
+                        <option value="last_visit">По последнему визиту</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button id="applyFilters" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Применить
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Users Table -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Имя пользователя</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дата регистрации</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Последний визит</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Данные будут загружены через JavaScript -->
+                        <tr>
+                            <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                                Загрузка данных...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                <div class="text-sm text-gray-700">
+                    Показано <span id="displayedRange">0-0</span> из <span id="totalUsers">0</span> пользователей
+                </div>
+                <div class="flex space-x-2">
+                    <button id="prevPage" class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button id="nextPage" class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="fixed inset-0 z-50 overflow-y-auto hidden">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modalTitle">Редактировать пользователя</h3>
+                    <form id="editUserForm">
+                        <input type="hidden" id="editUserId">
+                        <div class="mb-4">
+                            <label for="editUsername" class="block text-sm font-medium text-gray-700 mb-1">Имя пользователя</label>
+                            <input type="text" id="editUsername" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        </div>
+                        <div class="mb-4">
+                            <label for="editEmail" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" id="editEmail" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        </div>
+                        <div class="mb-4">
+                            <label for="editStatus" class="block text-sm font-medium text-gray-700 mb-1">Статус</label>
+                            <select id="editStatus" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                <option value="user">Пользователь</option>
+                                <option value="coder">Исполнитель</option>
+                                <option value="admin">Администратор</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label for="editPassword" class="block text-sm font-medium text-gray-700 mb-1">Новый пароль (оставьте пустым, чтобы не менять)</label>
+                            <input type="password" id="editPassword" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <p class="mt-1 text-xs text-gray-500">Пароль должен содержать минимум 8 символов, включая заглавные и строчные буквы, цифры и специальные символы</p>
+                        </div>
+                    </form>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button id="saveUserBtn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Сохранить
+                    </button>
+                    <button id="closeModalBtn" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Отмена
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu toggle
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            
+            if (menuToggle && sidebar) {
+                menuToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                });
+            }
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth <= 768 && 
+                    !sidebar.contains(event.target) && 
+                    !menuToggle.contains(event.target) && 
+                    sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            });
+            
+            // Состояние для пагинации и фильтрации
+            const state = {
+                page: 1,
+                limit: 10,
+                status: '',
+                search: '',
+                sortBy: 'username',
+                sortOrder: 'asc',
+                totalUsers: 0,
+                totalPages: 0
+            };
+            
+            // Функция для загрузки пользователей
+            function loadUsers() {
+                const usersTableBody = document.getElementById('usersTableBody');
+                usersTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                            <i class="fas fa-spinner fa-spin mr-2"></i> Загрузка данных...
+                        </td>
+                    </tr>
+                `;
+                
+                // Формируем URL с параметрами
+                const url = `/api/admin/users?page=${state.page}&limit=${state.limit}${state.status ? '&status=' + state.status : ''}${state.search ? '&search=' + encodeURIComponent(state.search) : ''}&sort_by=${state.sortBy}&sort_order=${state.sortOrder}`;
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Обновляем состояние
+                        state.totalUsers = data.total;
+                        state.totalPages = data.pages;
+                        
+                        // Обновляем информацию о пагинации
+                        const start = (state.page - 1) * state.limit + 1;
+                        const end = Math.min(state.page * state.limit, state.totalUsers);
+                        document.getElementById('displayedRange').textContent = `${start}-${end}`;
+                        document.getElementById('totalUsers').textContent = state.totalUsers;
+                        
+                        // Обновляем состояние кнопок пагинации
+                        document.getElementById('prevPage').disabled = state.page === 1;
+                        document.getElementById('nextPage').disabled = state.page === state.totalPages;
+                        
+                        // Заполняем таблицу данными
+                        if (data.users.length === 0) {
+                            usersTableBody.innerHTML = `
+                                <tr>
+                                    <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                                        Пользователи не найдены
+                                    </td>
+                                </tr>
+                            `;
+                            return;
+                        }
+                        
+                        usersTableBody.innerHTML = '';
+                        data.users.forEach(user => {
+                            // Определяем цвет для статуса
+                            let statusClass = 'bg-blue-100 text-blue-800';
+                            if (user.status === 'admin') statusClass = 'bg-purple-100 text-purple-800';
+                            if (user.status === 'coder') statusClass = 'bg-green-100 text-green-800';
+                            
+                            // Локализуем статусы
+                            const localizedStatus = {
+                                'user': 'Пользователь',
+                                'admin': 'Администратор',
+                                'coder': 'Исполнитель'
+                            }[user.status] || user.status;
+                            
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.id}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${user.username}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.email}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                                        ${localizedStatus}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.created_at}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.last_visit || 'Нет данных'}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <button class="text-indigo-600 hover:text-indigo-900 mr-3 edit-user" data-id="${user.id}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-900 delete-user" data-id="${user.id}">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            `;
+                            usersTableBody.appendChild(row);
+                        });
+                        
+                        // Добавляем обработчики для кнопок редактирования и удаления
+                        document.querySelectorAll('.edit-user').forEach(button => {
+                            button.addEventListener('click', () => openEditModal(button.dataset.id));
+                        });
+                        
+                        document.querySelectorAll('.delete-user').forEach(button => {
+                            button.addEventListener('click', () => confirmDeleteUser(button.dataset.id));
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error loading users:', error);
+                        usersTableBody.innerHTML = `
+                            <tr>
+                                <td colspan="7" class="px-6 py-4 text-center text-sm text-red-500">
+                                    Ошибка при загрузке данных. Пожалуйста, попробуйте позже.
+                                </td>
+                            </tr>
+                        `;
+                    });
+            }
+            
+            // Функция для открытия модального окна редактирования
+            function openEditModal(userId) {
+                // Получаем данные пользователя
+                fetch(`/api/admin/users/${userId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Заполняем форму данными
+                        document.getElementById('editUserId').value = userId;
+                        document.getElementById('editUsername').value = data.username;
+                        document.getElementById('editEmail').value = data.email;
+                        document.getElementById('editStatus').value = data.status;
+                        document.getElementById('editPassword').value = '';
+                        
+                        // Показываем модальное окно
+                        document.getElementById('editUserModal').classList.remove('hidden');
+                    })
+                    .catch(error => {
+                        console.error('Error loading user data:', error);
+                        alert('Ошибка при загрузке данных пользователя');
+                    });
+            }
+            
+            // Функция для подтверждения удаления пользователя
+            function confirmDeleteUser(userId) {
+                if (confirm('Вы уверены, что хотите удалить этого пользователя? Это действие нельзя отменить.')) {
+                    fetch(`/api/admin/users/${userId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Пользователь успешно удален');
+                            loadUsers(); // Перезагружаем список
+                        } else {
+                            alert(data.error || 'Ошибка при удалении пользователя');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error deleting user:', error);
+                        alert('Ошибка при удалении пользователя');
+                    });
+                }
+            }
+            
+            // Обработчики событий
+            loadUsers();
+            
+            // Обработчик для кнопки "Применить фильтры"
+            document.getElementById('applyFilters').addEventListener('click', () => {
+                state.status = document.getElementById('statusFilter').value;
+                state.search = document.getElementById('searchInput').value;
+                state.sortBy = document.getElementById('sortBy').value;
+                state.page = 1; // Сбрасываем на первую страницу
+                loadUsers();
+            });
+            
+            // Обработчики для кнопок пагинации
+            document.getElementById('prevPage').addEventListener('click', () => {
+                if (state.page > 1) {
+                    state.page--;
+                    loadUsers();
+                }
+            });
+            
+            document.getElementById('nextPage').addEventListener('click', () => {
+                if (state.page < state.totalPages) {
+                    state.page++;
+                    loadUsers();
+                }
+            });
+            
+            // Обработчики для модального окна
+            document.getElementById('closeModalBtn').addEventListener('click', () => {
+                document.getElementById('editUserModal').classList.add('hidden');
+            });
+            
+            document.getElementById('saveUserBtn').addEventListener('click', () => {
+                const userId = document.getElementById('editUserId').value;
+                const userData = {
+                    username: document.getElementById('editUsername').value,
+                    email: document.getElementById('editEmail').value,
+                    status: document.getElementById('editStatus').value,
+                    password: document.getElementById('editPassword').value
+                };
+                
+                // Если пароль пустой, не отправляем его
+                if (!userData.password) {
+                    delete userData.password;
+                }
+                
+                // Отправляем запрос на обновление
+                fetch(`/api/admin/users/${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(userData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Данные пользователя успешно обновлены');
+                        document.getElementById('editUserModal').classList.add('hidden');
+                        loadUsers(); // Перезагружаем список
+                    } else {
+                        alert(data.error || 'Ошибка при обновлении данных пользователя');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating user:', error);
+                    alert('Ошибка при обновлении данных пользователя');
+                });
+            });
+            
+            // Обработчик для добавления пользователя
+            document.getElementById('addUserBtn').addEventListener('click', () => {
+                // Очищаем форму
+                document.getElementById('editUserId').value = '';
+                document.getElementById('editUsername').value = '';
+                document.getElementById('editEmail').value = '';
+                document.getElementById('editStatus').value = 'user';
+                document.getElementById('editPassword').value = '';
+                
+                // Меняем заголовок
+                document.getElementById('modalTitle').textContent = 'Добавить пользователя';
+                
+                // Показываем модальное окно
+                document.getElementById('editUserModal').classList.remove('hidden');
+            });
+        });
+    </script>
+</body>
+</html>

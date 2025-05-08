@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель | ROXIN Studio</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        .admin-sidebar {
+            background: linear-gradient(135deg, #6366F1, #8B5CF6);
+            transition: transform 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+                z-index: 50;
+            }
+            
+            .admin-sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+        }
+        
+        .card-gradient {
+            background: linear-gradient(135deg, #4F46E5, #6366F1);
+        }
+        .log-info { background-color: #EFF6FF; border-left: 4px solid #3B82F6; }
+        .log-warning { background-color: #FEF3C7; border-left: 4px solid #F59E0B; }
+        .log-error { background-color: #FEE2E2; border-left: 4px solid #EF4444; }
+        .log-critical { background-color: #FCE7F3; border-left: 4px solid #DB2777; }
+        .notification-info { background-color: #EFF6FF; }
+        .notification-warning { background-color: #FEF3C7; }
+        .notification-error { background-color: #FEE2E2; }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(139, 92, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+        }
+        /* Дополнительные стили для улучшения макета */
+        .chart-container {
+            width: 100%;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        #orderStatusChart {
+            max-height: 220px;
+        }
+        .grid-cols-4 {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+        @media (max-width: 1024px) {
+            .grid-cols-4 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        @media (max-width: 640px) {
+            .grid-cols-4 {
+                grid-template-columns: repeat(1, minmax(0, 1fr));
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Mobile Menu Button -->
+    <div class="fixed top-4 left-4 z-50 md:hidden">
+        <button id="menuToggle" class="bg-indigo-600 text-white rounded-md p-2 focus:outline-none">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+    
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 bg-gradient-to-b from-indigo-600 to-purple-600 w-64 text-white transition-all duration-300 transform admin-sidebar shadow-lg overflow-y-auto">
+        <div class="p-6">
+            <div class="flex items-center space-x-3">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="ROXIN Studio" class="w-10 h-10 rounded-full">
+                <span class="text-xl font-bold">ROXIN Admin</span>
+            </div>
+        </div>
+        
+        <nav class="mt-6">
+            <div class="px-6 py-4 border-t border-indigo-800">
+                <p class="text-xs text-indigo-200 uppercase tracking-wider">Основное</p>
+            </div>
+            <a href="{{ url_for('admin.admin_dashboard') }}" class="flex items-center px-6 py-3 text-white bg-indigo-800 bg-opacity-50">
+                <i class="fas fa-chart-line mr-3"></i>
+                <span>Панель управления</span>
+            </a>
+            <a href="{{ url_for('admin.admin_users') }}" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-users mr-3"></i>
+                <span>Пользователи</span>
+            </a>
+            <a href="{{ url_for('admin.admin_logs') }}" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-clipboard-list mr-3"></i>
+                <span>Логи системы</span>
+            </a>
+            
+            <div class="px-6 py-4 border-t border-indigo-800">
+                <p class="text-xs text-indigo-200 uppercase tracking-wider">Коммуникации</p>
+            </div>
+            <a href="{{ url_for('admin.admin_notifications') }}" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-bell mr-3"></i>
+                <span>Уведомления</span>
+            </a>
+            
+            <div class="px-6 py-4 border-t border-indigo-800">
+                <p class="text-xs text-indigo-200 uppercase tracking-wider">Система</p>
+            </div>
+            <a href="#" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-cog mr-3"></i>
+                <span>Настройки</span>
+            </a>
+            <a href="{{ url_for('logout.logout') }}" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-sign-out-alt mr-3"></i>
+                <span>Выйти</span>
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="ml-64 p-4 md:p-8 main-content">
+        <!-- Top Navigation -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+            <h1 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-0">Панель управления</h1>
+            
+            <div class="flex items-center space-x-4">
+                <!-- Notifications -->
+                <div class="relative">
+                    <button id="notificationsButton" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                        <i class="fas fa-bell"></i>
+                        {% if unread_notifications > 0 %}
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">{{ unread_notifications }}</span>
+                        {% endif %}
+                    </button>
+                    
+                    <div id="notificationsDropdown" class="hidden absolute right-0 mt-2 w-72 bg-white rounded-md shadow-lg z-10">
+                        <div class="px-4 py-2 border-b border-gray-200">
+                            <h3 class="text-sm font-semibold text-gray-700">Уведомления</h3>
+                        </div>
+                        {% if notifications|length > 0 %}
+                            {% for notification in notifications %}
+                                <div class="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 notification-{{ notification[3]|lower }}">
+                                    <p class="text-sm font-semibold text-gray-800">{{ notification[1] }}</p>
+                                    <p class="text-xs text-gray-600">{{ notification[2] }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">{{ notification[4].strftime('%d.%m.%Y %H:%M') }}</p>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="px-4 py-3 text-sm text-gray-600">
+                                Нет новых уведомлений
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-2">
+                    <img src="{{ url_for('static', filename='images/' + current_user_avatar) }}" alt="{{ current_user_username }}" class="w-8 h-8 rounded-full">
+                    <span class="text-sm font-medium text-gray-700">{{ current_user_username }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dashboard Content -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <!-- Stats Card: Users -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-4 card-gradient text-white">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-semibold">Пользователи</h3>
+                        <i class="fas fa-users text-2xl opacity-75"></i>
+                    </div>
+                    <p class="text-3xl font-bold mt-2">{{ total_users }}</p>
+                </div>
+                <div class="bg-white p-4">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Всего аккаунтов</span>
+                        <a href="{{ url_for('admin.admin_users') }}" class="text-indigo-600 hover:text-indigo-800">Подробнее</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Card: Coders -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-4 card-gradient text-white">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-semibold">Исполнители</h3>
+                        <i class="fas fa-code text-2xl opacity-75"></i>
+                    </div>
+                    <p class="text-3xl font-bold mt-2">{{ total_coders }}</p>
+                </div>
+                <div class="bg-white p-4">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Активных исполнителей</span>
+                        <a href="{{ url_for('admin.admin_users') }}?status=coder" class="text-indigo-600 hover:text-indigo-800">Подробнее</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Card: Orders -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-4 card-gradient text-white">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-semibold">Заказы</h3>
+                        <i class="fas fa-shopping-cart text-2xl opacity-75"></i>
+                    </div>
+                    <p class="text-3xl font-bold mt-2">{{ total_orders }}</p>
+                </div>
+                <div class="bg-white p-4">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Всего заказов</span>
+                        <a href="#" class="text-indigo-600 hover:text-indigo-800">Подробнее</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Card: Completed Orders -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-4 card-gradient text-white">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-semibold">Выполнено</h3>
+                        <i class="fas fa-check-circle text-2xl opacity-75"></i>
+                    </div>
+                    <p class="text-3xl font-bold mt-2">{{ completed_orders }}</p>
+                </div>
+                <div class="bg-white p-4">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Завершенных заказов</span>
+                        <span class="text-green-600">{{ "{:.1f}".format(completed_orders / total_orders * 100) if total_orders > 0 else 0 }}%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- User Registration Chart -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Регистрации пользователей</h3>
+                <div class="chart-container" style="position: relative; height: 240px;">
+                    <canvas id="userRegistrationChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Order Status Chart -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Статусы заказов</h3>
+                <div class="chart-container" style="position: relative; height: 240px;">
+                    <canvas id="orderStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Logs Section -->
+        <div class="bg-white shadow overflow-x-auto sm:rounded-lg mb-8">
+            <div class="px-4 py-5 sm:px-6 flex flex-col md:flex-row justify-between items-start md:items-center">
+                <div>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Недавняя активность</h3>
+                    <p class="mt-1 max-w-2xl text-sm text-gray-500">Последние 10 записей из системного лога</p>
+                </div>
+                <a href="{{ url_for('admin.admin_logs') }}" class="mt-3 md:mt-0 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Все логи <i class="ml-2 fas fa-arrow-right"></i>
+                </a>
+            </div>
+            <div class="border-t border-gray-200 overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr class="bg-gray-50 border-b border-gray-200">
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Уровень</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Источник</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Сообщение</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Время</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody" class="bg-white divide-y divide-gray-200">
+                        {% for log in recent_logs %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if log[0] == 'INFO' %}bg-blue-100 text-blue-800{% elif log[0] == 'WARNING' %}bg-yellow-100 text-yellow-800{% elif log[0] == 'ERROR' %}bg-red-100 text-red-800{% elif log[0] == 'CRITICAL' %}bg-pink-100 text-pink-800{% endif %}">
+                                    {{ log[0] }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ log[1] }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-700">{{ log[2] }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ log[3].strftime('%d.%m.%Y %H:%M:%S') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize variables from server-side
+        var serverData = {
+            completedOrders: parseInt('{{ completed_orders|default(0)|int }}'),
+            totalUsers: parseInt('{{ total_users|default(0)|int }}'),
+            totalCoders: parseInt('{{ total_coders|default(0)|int }}'),
+            totalOrders: parseInt('{{ total_orders|default(0)|int }}'),
+            months: JSON.parse('{{ months|safe }}'),
+            registrations: JSON.parse('{{ registrations|safe }}'),
+            orderStatusLabels: JSON.parse('{{ order_status_labels|safe }}'),
+            orderStatusData: JSON.parse('{{ order_status_data|safe }}'),
+            orderStatusColorsBg: JSON.parse('{{ order_status_colors_bg|safe }}'),
+            orderStatusColorsBorder: JSON.parse('{{ order_status_colors_border|safe }}')
+        };
+        
+        // Функция для инициализации уведомлений
+        function initNotifications() {
+            var notificationsButton = document.getElementById('notificationsButton');
+            var notificationsDropdown = document.getElementById('notificationsDropdown');
+            
+            if (notificationsButton && notificationsDropdown) {
+                notificationsButton.addEventListener('click', function() {
+                    notificationsDropdown.classList.toggle('hidden');
+                });
+                
+                document.addEventListener('click', function(event) {
+                    if (!notificationsButton.contains(event.target) && 
+                        !notificationsDropdown.contains(event.target)) {
+                        notificationsDropdown.classList.add('hidden');
+                    }
+                });
+            }
+        }
+        
+        // Функция для инициализации Socket.IO
+        function initSocketIO() {
+            var socket = io();
+            var tableBody = document.getElementById('logsTableBody');
+            
+            if (tableBody) {
+                socket.on('new_log', function(data) {
+                    var row = document.createElement('tr');
+                    
+                    // Определяем цвет для уровня лога
+                    var levelClass = 'bg-blue-100 text-blue-800';
+                    if (data.level === 'WARNING') levelClass = 'bg-yellow-100 text-yellow-800';
+                    if (data.level === 'ERROR') levelClass = 'bg-red-100 text-red-800';
+                    if (data.level === 'CRITICAL') levelClass = 'bg-pink-100 text-pink-800';
+                    
+                    // Форматируем дату
+                    var date = new Date(data.created_at);
+                    var formattedDate = date.getDate().toString().padStart(2, '0') + '.' +
+                                      (date.getMonth() + 1).toString().padStart(2, '0') + '.' +
+                                      date.getFullYear() + ' ' +
+                                      date.getHours().toString().padStart(2, '0') + ':' +
+                                      date.getMinutes().toString().padStart(2, '0') + ':' +
+                                      date.getSeconds().toString().padStart(2, '0');
+                    
+                    row.innerHTML = 
+                        '<td class="px-6 py-4 whitespace-nowrap">' +
+                            '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ' + levelClass + '">' +
+                                data.level +
+                            '</span>' +
+                        '</td>' +
+                        '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">' + data.source + '</td>' +
+                        '<td class="px-6 py-4 text-sm text-gray-700">' + data.message + '</td>' +
+                        '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + formattedDate + '</td>';
+                    
+                    // Добавляем новую строку и удаляем последнюю для поддержания фиксированного размера таблицы
+                    tableBody.insertBefore(row, tableBody.firstChild);
+                    if (tableBody.children.length > 10) {
+                        tableBody.removeChild(tableBody.lastChild);
+                    }
+                });
+            }
+        }
+        
+        // Функция для инициализации графиков
+        function initCharts() {
+            var userCtx = document.getElementById('userRegistrationChart');
+            if (userCtx) {
+                new Chart(userCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: serverData.months,
+                        datasets: [{
+                            label: 'Регистрации',
+                            data: serverData.registrations,
+                            backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                            borderColor: 'rgba(99, 102, 241, 1)',
+                            borderWidth: 2,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+            
+            var orderCtx = document.getElementById('orderStatusChart');
+            if (orderCtx) {
+                new Chart(orderCtx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: serverData.orderStatusLabels,
+                        datasets: [{
+                            data: serverData.orderStatusData,
+                            backgroundColor: serverData.orderStatusColorsBg,
+                            borderColor: serverData.orderStatusColorsBorder,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 12,
+                                    padding: 10,
+                                    font: {
+                                        size: 11
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Мобильное меню
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu toggle
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            
+            if (menuToggle && sidebar) {
+                menuToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                });
+            }
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth <= 768 && 
+                    !sidebar.contains(event.target) && 
+                    !menuToggle.contains(event.target) && 
+                    sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            });
+            
+            // Инициализируем уведомления
+            initNotifications();
+            initSocketIO();
+            initCharts();
+        });
+    </script>
+</body>
+</html>

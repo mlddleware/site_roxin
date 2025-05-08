@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оплата | ROXIN Studio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ url_for('static', filename='icons/lucide/dist/umd/lucide.js') }}"></script>
+    <!-- CloudPayments SDK -->
+    <script src="https://widget.cloudpayments.ru/bundles/cloudpayments.js"></script>
+    <style>
+        :root {
+            --color-primary: #8b5cf6;
+            --color-primary-light: #a78bfa;
+            --color-primary-dark: #7c3aed;
+            --color-bg-dark: rgba(10, 10, 18, 0.95);
+            --color-bg-light: rgba(30, 30, 46, 0.8);
+            --color-text: #e2e8f0;
+            --color-text-muted: #94a3b8;
+            --color-border: rgba(139, 92, 246, 0.2);
+            --color-success: #10b981;
+            --color-warning: #f59e0b;
+            --color-danger: #ef4444;
+            --color-info: #3b82f6;
+        }
+        
+        body {
+            background-color: #0f172a;
+            color: var(--color-text);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            min-height: calc(100vh - 200px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .payment-card {
+            background: var(--color-bg-dark);
+            border-radius: 1rem;
+            border: 1px solid var(--color-border);
+            padding: 2.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .payment-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-text);
+            margin-bottom: 0.75rem;
+        }
+        
+        .payment-subtitle {
+            color: var(--color-text-muted);
+            margin-bottom: 1.5rem;
+        }
+        
+        .transaction-info {
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .amount {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-text);
+            margin-bottom: 1rem;
+        }
+        
+        .button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        .button-primary {
+            background: var(--color-primary);
+            color: white;
+        }
+        
+        .button-primary:hover {
+            background: var(--color-primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .button-secondary {
+            background: rgba(30, 41, 59, 0.5);
+            color: var(--color-text);
+        }
+        
+        .button-secondary:hover {
+            background: rgba(30, 41, 59, 0.7);
+            transform: translateY(-2px);
+        }
+        
+        .payment-fields {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .loading-state {
+            display: none;
+            text-align: center;
+            margin: 2rem 0;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--color-primary);
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    {% include 'components/simple_navbar.html' %}
+    
+    <div class="container">
+        <div class="payment-card">
+            <h1 class="payment-title">Оплата заказа</h1>
+            <p class="payment-subtitle">Заполните данные карты для оплаты</p>
+            
+            <div class="amount">{{ amount }} ₽</div>
+            
+            <div class="transaction-info">
+                <p>ID транзакции: {{ transaction_id }}</p>
+                <p>Метод оплаты: {{ method_name }}</p>
+            </div>
+            
+            <div id="paymentContainer">
+                <button id="payButton" class="button button-primary">
+                    Оплатить
+                </button>
+                
+                <button id="cancelButton" class="button button-secondary" onclick="window.location.href = '/finances'">
+                    Отмена
+                </button>
+            </div>
+            
+            <div id="loadingState" class="loading-state">
+                <div class="loading-spinner"></div>
+                <p>Обработка платежа...</p>
+            </div>
+        </div>
+    </div>
+    
+    {% include 'components/footer.html' %}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Инициализация иконок
+            lucide.createIcons({
+                attrs: {
+                    'stroke-width': 1.5
+                }
+            });
+            
+            // Инициализация CloudPayments
+            const payButton = document.getElementById('payButton');
+            payButton.addEventListener('click', function() {
+                // Показываем индикатор загрузки
+                document.getElementById('paymentContainer').style.display = 'none';
+                document.getElementById('loadingState').style.display = 'block';
+                
+                // Создаем виджет CloudPayments
+                const widget = new cp.CloudPayments();
+                
+                // Данные для платежа
+                const paymentData = {
+                    publicId: 'pk_xxxxx', // Замените на ваш публичный ключ из личного кабинета CloudPayments
+                    description: 'Пополнение баланса в ROXIN Studio',
+                    amount: parseFloat('{{ amount }}'),
+                    currency: 'RUB',
+                    accountId: '{{ username }}',
+                    invoiceId: '{{ transaction_id }}',
+                    skin: 'modern',
+                    data: {
+                        user_id: '{{ user_id }}',
+                        transaction_type: 'deposit'
+                    }
+                };
+                
+                // Запускаем виджет оплаты картой
+                widget.charge(paymentData, 
+                    function(options) { // success
+                        console.log('Успешный платеж:', options);
+                        // Перенаправление на страницу успешной оплаты
+                        window.location.href = '/finances/success?transaction_id={{ transaction_id }}';
+                    },
+                    function(reason, options) { // fail
+                        console.log('Ошибка платежа:', reason, options);
+                        // Показываем форму оплаты снова
+                        document.getElementById('paymentContainer').style.display = 'block';
+                        document.getElementById('loadingState').style.display = 'none';
+                        // Сообщение об ошибке
+                        alert('Ошибка при оплате: ' + reason);
+                    }
+                );
+            });
+        });
+    </script>
+</body>
+</html>

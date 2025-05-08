@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль пользователя</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user_profile.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <script src="{{ url_for('static', filename='icons/lucide/dist/umd/lucide.js') }}"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <style>
+        :root {
+            --color-primary: #8B5CF6;
+            --color-primary-light: rgba(139, 92, 246, 0.2);
+            --color-primary-glow: rgba(139, 92, 246, 0.15);
+            --color-background: #0A0A12;
+            --color-card-bg: rgba(15, 15, 25, 0.85);
+            --color-text: #FFFFFF;
+            --color-text-secondary: #A0A0C0;
+            --color-border: rgba(139, 92, 246, 0.2);
+            --gradient-purple: linear-gradient(135deg, #8B5CF6, #6366F1);
+        }
+        
+        /* Core responsive layout improvements */
+        .profile-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+        
+        /* Font styles to match user profile */
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text);
+        }
+        
+        h1, h2, h3, .user-name {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+        }
+        
+        /* Enhanced profile card */
+        .profile-card {
+            background: var(--color-card-bg);
+            border-radius: 1.5rem;
+            overflow: hidden;
+            border: 1px solid var(--color-border);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 15px var(--color-primary-glow);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        
+        .profile-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3), 0 0 20px var(--color-primary-glow);
+            border-color: rgba(139, 92, 246, 0.4);
+        }
+        
+        /* Profile header with gradient */
+        .profile-header {
+            background: var(--gradient-purple);
+            height: 250px;
+            position: relative;
+            display: flex;
+            justify-content: flex-end;
+            padding: 1rem;
+            box-shadow: inset 0 -10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Profile avatar */
+        .profile-avatar-wrapper {
+            position: absolute;
+            left: 2rem;
+            bottom: -75px;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid var(--color-card-bg);
+            outline: 1px solid var(--color-primary-light);
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2), 0 0 15px var(--color-primary-glow);
+            background-color: var(--color-card-bg);
+            z-index: 20;
+        }
+        
+        .profile-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .profile-avatar:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Flex header for better responsiveness */
+        .info-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        /* User name styling */
+        .user-name {
+            font-size: 2rem;
+            color: var(--color-text);
+            margin-bottom: 0.25rem;
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+        }
+        
+        .user-role {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            color: var(--color-text-secondary);
+            margin: 0;
+        }
+        
+        /* Enhanced status indicator */
+        .online-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            background: rgba(15, 15, 25, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 15px rgba(139, 92, 246, 0.15);
+            transition: all 0.3s ease;
+        }
+        
+        .online-indicator:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Online status dot */
+        .online-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .online-dot.online {
+            background-color: #4CAF50;
+            animation: pulse-dot 1.5s infinite;
+        }
+
+        .online-dot.offline {
+            background-color: rgba(255,255,255,0.3);
+        }
+
+        @keyframes pulse-dot {
+            0% { 
+                transform: scale(1); 
+                opacity: 0.7; 
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+            }
+            50% { 
+                transform: scale(1.2); 
+                opacity: 1; 
+                box-shadow: 0 0 0 5px rgba(76, 175, 80, 0.0);
+            }
+            100% { 
+                transform: scale(1); 
+                opacity: 0.7; 
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.0);
+            }
+        }
+
+        .status-text {
+            transition: color 0.3s ease;
+            font-weight: 600;
+        }
+
+        .status-text.online {
+            color: #4CAF50 !important;
+        }
+
+        .status-text.offline {
+            color: #aaabbe;
+        }
+        
+        /* Profile info section */
+        .profile-info {
+            padding: 5.5rem 2rem 2rem;
+            position: relative;
+        }
+        
+        /* Stats grid layout */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stats-column {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        /* Stat items styling */
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 1rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Stats cards responsive grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .stat-card {
+            padding: 1.5rem;
+            border-radius: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: rgba(139, 92, 246, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1), 0 0 15px rgba(139, 92, 246, 0.15);
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0.5rem 0 0.25rem;
+            color: var(--color-text);
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            margin: 0;
+        }
+        
+        /* Header action buttons */
+        .header-actions {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.75rem;
+            z-index: 10;
+        }
+        
+        .action-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            color: var(--color-text);
+            cursor: pointer;
+            transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .action-button:hover {
+            transform: scale(1.1);
+            background: rgba(139, 92, 246, 0.2);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+        }
+        
+        /* Message buttons */
+        .message-btn-container {
+            margin-left: 1.5rem;
+        }
+        
+        .desktop-message-btn {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background: var(--gradient-purple);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 15px rgba(139, 92, 246, 0.4);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            z-index: 10;
+        }
+        
+        .desktop-message-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4), 0 0 20px rgba(139, 92, 246, 0.6);
+        }
+        
+        /* Username container */
+        .username-container {
+            flex-direction: row;
+            align-items: center;
+        }
+        
+        /* Floating message button for mobile */
+        .floating-message-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--gradient-purple);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 15px rgba(139, 92, 246, 0.4);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .floating-message-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2), 0 0 20px rgba(139, 92, 246, 0.6);
+        }
+        
+        /* Achievements section */
+        .achievements-card {
+            margin-top: 2rem;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            background: rgba(11, 17, 32, 0.7);
+            backdrop-filter: blur(10px);
+        }
+        
+        .achievements-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            cursor: pointer;
+            width: 100%;
+            border: none;
+            text-align: left;
+        }
+        
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--color-text);
+        }
+        
+        .chevron {
+            transition: transform 0.3s ease;
+        }
+        
+        .achievements-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .achievements-content.show {
+            max-height: 1000px;
+        }
+        
+        .achievement-item {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background-color 0.3s ease;
+        }
+        
+        .achievement-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        
+        .achievement-icon {
+            background: rgba(255, 255, 255, 0.05);
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .achievement-info {
+            flex: 1;
+        }
+        
+        .achievement-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .achievement-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--color-text);
+        }
+        
+        .achievement-header span {
+            margin-left: 0.75rem;
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 640px) {
+            .profile-avatar-wrapper {
+                left: 50%;
+                transform: translateX(-50%);
+            }
+            
+            .profile-info {
+                padding-top: 4.5rem;
+                text-align: center;
+            }
+            
+            .user-name-wrapper {
+                width: 100%;
+                text-align: center;
+                margin-top: 1rem;
+            }
+            
+            .user-role {
+                justify-content: center;
+            }
+            
+            .online-indicator {
+                margin: 1rem auto;
+                justify-content: center;
+            }
+            
+            .header-actions {
+                top: 0.5rem;
+                right: 0.5rem;
+                gap: 0.5rem;
+            }
+            
+            .action-button {
+                width: 2.5rem;
+                height: 2.5rem;
+            }
+            
+            .stats-column {
+                margin-bottom: 1.5rem;
+            }
+            
+            .floating-message-btn {
+                display: flex;
+            }
+            
+            .desktop-message-btn {
+                display: none;
+            }
+            
+            .username-container {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .username-container h1 {
+                margin-right: 0;
+            }
+            
+            .message-btn-container {
+                justify-content: center;
+                margin-left: 0;
+                margin-top: 0.5rem;
+            }
+            
+            .achievement-item {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            .achievement-info {
+                width: 100%;
+            }
+            
+            .achievement-header {
+                justify-content: center;
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+            
+            .achievement-header span {
+                margin-left: 0;
+            }
+            
+        }
+    </style>
+</head>
+<body>
+    {% include 'components/simple_navbar.html' %}
+    
+    <div class="profile-container">
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="header-actions">
+                    <button class="action-button glass-effect">
+                        <i data-lucide="share-2" class="icon-gray"></i>
+                    </button>
+                </div>
+                <div class="profile-avatar-wrapper">
+                    <img src="{{ url_for('static', filename='images/' + avatar) }}" alt="Avatar" class="profile-avatar">
+                </div>
+            </div>
+
+            <div class="profile-info">
+                <div class="info-header">
+                    <div class="user-name-wrapper">
+                        <div class="username-container">
+                            <h1 class="user-name">{{ username }}</h1>
+                            <!-- Message button positioned next to username -->
+                            <div class="message-btn-container">
+                                <button class="desktop-message-btn" onclick="startChat('{{ user_id }}')">
+                                    <i data-lucide="message-circle" class="icon-white" style="width: 1.5rem; height: 1.5rem;"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <p class="user-role">
+                            <i data-lucide="user" class="icon-purple glow-effect"></i>
+                            {% if status == "admin" %}CEO{% elif status == "user" %}Пользователь{% elif status == "coder" %}Разработчик{% endif %}
+                        </p>
+                    </div>
+                    <div class="online-indicator">
+                        <span class="online-dot {{ 'online' if online_status == 'Онлайн' else 'offline' }}"></span>
+                        <span class="status-text {{ 'online' if online_status == 'Онлайн' else 'offline' }}">{{ online_status }}</span>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stats-column">
+                        {% if status == "coder" and direction %}
+                        <div class="stat-item glass-effect">
+                            <i data-lucide="target" class="icon-blue glow-effect"></i>
+                            <span>Направление: {{ direction }}</span>
+                        </div>
+                        {% endif %}                        
+                        <div class="stat-item glass-effect">
+                            <i data-lucide="calendar" class="icon-purple glow-effect"></i>
+                            <span>Присоединился: {{ registration_date_info }}</span>
+                        </div>
+                        <div class="stat-item glass-effect">
+                            <img src="{{ url_for('static', filename='images/Flag_Of_Russia.webp') }}" alt="Флаг России" class="icon-gold glow-effect" width="24" height="16">
+                            <div class="rank-progress">
+                                <span class="rank-title">Страна: Россия</span>
+                            </div>
+                        </div>
+                    </div>
+                
+                    {% if status == "coder" %}
+                    <div class="stats-column">
+                        <div class="stat-item glass-effect">
+                            <i data-lucide="star" class="icon-yellow glow-effect"></i>
+                            <span>Рейтинг: {{ rating }}</span>
+                        </div>
+                        <div class="stat-item glass-effect">
+                            <i data-lucide="trophy" class="icon-gold glow-effect"></i>
+                            <span>Выполнено заказов: {{ completed_orders }}</span>
+                        </div>
+                        <div class="stat-item glass-effect">
+                            <i data-lucide="clock" class="icon-blue glow-effect"></i>
+                            <span>Среднее время: {{ avg_completion_time }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if status == "coder" %}
+            <div class="stats-cards">
+                <div class="stat-card glass-effect">
+                    <i data-lucide="trophy" class="icon-gold glow-effect"></i>
+                    <p class="stat-value">{{ completed_orders }}</p>
+                    <p class="stat-label">Заказов</p>
+                </div>
+                <div class="stat-card glass-effect">
+                    <i data-lucide="heart" class="icon-red glow-effect"></i>
+                    <p class="stat-value">{{ reviews_count }}</p>
+                    <p class="stat-label">Отзывов</p>
+                </div>
+                <div class="stat-card glass-effect">
+                    <i data-lucide="star" class="icon-yellow glow-effect"></i>
+                    <p class="stat-value">{{ rating }}</p>
+                    <p class="stat-label">Рейтинг</p>
+                </div>
+                <div class="stat-card glass-effect">
+                    <i data-lucide="shield" class="icon-green glow-effect"></i>
+                    <p class="stat-value">{{ warn }}</p>
+                    <p class="stat-label">Предупреждений</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if status == "coder" %}
+        <!-- Achievements section -->
+        <div class="achievements-card">
+            <button class="achievements-header glass-effect" onclick="toggleAchievements()">
+                <div class="header-title">
+                    <i data-lucide="trophy" class="icon-gold glow-effect"></i>
+                    <span>Достижения</span>
+                </div>
+                <i data-lucide="chevron-down" class="chevron"></i>
+            </button>
+            <div class="achievements-content" id="achievementsContent">
+                <div class="achievement-item glass-effect">
+                    <div class="achievement-icon">
+                        <i data-lucide="crown" class="icon-gold glow-effect"></i>
+                    </div>
+                    <div class="achievement-info">
+                        <div class="achievement-header">
+                            <h3>Разработчик месяца</h3>
+                            <span>• Март 2025</span>
+                        </div>
+                        <p>Лучший разработчик по оценкам пользователей</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Floating message button for mobile -->
+    <button class="floating-message-btn" onclick="startChat('{{ user_id }}')">
+        <i data-lucide="message-circle" class="icon-white" style="width: 1.5rem; height: 1.5rem;"></i>
+    </button>
+
+    {% include 'components/footer.html' %}
+
+    <script>
+        lucide.createIcons();
+        
+        // Toggle achievements section
+        function toggleAchievements() {
+            const content = document.getElementById('achievementsContent');
+            const chevron = document.querySelector('.chevron');
+            content.classList.toggle('show');
+            chevron.style.transform = content.classList.contains('show') ? 'rotate(180deg)' : '';
+        }
+        
+        // Initialize chat
+        function startChat(userId) {
+            fetch(`/chat/start/${userId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.chat_url) {
+                    window.location.href = data.chat_url;
+                } else {
+                    alert("Ошибка: " + (data.error || "Не удалось создать чат"));
+                }
+            })
+            .catch(error => console.error("Ошибка при создании чата:", error));
+        }
+        
+        // Toggle dropdown menu
+        function toggleDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                const dropdown = document.getElementById('userDropdown');
+                const button = document.querySelector('.user-dropdown-button');
+                if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+        }
+        
+        // Handle responsive layout
+        document.addEventListener('DOMContentLoaded', function() {
+            // Pulse animation for online status
+            const statusDot = document.querySelector('.online-dot');
+            if (statusDot && statusDot.classList.contains('online')) {
+                statusDot.style.animation = 'pulse-dot 1.5s infinite';
+            }
+            
+            // Responsive adjustments based on screen size
+            function adjustLayout() {
+                const width = window.innerWidth;
+                const userNameWrapper = document.querySelector('.user-name-wrapper');
+                const onlineIndicator = document.querySelector('.online-indicator');
+                
+                if (width <= 640) {
+                    if (userNameWrapper) userNameWrapper.style.textAlign = 'center';
+                    if (onlineIndicator) onlineIndicator.style.margin = '0 auto';
+                } else {
+                    if (userNameWrapper) userNameWrapper.style.textAlign = '';
+                    if (onlineIndicator) onlineIndicator.style.margin = '';
+                }
+            }
+            
+            // Initial call and window resize listener
+            adjustLayout();
+            window.addEventListener('resize', adjustLayout);
+        });
+    </script>
+</body>
+</html>

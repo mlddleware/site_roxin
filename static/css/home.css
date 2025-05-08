@@ -1,0 +1,243 @@
+/* Общие стили для всех страниц */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+    line-height: 1.5;
+    color: #333333;
+}
+
+/* Контейнер для центровки контента */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    padding: 2rem;
+    position: relative;
+}
+
+/* Шапка страницы */
+.header {
+    display: flex;
+    justify-content: flex-end;
+    position: absolute;
+    top: -440px;
+    right: -320px;
+}
+
+.header a {
+    padding: 10px 20px;
+    background-color: #6312A4;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.header a:hover {
+    background-color: #4c0d84;
+}
+
+/* Основной контент */
+.content {
+    background: #ffffff;
+    padding: 1.5rem 1rem;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    position: relative;
+    margin-top: -450px;
+}
+
+.content h1 {
+    font-size: 48px;
+    color: #6312A4;
+    margin: 5px 0;
+}
+
+.content p {
+    font-size: 18px;
+    color: #666666;
+    margin: 5px 0 10px;
+}
+
+.content a {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 8px 20px;
+    background-color: #6312A4;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.content a:hover {
+    background-color: #4c0d84;
+}
+
+/* Футер */
+.footer {
+    width: 100%;
+    text-align: center;
+    font-size: 12px;
+    color: #666666;
+    position: absolute;
+    bottom: 0px;
+    padding: 0px 0;
+}
+
+.footer a {
+    color: #6312A4;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+
+.footer p {
+    margin-bottom: 5px;
+}
+
+.footer p:last-child {
+    margin-top: 0;
+}
+
+/* Формы для входа, регистрации и заказа */
+.form-container {
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+}
+
+.form-container h1 {
+    margin-bottom: 1rem;
+    font-size: 24px;
+    color: #6312A4;
+}
+
+.form-container input,
+.form-container select,
+.form-container textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.form-container button {
+    width: 100%;
+    padding: 10px;
+    background-color: #6312A4;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.form-container button:hover {
+    background-color: #4c0d84;
+}
+
+.form-container p {
+    margin-top: 1rem;
+    font-size: 14px;
+    color: #666666;
+}
+
+/* Стили для заказов */
+.order-container {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px;
+}
+
+.order-container h2 {
+    text-align: center;
+    color: #6312A4;
+}
+
+.order-container label {
+    display: block;
+    margin-top: 10px;
+    font-size: 14px;
+    color: #333333;
+}
+
+.order-container input,
+.order-container select,
+.order-container textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.order-container button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 10px;
+    background-color: #6312A4;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.order-container button:hover {
+    background-color: #4c0d84;
+}
+
+/* Для страницы с заказами */
+.orders-container {
+    font-size: 16px;
+    color: #333333;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
+
+.orders-container table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.orders-container table th,
+.orders-container table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #cccccc;
+}
+
+.orders-container table th {
+    background-color: #6312A4;
+    color: #ffffff;
+}
+
+.orders-container table tr:hover {
+    background-color: #f1f1f1;
+}

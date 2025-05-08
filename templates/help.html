@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Помощь - ROXIN Studio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ url_for('static', filename='icons/lucide/dist/umd/lucide.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/update_last_visit.js') }}"></script>
+    <style>
+        :root {
+            --color-background: #0f0f1a;
+            --color-card-bg: rgba(255, 255, 255, 0.05);
+            --color-text: #ffffff;
+            --color-text-muted: #a0a0a0;
+            --color-primary: #7c3aed;
+            --color-primary-dark: #6d28d9;
+            --color-border: rgba(255, 255, 255, 0.1);
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3, h4 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+        }
+        
+        .help-container {
+            max-width: 1000px;  
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            background: linear-gradient(90deg, var(--color-primary), #9f7aea);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+        
+        .page-subtitle {
+            font-size: 1.2rem;
+            text-align: center;
+            color: var(--color-text-muted);
+            margin-bottom: 3rem;
+        }
+        
+        .faq-section {
+            margin-bottom: 3rem;
+        }
+        
+        .faq-title {
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+            color: var(--color-primary);
+            font-weight: 700;
+        }
+        
+        .faq-items {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .faq-item {
+            background-color: var(--color-card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--color-border);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .faq-item:hover {
+            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .faq-question {
+            padding: 1.25rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            color: var(--color-text);
+        }
+        
+        .faq-question i {
+            transition: transform 0.3s ease;
+        }
+        
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .faq-answer-content {
+            padding: 0 1.25rem 1.25rem;
+            color: var(--color-text-muted);
+        }
+        
+        .faq-item.active .faq-question i {
+            transform: rotate(180deg);
+        }
+        
+        .faq-item.active .faq-answer {
+            max-height: 1000px;
+        }
+        
+        .faq-item.active {
+            border-color: rgba(124, 58, 237, 0.3);
+        }
+        
+        .contact-support {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--color-card-bg);
+            border-radius: 16px;
+            padding: 2.5rem;
+            text-align: center;
+            border: 1px solid var(--color-border);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .contact-support::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--color-primary), #9f7aea);
+        }
+        
+        .contact-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .contact-desc {
+            margin-bottom: 1.5rem;
+            color: var(--color-text-muted);
+            max-width: 600px;
+        }
+        
+        .support-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark));
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .support-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.4);
+        }
+        
+        .support-btn i {
+            stroke-width: 2;
+        }
+        
+        .glass-card {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+        }
+        
+        /* Decorative elements */
+        .decoration {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: -1;
+            opacity: 0.15;
+        }
+        
+        .decoration-1 {
+            width: 300px;
+            height: 300px;
+            background-color: var(--color-primary);
+            top: 5%;
+            left: -5%;
+        }
+        
+        .decoration-2 {
+            width: 250px;
+            height: 250px;
+            background-color: #9f7aea;
+            bottom: 10%;
+            right: -5%;
+        }
+        
+        /* Support Form Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            overflow: auto;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: var(--color-card-bg);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            animation: modalFadeIn 0.3s ease;
+            padding: 0;
+            overflow: hidden;
+            border: 1px solid var(--color-border);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 1.5rem;
+            color: var(--color-text);
+        }
+        
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--color-text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
+        
+        .close-button:hover {
+            color: var(--color-text);
+        }
+        
+        .modal-body {
+            padding: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--color-text);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            color: var(--color-text);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.3);
+        }
+        
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .cancel-button, .send-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .cancel-button {
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--color-border);
+            color: var(--color-text);
+        }
+        
+        .send-button {
+            background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark));
+            border: none;
+            color: white;
+        }
+        
+        .cancel-button:hover {
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+        
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.4);
+        }
+        
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .help-container {
+                padding: 2rem 1rem;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .contact-support {
+                padding: 1.5rem;
+            }
+        }
+        
+        .user-dropdown-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-radius: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .user-dropdown-button:hover {
+            background: var(--color-surface);
+        }
+        
+
+        
+        /* Dropdown menu styles */
+        .user-dropdown {
+            position: relative;
+        }
+        
+        .dropdown-icon {
+            color: var(--color-text-muted);
+            transition: transform 0.3s ease;
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            right: 0;
+            width: 240px;
+            background-color: var(--bg-tertiary);
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            visibility: hidden;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .dropdown-menu.show {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .dropdown-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            text-decoration: none;
+        }
+        
+        .dropdown-avatar {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .dropdown-profile-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .dropdown-username {
+            font-weight: 600;
+            color: var(--color-text);
+        }
+        
+        .dropdown-role {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+        }
+        
+        .dropdown-divider {
+            height: 1px;
+            background-color: rgba(255, 255, 255, 0.1);
+            margin: 0.5rem 0;
+        }
+        
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: var(--color-text);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-item:hover {
+            background-color: rgba(124, 58, 237, 0.1);
+            color: var(--color-primary);
+        }
+        
+        .login-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark));
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- Подключаем общий навбар -->
+    {% include 'components/simple_navbar.html' %}
+    
+    <!-- Содержимое страницы -->
+    <div class="help-container">
+        <div class="decoration decoration-1"></div>
+        <div class="decoration decoration-2"></div>
+        
+        <h1 class="page-title">Центр помощи</h1>
+        <p class="page-subtitle">Ответы на часто задаваемые вопросы и поддержка пользователей</p>
+        
+        <section class="faq-section">
+            <h2 class="faq-title">Часто задаваемые вопросы</h2>
+            
+            <div class="faq-items">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Как сделать заказ на разработку?</span>
+                        <i data-lucide="chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Чтобы сделать заказ на разработку, выполните следующие шаги:</p>
+                            <ol>
+                                <li>Войдите в свой аккаунт или зарегистрируйтесь, если у вас его ещё нет</li>
+                                <li>Перейдите в раздел "Заказы" и нажмите кнопку "Создать заказ"</li>
+                                <li>Заполните форму заказа, указав все необходимые детали проекта</li>
+                                <li>Отправьте заказ на рассмотрение</li>
+                                <li>Дождитесь ответа от наших специалистов</li>
+                            </ol>
+                            <p>После одобрения заказа начнётся работа над вашим проектом.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Какие способы оплаты вы принимаете?</span>
+                        <i data-lucide="chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Мы принимаем различные способы оплаты для вашего удобства:</p>
+                            <ul>
+                                <li>Банковские карты (Visa, MasterCard)</li>
+                                <li>Электронные кошельки (QIWI, ЮMoney)</li>
+                                <li>Банковский перевод</li>
+                                <li>Криптовалюты (Bitcoin, Ethereum)</li>
+                            </ul>
+                            <p>Выбор способа оплаты доступен на этапе подтверждения заказа.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Сколько времени занимает разработка проекта?</span>
+                        <i data-lucide="chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Сроки разработки зависят от сложности и объёма работ по вашему проекту:</p>
+                            <ul>
+                                <li>Простые проекты: 3-7 дней</li>
+                                <li>Проекты средней сложности: 1-3 недели</li>
+                                <li>Сложные проекты: от 1 месяца и более</li>
+                            </ul>
+                            <p>Точные сроки будут определены после детального обсуждения вашего заказа со специалистами студии.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Что входит в стоимость разработки?</span>
+                        <i data-lucide="chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>В стоимость разработки включены следующие этапы и услуги:</p>
+                            <ul>
+                                <li>Анализ требований и планирование проекта</li>
+                                <li>Дизайн и прототипирование</li>
+                                <li>Разработка функционала</li>
+                                <li>Тестирование и отладка</li>
+                                <li>Базовая оптимизация</li>
+                                <li>Развертывание проекта</li>
+                                <li>Базовая техническая поддержка в течение 30 дней после сдачи</li>
+                            </ul>
+                            <p>Дополнительные услуги, такие как расширенная техническая поддержка, SEO-оптимизация, контент-наполнение и другие, могут быть добавлены к заказу за отдельную плату.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Как защищены мои данные и идеи проекта?</span>
+                        <i data-lucide="chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Мы серьезно относимся к конфиденциальности наших клиентов:</p>
+                            <ul>
+                                <li>Все данные передаются по защищенному соединению (HTTPS)</li>
+                                <li>Доступ к информации о проектах имеют только сотрудники, непосредственно работающие над ними</li>
+                                <li>Мы подписываем NDA (соглашение о неразглашении) по запросу клиента</li>
+                                <li>После завершения проекта вам передаются все права на код и интеллектуальную собственность</li>
+                            </ul>
+                            <p>Ваши идеи и данные находятся в безопасности с нами.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Можно ли вносить изменения в проект после его начала?</span>
+                        <i data-lucide="chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Да, вы можете вносить изменения в проект после его начала, но есть несколько моментов, которые стоит учесть:</p>
+                            <ul>
+                                <li>Незначительные изменения (исправления текста, мелкие правки дизайна) обычно включены в стоимость</li>
+                                <li>Существенные изменения в требованиях или функционале могут повлиять на сроки и стоимость проекта</li>
+                                <li>Крупные изменения требуют согласования и могут рассматриваться как дополнительные задачи</li>
+                            </ul>
+                            <p>Мы стараемся быть гибкими и учитывать потребности клиентов, поэтому всегда готовы обсудить необходимые изменения.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="contact-support">
+            <h2 class="contact-title">Не нашли ответ на свой вопрос?</h2>
+            <p class="contact-desc">Свяжитесь с нашей службой поддержки, и мы постараемся помочь вам в кратчайшие сроки. Наши специалисты доступны 24/7.</p>
+            <button class="support-btn" onclick="openSupportModal()">
+                <i data-lucide="message-circle"></i>
+                <span>Написать в поддержку</span>
+            </button>
+        </section>
+    </div>
+    
+    <!-- Модальное окно поддержки -->
+    <div id="supportModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Обращение в поддержку</h2>
+                <button class="close-button" onclick="closeSupportModal()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="supportForm" onsubmit="submitSupportForm(event)">
+                    <div class="form-group">
+                        <label for="supportName">Ваше имя</label>
+                        <input type="text" id="supportName" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="supportEmail">Email для связи</label>
+                        <input type="email" id="supportEmail" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="supportTopic">Тема обращения</label>
+                        <select id="supportTopic" class="form-control" required>
+                            <option value="">Выберите тему</option>
+                            <option value="order">Вопрос по заказу</option>
+                            <option value="account">Проблема с аккаунтом</option>
+                            <option value="payment">Вопрос по оплате</option>
+                            <option value="technical">Техническая проблема</option>
+                            <option value="other">Другое</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="supportMessage">Сообщение</label>
+                        <textarea id="supportMessage" class="form-control" required></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="cancel-button" onclick="closeSupportModal()">Отмена</button>
+                        <button type="submit" class="send-button">Отправить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Подключаем общий футер -->
+    {% include 'components/footer.html' %}
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Initialize Lucide icons
+            lucide.createIcons();
+            
+            // FAQ аккордеон
+            document.querySelectorAll('.faq-question').forEach(question => {
+                question.addEventListener('click', () => {
+                    const item = question.parentNode;
+                    item.classList.toggle('active');
+                });
+            });
+            
+            // Toggle dropdown menu
+            window.toggleDropdown = function() {
+                const dropdown = document.getElementById('userDropdown');
+                if (dropdown) {
+                    dropdown.classList.toggle('show');
+                    
+                    // Close dropdown when clicking outside
+                    document.addEventListener('click', function(event) {
+                        const dropdown = document.getElementById('userDropdown');
+                        const button = document.querySelector('.user-dropdown-button');
+                        if (dropdown && button && !button.contains(event.target) && !dropdown.contains(event.target)) {
+                            dropdown.classList.remove('show');
+                        }
+                    });
+                }
+            }
+        });
+        
+        // Модальное окно поддержки
+        function openSupportModal() {
+            document.getElementById('supportModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Блокируем прокрутку
+        }
+        
+        function closeSupportModal() {
+            document.getElementById('supportModal').style.display = 'none';
+            document.body.style.overflow = ''; // Разблокируем прокрутку
+        }
+        
+        // Закрытие модального окна по клику вне его области
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('supportModal');
+            if (event.target === modal) {
+                closeSupportModal();
+            }
+        });
+        
+        // Отправка формы поддержки
+        function submitSupportForm(event) {
+            event.preventDefault();
+            
+            // Получаем данные формы
+            const name = document.getElementById('supportName').value;
+            const email = document.getElementById('supportEmail').value;
+            const topic = document.getElementById('supportTopic').value;
+            const message = document.getElementById('supportMessage').value;
+            
+            // В реальном проекте здесь был бы AJAX запрос для отправки данных на сервер
+            console.log('Отправка обращения в поддержку:', { name, email, topic, message });
+            
+            // Заглушка: показываем сообщение об успехе
+            alert('Ваше обращение успешно отправлено! Мы свяжемся с вами в ближайшее время.');
+            
+            // Закрываем модальное окно и сбрасываем форму
+            closeSupportModal();
+            document.getElementById('supportForm').reset();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,700 @@
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROXIN Studio - Профессиональная разработка</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+</head>
+<body>
+    <div class="min-h-screen flex flex-col bg-gradient">
+        <!-- Navigation -->
+        <nav class="fixed w-full top-0 z-50 nav-blur">
+            <div class="container">
+                <div class="nav-content">
+                    <div class="flex items-center">
+                        <span class="logo">ROXIN</span>
+                    </div>
+                    
+                    <div class="nav-links">
+                        <a href="#portfolio" class="nav-link">Портфолио</a>
+                        <a href="#services" class="nav-link">Услуги</a>
+                        <a href="#team" class="nav-link">Команда</a>
+                        <a href="#contact" class="nav-link">Контакты</a>
+                    </div>
+
+                    <div class="flex items-center">
+                        <a href="/register" class="login-button">Войти</a>
+                        <button class="menu-button">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="3" y1="12" x2="21" y2="12"></line>
+                                <line x1="3" y1="6" x2="21" y2="6"></line>
+                                <line x1="3" y1="18" x2="21" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <header class="hero-section">
+            <div class="container">
+                <div class="hero-content-wrapper">
+                    <div class="hero-content">
+                        <div class="animated-badge">Инновационные решения</div>
+                        <h1 class="hero-title">
+                            Создаем <span class="gradient-text">будущее</span><br>
+                            цифрового мира
+                        </h1>
+                        <p class="hero-description">
+                            Мы превращаем идеи в продукты, которые меняют мир и помогают бизнесу расти, 
+                            используя передовые технологии и креативный подход.
+                        </p>
+                        <div class="hero-buttons">
+                            <a href="#contact" class="cta-button">
+                                Начать проект
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                            </a>
+                            <a href="#portfolio" class="secondary-button">
+                                Смотреть работы
+                            </a>
+                        </div>
+                        <div class="stats-container">
+                            <div class="stat-item">
+                                <div class="stat-value">100+</div>
+                                <div class="stat-label">Проектов</div>
+                            </div>
+                            <div class="stats-divider"></div>
+                            <div class="stat-item">
+                                <div class="stat-value">50+</div>
+                                <div class="stat-label">Клиентов</div>
+                            </div>
+                            <div class="stats-divider"></div>
+                            <div class="stat-item">
+                                <div class="stat-value">95%</div>
+                                <div class="stat-label">Удовлетворенность</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="hero-image-container">
+                        <div class="hero-image">
+                            <img src="{{ url_for('static', filename='images/robot2.png') }}" alt="AI Робот">
+                        </div>
+                        <div class="floating-card card-1">
+                            <i class="fas fa-code"></i>
+                            <span>Чистый код</span>
+                        </div>
+                        <div class="floating-card card-2">
+                            <i class="fas fa-rocket"></i>
+                            <span>Быстрый запуск</span>
+                        </div>
+                        <div class="floating-card card-3">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Надежная защита</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="scroll-indicator">
+                <div class="mouse">
+                    <div class="wheel"></div>
+                </div>
+                <div>
+                    <span class="scroll-arrow"></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Services Section -->
+        <section id="services" class="services-section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-subtitle">Наши услуги</span>
+                    <h2 class="section-title">Что мы <span class="gradient-text">предлагаем</span></h2>
+                </div>
+                <div class="services-grid">
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-laptop-code"></i>
+                        </div>
+                        <h3>Веб-разработка</h3>
+                        <p>Создаем современные веб-сайты и приложения с адаптивным дизайном и высокой производительностью.</p>
+                        <a href="#contact" class="service-link">Подробнее <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3>Мобильные приложения</h3>
+                        <p>Разрабатываем нативные и кросс-платформенные мобильные приложения для iOS и Android.</p>
+                        <a href="#contact" class="service-link">Подробнее <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <h3>UI/UX Дизайн</h3>
+                        <p>Проектируем интуитивные и эстетичные интерфейсы, которые нравятся пользователям.</p>
+                        <a href="#contact" class="service-link">Подробнее <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-server"></i>
+                        </div>
+                        <h3>Бэкенд разработка</h3>
+                        <p>Создаем надежные и масштабируемые серверные решения для любых типов проектов.</p>
+                        <a href="#contact" class="service-link">Подробнее <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-cloud"></i>
+                        </div>
+                        <h3>Облачные решения</h3>
+                        <p>Разворачиваем и оптимизируем инфраструктуру в облаке для снижения затрат и повышения надежности.</p>
+                        <a href="#contact" class="service-link">Подробнее <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h3>ИИ и машинное обучение</h3>
+                        <p>Внедряем интеллектуальные алгоритмы для автоматизации процессов и анализа данных.</p>
+                        <a href="#contact" class="service-link">Подробнее <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Portfolio Section -->
+        <section id="portfolio" class="portfolio-section">
+            <div class="section-header container">
+                <span class="section-subtitle">Наши работы</span>
+                <h2 class="section-title">Портфолио <span class="gradient-text">проектов</span></h2>
+            </div>
+            <div class="portfolio-filters container">
+                <button class="filter-button active" data-filter="all">Все</button>
+                <button class="filter-button" data-filter="web">Веб</button>
+                <button class="filter-button" data-filter="mobile">Мобильные</button>
+                <button class="filter-button" data-filter="design">Дизайн</button>
+            </div>
+            
+            <div class="portfolio-showcase">
+                <!-- Верхний ряд - движение вправо -->
+                <div class="portfolio-row portfolio-row-right">
+                    <div class="portfolio-item" data-category="web">
+                        <div class="portfolio-image">
+                            <img src="{{ url_for('static', filename='img/portfolio-1.jpg') }}" alt="Проект 1">
+                            <div class="portfolio-overlay">
+                                <div class="portfolio-info">
+                                    <h3>E-commerce платформа</h3>
+                                    <p>Веб-разработка</p>
+                                    <a href="#" class="portfolio-link">Подробнее</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="portfolio-item" data-category="mobile">
+                        <div class="portfolio-image">
+                            <img src="{{ url_for('static', filename='img/portfolio-2.jpg') }}" alt="Проект 2">
+                            <div class="portfolio-overlay">
+                                <div class="portfolio-info">
+                                    <h3>Фитнес-приложение</h3>
+                                    <p>Мобильная разработка</p>
+                                    <a href="#" class="portfolio-link">Подробнее</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="portfolio-item" data-category="design">
+                        <div class="portfolio-image">
+                            <img src="{{ url_for('static', filename='img/portfolio-3.jpg') }}" alt="Проект 3">
+                            <div class="portfolio-overlay">
+                                <div class="portfolio-info">
+                                    <h3>Брендинг для стартапа</h3>
+                                    <p>UI/UX Дизайн</p>
+                                    <a href="#" class="portfolio-link">Подробнее</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="portfolio-item" data-category="web">
+                        <div class="portfolio-image">
+                            <img src="{{ url_for('static', filename='img/portfolio-7.jpg') }}" alt="Проект 7">
+                            <div class="portfolio-overlay">
+                                <div class="portfolio-info">
+                                    <h3>Лендинг продукта</h3>
+                                    <p>Веб-разработка</p>
+                                    <a href="#" class="portfolio-link">Подробнее</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="portfolio-item" data-category="design">
+                        <div class="portfolio-image">
+                            <img src="{{ url_for('static', filename='img/portfolio-8.jpg') }}" alt="Проект 8">
+                            <div class="portfolio-overlay">
+                                <div class="portfolio-info">
+                                    <h3>Дизайн приложения</h3>
+                                    <p>UI/UX Дизайн</p>
+                                    <a href="#" class="portfolio-link">Подробнее</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Дублируем элементы для бесконечной прокрутки -->
+                    <div class="portfolio-item" data-category="web">
+                        <div class="portfolio-image">
+                            <img src="{{ url_for('static', filename='img/portfolio-1.jpg') }}" alt="Проект 1">
+                            <div class="portfolio-overlay">
+                                <div class="portfolio-info">
+                                    <h3>E-commerce платформа</h3>
+                                    <p>Веб-разработка</p>
+                                    <a href="#" class="portfolio-link">Подробнее</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="portfolio-item" data-category="mobile">
+                        <div class="portfolio-image">
+                            <img src="{{ url_for('static', filename='img/portfolio-2.jpg') }}" alt="Проект 2">
+                            <div class="portfolio-overlay">
+                                <div class="portfolio-info">
+                                    <h3>Фитнес-приложение</h3>
+                                    <p>Мобильная разработка</p>
+                                    <a href="#" class="portfolio-link">Подробнее</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Нижний ряд - движение влево -->
+                <div class="portfolio-row portfolio-row-left">
+                    <div class="portfolio-item" data-category="mobile">
+                        <div class="portfolio-image">
+                            <img src="{{ url_for('static', filename='img/portfolio-4.jpg') }}" alt="Проект 4">
+                            <div class="portfolio-overlay">
+                                <div class="portfolio-info">
+                                    <h3>Корпоративный портал</h3>
+                                    <p>Веб-разработка</p>
+                                    <a href="#" class="portfolio-link">Подробнее</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="portfolio-item" data-category="web">
+                        <div class="portfolio-image">
+                            <img src="{{ url_for('static', filename='img/portfolio-5.jpg') }}" alt="Проект 5">
+                            <div class="portfolio-overlay">
+                                <div class="portfolio-info">
+                                    <h3>Приложение доставки</h3>
+                                    <p>Мобильная разработка</p>
+                                    <a href="#" class="portfolio-link">Подробнее</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="portfolio-item" data-category="design">
+                        <div class="portfolio-image">
+                            <img src="{{ url_for('static', filename='img/portfolio-6.jpg') }}" alt="Проект 6">
+                            <div class="portfolio-overlay">
+                                <div class="portfolio-info">
+                                    <h3>Редизайн интерфейса</h3>
+                                    <p>UI/UX Дизайн</p>
+                                    <a href="#" class="portfolio-link">Подробнее</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="portfolio-item" data-category="mobile">
+                        <div class="portfolio-image">
+                            <img src="{{ url_for('static', filename='img/portfolio-9.jpg') }}" alt="Проект 9">
+                            <div class="portfolio-overlay">
+                                <div class="portfolio-info">
+                                    <h3>Мобильный банкинг</h3>
+                                    <p>Мобильная разработка</p>
+                                    <a href="#" class="portfolio-link">Подробнее</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="portfolio-item" data-category="web">
+                        <div class="portfolio-image">
+                            <img src="{{ url_for('static', filename='img/portfolio-10.jpg') }}" alt="Проект 10">
+                            <div class="portfolio-overlay">
+                                <div class="portfolio-info">
+                                    <h3>Онлайн-магазин</h3>
+                                    <p>Веб-разработка</p>
+                                    <a href="#" class="portfolio-link">Подробнее</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Дублируем элементы для бесконечной прокрутки -->
+                    <div class="portfolio-item" data-category="mobile">
+                        <div class="portfolio-image">
+                            <img src="{{ url_for('static', filename='img/portfolio-4.jpg') }}" alt="Проект 4">
+                            <div class="portfolio-overlay">
+                                <div class="portfolio-info">
+                                    <h3>Корпоративный портал</h3>
+                                    <p>Веб-разработка</p>
+                                    <a href="#" class="portfolio-link">Подробнее</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="portfolio-item" data-category="web">
+                        <div class="portfolio-image">
+                            <img src="{{ url_for('static', filename='img/portfolio-5.jpg') }}" alt="Проект 5">
+                            <div class="portfolio-overlay">
+                                <div class="portfolio-info">
+                                    <h3>Приложение доставки</h3>
+                                    <p>Мобильная разработка</p>
+                                    <a href="#" class="portfolio-link">Подробнее</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="portfolio-cta container">
+                <a href="#" class="outline-button">Смотреть все проекты</a>
+            </div>
+        </section>
+
+        <!-- Process Section -->
+        <section class="process-section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-subtitle">Как мы работаем</span>
+                    <h2 class="section-title">Наш <span class="gradient-text">процесс</span></h2>
+                </div>
+                <div class="process-steps">
+                    <div class="process-step">
+                        <div class="step-number">01</div>
+                        <div class="step-content">
+                            <h3>Анализ и стратегия</h3>
+                            <p>Изучаем ваши потребности, анализируем рынок и конкурентов, формируем стратегию разработки.</p>
+                        </div>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">02</div>
+                        <div class="step-content">
+                            <h3>Проектирование и дизайн</h3>
+                            <p>Создаем прототипы интерфейса, разрабатываем архитектуру и визуальный облик продукта.</p>
+                        </div>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">03</div>
+                        <div class="step-content">
+                            <h3>Разработка</h3>
+                            <p>Пишем чистый и оптимизированный код, следуя лучшим практикам и стандартам качества.</p>
+                        </div>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">04</div>
+                        <div class="step-content">
+                            <h3>Тестирование</h3>
+                            <p>Проводим тщательное тестирование на всех этапах для обеспечения надежности и безопасности.</p>
+                        </div>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">05</div>
+                        <div class="step-content">
+                            <h3>Запуск и поддержка</h3>
+                            <p>Выпускаем продукт, обеспечиваем плавный старт и последующую техническую поддержку.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Team Section -->
+        <section id="team" class="team-section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-subtitle">Наша команда</span>
+                    <h2 class="section-title">Станьте частью <span class="gradient-text">нашей команды</span></h2>
+                    <p class="section-description">Мы всегда в поиске талантливых специалистов, готовых развиваться вместе с нами и создавать прорывные технологические решения.</p>
+                </div>
+                <div class="team-grid">
+                    <div class="team-role-card">
+                        <div class="role-icon">
+                            <i class="fas fa-pencil-ruler"></i>
+                        </div>
+                        <h3>Дизайнер</h3>
+                        <p>Создавайте привлекательные пользовательские интерфейсы и превращайте идеи в визуальные концепты</p>
+                        <ul class="role-requirements">
+                            <li>Опыт в UI/UX дизайне</li>
+                            <li>Знание Figma и Photoshop</li>
+                            <li>Понимание пользовательских потребностей</li>
+                        </ul>
+                        <a href="#" class="apply-button">Подать заявку</a>
+                    </div>
+                    <div class="team-role-card">
+                        <div class="role-icon">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <h3>Разработчик</h3>
+                        <p>Создавайте стабильный и эффективный код, воплощая дизайн в функциональные продукты</p>
+                        <ul class="role-requirements">
+                            <li>Опыт разработки веб/мобильных приложений</li>
+                            <li>Знание современных технологий</li>
+                            <li>Командная работа и коммуникация</li>
+                        </ul>
+                        <a href="#" class="apply-button">Подать заявку</a>
+                    </div>
+                    <div class="team-role-card">
+                        <div class="role-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3>Менеджер проектов</h3>
+                        <p>Координируйте процессы разработки и обеспечивайте своевременную доставку продукта</p>
+                        <ul class="role-requirements">
+                            <li>Опыт управления IT-проектами</li>
+                            <li>Организационные навыки</li>
+                            <li>Знание методологий разработки</li>
+                        </ul>
+                        <a href="#" class="apply-button">Подать заявку</a>
+                    </div>
+                </div>
+            </div>
+            <div class="team-culture">
+                <div class="container">
+                    <div class="culture-content">
+                        <h3>Наша культура</h3>
+                        <p>Мы создаем комфортную среду для профессионального роста и реализации амбициозных идей. В основе нашей культуры лежат ценности открытости, инноваций и постоянного совершенствования.</p>
+                        <div class="culture-benefits">
+                            <div class="benefit-item">
+                                <i class="fas fa-gem"></i>
+                                <span>Достойная оплата</span>
+                            </div>
+                            <div class="benefit-item">
+                                <i class="fas fa-laptop-house"></i>
+                                <span>Гибридный формат работы</span>
+                            </div>
+                            <div class="benefit-item">
+                                <i class="fas fa-graduation-cap"></i>
+                                <span>Обучение и развитие</span>
+                            </div>
+                            <div class="benefit-item">
+                                <i class="fas fa-users"></i>
+                                <span>Дружный коллектив</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials Section -->
+        <section class="testimonials-section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-subtitle">Отзывы клиентов</span>
+                    <h2 class="section-title">Что говорят о <span class="gradient-text">нашей работе</span></h2>
+                </div>
+                <div class="testimonials-slider">
+                    <div class="testimonial-card">
+                        <div class="testimonial-content">
+                            <p>"ROXIN Studio превзошла все наши ожидания. Их команда не только создала потрясающий дизайн, но и обеспечила безупречную техническую реализацию. Проект был выполнен в срок и в рамках бюджета."</p>
+                        </div>
+                        <div class="testimonial-author">
+                            <img src="{{ url_for('static', filename='img/client-1.jpg') }}" alt="Клиент 1">
+                            <div class="author-info">
+                                <h4>Александр Петров</h4>
+                                <p>CEO, TechStart</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="testimonial-content">
+                            <p>"Работа с ROXIN Studio была настоящим удовольствием. Они действительно понимают потребности бизнеса и предлагают решения, которые работают. Наше мобильное приложение получило отличные отзывы от пользователей."</p>
+                        </div>
+                        <div class="testimonial-author">
+                            <img src="{{ url_for('static', filename='img/client-2.jpg') }}" alt="Клиент 2">
+                            <div class="author-info">
+                                <h4>Елена Соколова</h4>
+                                <p>Директор по маркетингу, FitLife</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="testimonial-content">
+                            <p>"ROXIN Studio помогла нам трансформировать наше онлайн-присутствие. Новый веб-сайт не только привлекательно выглядит, но и значительно улучшил конверсию и пользовательский опыт."</p>
+                        </div>
+                        <div class="testimonial-author">
+                            <img src="{{ url_for('static', filename='img/client-3.jpg') }}" alt="Клиент 3">
+                            <div class="author-info">
+                                <h4>Михаил Иванов</h4>
+                                <p>Владелец, RetailPlus</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonials-indicators">
+                    <span class="indicator active"></span>
+                    <span class="indicator"></span>
+                    <span class="indicator"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="contact-section">
+            <div class="container">
+                <div class="contact-wrapper">
+                    <div class="contact-content">
+                        <div class="section-header">
+                            <span class="section-subtitle">Свяжитесь с нами</span>
+                            <h2 class="section-title">Начнем <span class="gradient-text">сотрудничество</span></h2>
+                            <p class="section-description">Расскажите нам о вашем проекте, и мы свяжемся с вами, чтобы обсудить детали и предложить оптимальное решение.</p>
+                        </div>
+                        <div class="contact-info">
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <div>
+                                    <h4>Email</h4>
+                                    <p>support@roxinstudio.com</p>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-paper-plane"></i>
+                                <div>
+                                    <h4>Telegram</h4>
+                                    <p>@Roxin_K</p>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <div>
+                                    <h4>Адрес</h4>
+                                    <p>Москва, ул. Технологическая, 42</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="contact-form-container">
+                        <form class="contact-form">
+                            <div class="input-group">
+                                <label for="name">Ваше имя</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="project-type">Тип проекта</label>
+                                <select id="project-type" name="project-type">
+                                    <option value="web">Веб-разработка</option>
+                                    <option value="mobile">Мобильное приложение</option>
+                                    <option value="design">UI/UX Дизайн</option>
+                                    <option value="other">Другое</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="message">О проекте</label>
+                                <textarea id="message" name="message" rows="4" required></textarea>
+                            </div>
+                            <button type="submit" class="submit-button">
+                                Отправить запрос
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+      <!-- Подключаем общий футер -->
+    {% include 'components/footer.html' %}
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+        // Плавная прокрутка для навигационных ссылок
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Мобильное меню
+        const menuButton = document.querySelector('.menu-button');
+        const navLinks = document.querySelector('.nav-links');
+        
+        menuButton.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // Фильтрация портфолио
+        const filterButtons = document.querySelectorAll('.filter-button');
+        const portfolioItems = document.querySelectorAll('.portfolio-item');
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Убираем активный класс со всех кнопок
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                // Добавляем активный класс на нажатую кнопку
+                button.classList.add('active');
+                
+                const filterValue = button.getAttribute('data-filter');
+                
+                setTimeout(() => {
+                    portfolioItems.forEach(item => {
+                        if (filterValue === 'all' || item.getAttribute('data-category') === filterValue) {
+                            item.style.opacity = '1';
+                            item.style.pointerEvents = 'auto';
+                        } else {
+                            item.style.opacity = '0.2';
+                            item.style.pointerEvents = 'none';
+                        }
+                    });
+                }, 100);
+            });
+        });
+
+        // Простой слайдер для отзывов
+        const indicators = document.querySelectorAll('.indicator');
+        let currentSlide = 0;
+        
+        function showSlide(index) {
+            const testimonialCards = document.querySelectorAll('.testimonial-card');
+            const sliderWidth = testimonialCards[0].offsetWidth;
+            
+            document.querySelector('.testimonials-slider').style.transform = `translateX(-${index * sliderWidth}px)`;
+            
+            indicators.forEach((ind, i) => {
+                ind.classList.toggle('active', i === index);
+            });
+            
+            currentSlide = index;
+        }
+        
+        indicators.forEach((indicator, index) => {
+            indicator.addEventListener('click', () => {
+                showSlide(index);
+            });
+        });
+        
+        // Автоматическая прокрутка слайдов
+        setInterval(() => {
+            currentSlide = (currentSlide + 1) % indicators.length;
+            showSlide(currentSlide);
+        }, 5000);
+    </script>
+</body>
+</html>

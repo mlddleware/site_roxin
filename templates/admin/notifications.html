@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление уведомлениями | ROXIN Studio</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+    <style>
+        .admin-sidebar {
+            background: linear-gradient(135deg, #6366F1, #8B5CF6);
+            transition: transform 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+                z-index: 50;
+            }
+            
+            .admin-sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+        }
+        
+        .notification-info { 
+            background-color: #EFF6FF; 
+            border-left: 4px solid #3B82F6; 
+        }
+        .notification-warning { 
+            background-color: #FEF3C7; 
+            border-left: 4px solid #F59E0B; 
+        }
+        .notification-error { 
+            background-color: #FEE2E2; 
+            border-left: 4px solid #EF4444; 
+        }
+        
+        /* Стили для нового дизайна уведомлений */
+        .notification-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .notification-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .notification-date {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        
+        .notification-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .notification-icon-wrapper {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+        
+        .notification-icon-info {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2));
+        }
+        
+        .notification-icon-warning {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2));
+        }
+        
+        .notification-icon-error {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2));
+        }
+        
+        .notification-message {
+            font-size: 13px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.7);
+            white-space: pre-line;
+            word-break: break-word;
+        }
+        
+        .notification-item.info {
+            border-left: 3px solid #3B82F6;
+        }
+        
+        .notification-item.warning {
+            border-left: 3px solid #F59E0B;
+        }
+        
+        .notification-item.error {
+            border-left: 3px solid #EF4444;
+        }
+        
+        .notification-title.info {
+            color: #60A5FA;
+        }
+        
+        .notification-title.warning {
+            color: #FBBF24;
+        }
+        
+        .notification-title.error {
+            color: #F87171;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Mobile Menu Button -->
+    <div class="fixed top-4 left-4 z-50 md:hidden">
+        <button id="menuToggle" class="bg-indigo-600 text-white rounded-md p-2 focus:outline-none">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+    
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 bg-gradient-to-b from-indigo-600 to-purple-600 w-64 text-white transition-all duration-300 transform admin-sidebar shadow-lg overflow-y-auto">
+        <div class="p-6">
+            <div class="flex items-center space-x-3">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="ROXIN Studio" class="w-10 h-10 rounded-full">
+                <span class="text-xl font-bold">ROXIN Admin</span>
+            </div>
+        </div>
+        
+        <nav class="mt-6">
+            <div class="px-6 py-4 border-t border-indigo-800">
+                <p class="text-xs text-indigo-200 uppercase tracking-wider">Основное</p>
+            </div>
+            <a href="{{ url_for('admin.admin_dashboard') }}" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-chart-line mr-3"></i>
+                <span>Панель управления</span>
+            </a>
+            <a href="{{ url_for('admin.admin_users') }}" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-users mr-3"></i>
+                <span>Пользователи</span>
+            </a>
+            <a href="{{ url_for('admin.admin_logs') }}" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-clipboard-list mr-3"></i>
+                <span>Логи системы</span>
+            </a>
+            
+            <div class="px-6 py-4 border-t border-indigo-800">
+                <p class="text-xs text-indigo-200 uppercase tracking-wider">Коммуникации</p>
+            </div>
+            <a href="{{ url_for('admin.admin_notifications') }}" class="flex items-center px-6 py-3 text-white bg-indigo-800 bg-opacity-50">
+                <i class="fas fa-bell mr-3"></i>
+                <span>Уведомления</span>
+            </a>
+            
+            <div class="px-6 py-4 border-t border-indigo-800">
+                <p class="text-xs text-indigo-200 uppercase tracking-wider">Заказы</p>
+            </div>
+            <a href="#" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-shopping-cart mr-3"></i>
+                <span>Все заказы</span>
+            </a>
+            <a href="#" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-file-invoice mr-3"></i>
+                <span>Текущие заказы</span>
+            </a>
+            
+            <div class="px-6 py-4 border-t border-indigo-800">
+                <p class="text-xs text-indigo-200 uppercase tracking-wider">Аккаунт</p>
+            </div>
+            <a href="{{ url_for('settings.settings') }}" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-cog mr-3"></i>
+                <span>Настройки</span>
+            </a>
+            <a href="{{ url_for('logout.logout') }}" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-sign-out-alt mr-3"></i>
+                <span>Выйти</span>
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="ml-64 p-4 md:p-8 main-content">
+        <!-- Top Navigation -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+            <h1 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-0">Управление уведомлениями</h1>
+            
+            <div class="flex items-center">
+                <div class="relative mr-4">
+                    <img src="{{ url_for('static', filename='images/' + current_user_avatar) }}" alt="User Avatar" class="w-8 h-8 rounded-full">
+                </div>
+                <span class="text-sm font-medium text-gray-700">{{ current_user_username }}</span>
+            </div>
+        </div>
+        
+        <!-- Notifications Content -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            <!-- Notification Form -->
+            <div class="md:col-span-1 bg-white rounded-lg shadow-md p-4 md:p-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">Отправить уведомление</h2>
+                <form id="notificationForm" class="space-y-4">
+                    <div>
+                        <label for="recipients" class="block text-sm font-medium text-gray-700">Получатели</label>
+                        <select id="recipients" name="recipients" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            <option value="all">Все пользователи</option>
+                            <option value="users">Только пользователи</option>
+                            <option value="coders">Только исполнители</option>
+                            <option value="specific">Выбрать конкретных</option>
+                        </select>
+                    </div>
+                    
+                    <div id="specificUsersContainer" class="hidden">
+                        <label for="specificUsers" class="block text-sm font-medium text-gray-700">Выберите пользователей</label>
+                        <select id="specificUsers" name="specificUsers" multiple class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md h-32">
+                            <!-- Будет заполнено через JavaScript -->
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Зажмите Ctrl для выбора нескольких пользователей</p>
+                    </div>
+                    
+                    <div>
+                        <label for="severity" class="block text-sm font-medium text-gray-700">Важность</label>
+                        <select id="severity" name="severity" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            <option value="info">Информация</option>
+                            <option value="warning">Предупреждение</option>
+                            <option value="error">Ошибка</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="title" class="block text-sm font-medium text-gray-700">Заголовок</label>
+                        <input type="text" id="title" name="title" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                    </div>
+                    
+                    <div>
+                        <label for="message" class="block text-sm font-medium text-gray-700">Сообщение</label>
+                        <textarea id="message" name="message" rows="4" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required></textarea>
+                    </div>
+                    
+                    <div>
+                        <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Отправить уведомление
+                        </button>
+                    </div>
+                </form>
+                
+                <div id="notificationResult" class="mt-4 hidden">
+                    <div id="notificationSuccess" class="hidden p-4 rounded-md bg-green-50 border border-green-200">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-check-circle text-green-500"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-green-800">Уведомление успешно отправлено</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="notificationError" class="hidden p-4 rounded-md bg-red-50 border border-red-200">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-circle text-red-500"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p id="notificationErrorMessage" class="text-sm text-red-800">Произошла ошибка при отправке уведомления</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Preview Section -->
+            <div class="md:col-span-2 bg-white rounded-lg shadow-md p-4 md:p-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">Предпросмотр уведомления</h2>
+                <div id="notificationPreview" class="notification-preview p-4 rounded-lg bg-gray-800 shadow-md overflow-x-auto">
+                    <div class="notification-item info">
+                        <div class="notification-date" id="previewDate">{{ current_datetime }}</div>
+                        <div class="notification-title info">
+                            <div class="notification-icon-wrapper notification-icon-info">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <span id="previewTitle">Заголовок уведомления</span>
+                        </div>
+                        <div class="notification-message" id="previewMessage">Текст уведомления будет отображаться здесь...</div>
+                    </div>
+                </div>
+                
+                <h3 class="text-md font-semibold text-gray-800 mt-6 mb-3">Стили уведомлений</h3>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    <!-- Информационное -->
+                    <div class="p-4 rounded-lg shadow-sm bg-gray-800">
+                        <div class="notification-item info">
+                            <div class="notification-date">{{ current_datetime }}</div>
+                            <div class="notification-title info">
+                                <div class="notification-icon-wrapper notification-icon-info">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <span>Информация</span>
+                            </div>
+                            <div class="notification-message">Информационное сообщение системы</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Предупреждение -->
+                    <div class="p-4 rounded-lg shadow-sm bg-gray-800">
+                        <div class="notification-item warning">
+                            <div class="notification-date">{{ current_datetime }}</div>
+                            <div class="notification-title warning">
+                                <div class="notification-icon-wrapper notification-icon-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <span>Предупреждение</span>
+                            </div>
+                            <div class="notification-message">Обратите внимание на это сообщение</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Ошибка -->
+                    <div class="p-4 rounded-lg shadow-sm bg-gray-800">
+                        <div class="notification-item error">
+                            <div class="notification-date">{{ current_datetime }}</div>
+                            <div class="notification-title error">
+                                <div class="notification-icon-wrapper notification-icon-error">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                                <span>Ошибка</span>
+                            </div>
+                            <div class="notification-message">Произошла ошибка в системе</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Последние отправленные уведомления -->
+                <div class="mt-8">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Последние отправленные уведомления</h2>
+                    <div id="recentNotifications" class="overflow-y-auto max-h-96 space-y-4">
+                        <!-- Уведомления будут загружены с помощью JavaScript -->
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                            <p>Загрузка последних уведомлений...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Notifications -->
+            <div class="md:col-span-1 bg-white rounded-lg shadow-md p-4 md:p-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">Последние отправленные</h2>
+                
+                <div id="recentNotifications" class="space-y-4 max-h-96 overflow-y-auto">
+                    <!-- Будет заполнено через JavaScript -->
+                    <div class="p-4 rounded-md bg-gray-100">
+                        <div class="animate-pulse flex space-x-4">
+                            <div class="rounded-full bg-gray-300 h-10 w-10"></div>
+                            <div class="flex-1 space-y-2 py-1">
+                                <div class="h-4 bg-gray-300 rounded w-3/4"></div>
+                                <div class="space-y-2">
+                                    <div class="h-3 bg-gray-300 rounded"></div>
+                                    <div class="h-3 bg-gray-300 rounded w-5/6"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu toggle
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            
+            if (menuToggle && sidebar) {
+                menuToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                });
+            }
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth <= 768 && 
+                    !sidebar.contains(event.target) && 
+                    !menuToggle.contains(event.target) && 
+                    sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            });
+            
+            // Инициализация элементов
+            const recipientsSelect = document.getElementById('recipients');
+            const specificUsersContainer = document.getElementById('specificUsersContainer');
+            const specificUsersSelect = document.getElementById('specificUsers');
+            const severitySelect = document.getElementById('severity');
+            const titleInput = document.getElementById('title');
+            const messageInput = document.getElementById('message');
+            const notificationForm = document.getElementById('notificationForm');
+            const notificationResult = document.getElementById('notificationResult');
+            const notificationSuccess = document.getElementById('notificationSuccess');
+            const notificationError = document.getElementById('notificationError');
+            const notificationErrorMessage = document.getElementById('notificationErrorMessage');
+            
+            // Элементы предпросмотра
+            const notificationPreview = document.getElementById('notificationPreview');
+            const previewIcon = document.getElementById('previewIcon');
+            const previewTitle = document.getElementById('previewTitle');
+            const previewMessage = document.getElementById('previewMessage');
+            
+            // Загрузка пользователей для выбора конкретных получателей
+            function loadUsers() {
+                fetch('/api/admin/users')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.users && Array.isArray(data.users)) {
+                            specificUsersSelect.innerHTML = ''; // Очищаем текущие опции
+                            data.users.forEach(user => {
+                                const option = document.createElement('option');
+                                option.value = user.id;
+                                option.textContent = `${user.username} (${user.status})`;
+                                specificUsersSelect.appendChild(option);
+                            });
+                        }
+                    })
+                    .catch(error => console.error('Ошибка при загрузке пользователей:', error));
+            }
+            
+            // Загружаем пользователей при инициализации
+            loadUsers();
+            
+            // Обработчик изменения получателей
+            recipientsSelect.addEventListener('change', function() {
+                if (this.value === 'specific') {
+                    specificUsersContainer.classList.remove('hidden');
+                } else {
+                    specificUsersContainer.classList.add('hidden');
+                }
+            });
+            
+            // Обновление предпросмотра при вводе
+            function updatePreview() {
+                previewTitle.textContent = titleInput.value || 'Заголовок уведомления';
+                previewMessage.textContent = messageInput.value || 'Текст уведомления';
+                
+                // Обновляем класс и иконку в зависимости от важности
+                notificationPreview.className = 'notification-preview p-4 rounded-lg bg-gray-800 shadow-md';
+                
+                if (severitySelect.value === 'info') {
+                    notificationPreview.classList.add('info');
+                    notificationPreview.classList.remove('warning', 'error');
+                } else if (severitySelect.value === 'warning') {
+                    notificationPreview.classList.add('warning');
+                    notificationPreview.classList.remove('info', 'error');
+                } else if (severitySelect.value === 'error') {
+                    notificationPreview.classList.add('error');
+                    notificationPreview.classList.remove('info', 'warning');
+                }
+            }
+            
+            titleInput.addEventListener('input', updatePreview);
+            messageInput.addEventListener('input', updatePreview);
+            severitySelect.addEventListener('change', updatePreview);
+            
+            // Инициализация предпросмотра
+            updatePreview();
+            
+            // Обработка отправки формы
+            notificationForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Сбор данных формы
+                const formData = {
+                    title: titleInput.value,
+                    message: messageInput.value,
+                    severity: severitySelect.value
+                };
+                
+                // Получение списка получателей
+                if (recipientsSelect.value === 'specific') {
+                    // Получаем выбранных пользователей
+                    const selectedUsers = Array.from(specificUsersSelect.selectedOptions).map(option => parseInt(option.value));
+                    if (selectedUsers.length === 0) {
+                        notificationResult.classList.remove('hidden');
+                        notificationSuccess.classList.add('hidden');
+                        notificationError.classList.remove('hidden');
+                        notificationErrorMessage.textContent = 'Выберите хотя бы одного пользователя';
+                        return;
+                    }
+                    formData.user_id = selectedUsers;
+                } else {
+                    // Загружаем всех пользователей выбранного типа
+                    fetch('/api/admin/users')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.users && Array.isArray(data.users)) {
+                                let filteredUsers = data.users;
+                                
+                                // Фильтруем по типу пользователя, если нужно
+                                if (recipientsSelect.value === 'users') {
+                                    filteredUsers = filteredUsers.filter(user => user.status === 'user');
+                                } else if (recipientsSelect.value === 'coders') {
+                                    filteredUsers = filteredUsers.filter(user => user.status === 'coder');
+                                }
+                                
+                                // Получаем только ID пользователей
+                                const userIds = filteredUsers.map(user => user.id);
+                                
+                                if (userIds.length === 0) {
+                                    notificationResult.classList.remove('hidden');
+                                    notificationSuccess.classList.add('hidden');
+                                    notificationError.classList.remove('hidden');
+                                    notificationErrorMessage.textContent = 'Не найдено ни одного пользователя для отправки';
+                                    return;
+                                }
+                                
+                                // Отправляем уведомления выбранным пользователям
+                                sendNotification({...formData, user_id: userIds});
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Ошибка при загрузке пользователей:', error);
+                            notificationResult.classList.remove('hidden');
+                            notificationSuccess.classList.add('hidden');
+                            notificationError.classList.remove('hidden');
+                            notificationErrorMessage.textContent = 'Ошибка при загрузке пользователей';
+                        });
+                    return; // Прерываем выполнение, так как отправка будет произведена в промисе
+                }
+                
+                // Отправляем уведомление конкретным пользователям
+                sendNotification(formData);
+            });
+            
+            function sendNotification(data) {
+                // Добавляем обработку выбора типа получателей
+                if (recipientsSelect.value === 'specific') {
+                    if (!data.user_id || data.user_id.length === 0) {
+                        notificationResult.classList.remove('hidden');
+                        notificationSuccess.classList.add('hidden');
+                        notificationError.classList.remove('hidden');
+                        notificationErrorMessage.textContent = 'Выберите хотя бы одного пользователя';
+                        return;
+                    }
+                }
+                
+                // Добавляем индикатор загрузки
+                const submitButton = notificationForm.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.innerHTML;
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Отправка...';
+                
+                fetch('/api/admin/notifications', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    notificationResult.classList.remove('hidden');
+                    
+                    if (data.success) {
+                        notificationSuccess.classList.remove('hidden');
+                        notificationError.classList.add('hidden');
+                        
+                        // Очищаем форму
+                        titleInput.value = '';
+                        messageInput.value = '';
+                        updatePreview();
+                        
+                        // Загружаем последние отправленные уведомления
+                        loadRecentNotifications();
+                    } else {
+                        notificationSuccess.classList.add('hidden');
+                        notificationError.classList.remove('hidden');
+                        notificationErrorMessage.textContent = data.error || 'Произошла ошибка при отправке уведомления';
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка при отправке уведомления:', error);
+                    notificationResult.classList.remove('hidden');
+                    notificationSuccess.classList.add('hidden');
+                    notificationError.classList.remove('hidden');
+                    notificationErrorMessage.textContent = 'Ошибка соединения с сервером';
+                })
+                .finally(() => {
+                    // Восстанавливаем кнопку
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
+                });
+            }
+            
+            // Функция для загрузки последних отправленных уведомлений
+            function loadRecentNotifications() {
+                const recentNotificationsContainer = document.getElementById('recentNotifications');
+                
+                if (!recentNotificationsContainer) {
+                    console.error('Не найден контейнер для последних уведомлений');
+                    return;
+                }
+                
+                fetch('/admin/notifications/recent')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        recentNotificationsContainer.innerHTML = '';
+                        
+                        if (data.logs && data.logs.length > 0) {
+                            data.logs.forEach(log => {
+                                try {
+                                    // Извлекаем данные из лога
+                                    const logDetails = log.details ? JSON.parse(log.details) : {};
+                                    const notification = logDetails.notification || {};
+                                    const userIds = logDetails.user_ids || [];
+                                    
+                                    // Создаем элемент в новом стиле
+                                    const notificationEl = document.createElement('div');
+                                    notificationEl.className = 'p-4 rounded-lg bg-gray-800 shadow-sm';
+                                    
+                                    let severityClass = notification.severity || 'info';
+                                    let severityIcon = '';
+                                    
+                                    switch (severityClass) {
+                                        case 'info':
+                                            severityIcon = '<i class="fas fa-info-circle"></i>';
+                                            break;
+                                        case 'warning':
+                                            severityIcon = '<i class="fas fa-exclamation-triangle"></i>';
+                                            break;
+                                        case 'error':
+                                            severityIcon = '<i class="fas fa-exclamation-circle"></i>';
+                                            break;
+                                        default:
+                                            severityIcon = '<i class="fas fa-info-circle"></i>';
+                                    }
+                                    
+                                    // Форматируем дату
+                                    const date = new Date(log.created_at);
+                                    const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+                                    
+                                    // Обрабатываем переносы строк в сообщении
+                                    const formattedMessage = notification.message?.replace(/\n/g, '<br>') || 'Без сообщения';
+                                    
+                                    notificationEl.innerHTML = `
+                                        <div class="notification-item ${severityClass}">
+                                            <div class="notification-date">${formattedDate}</div>
+                                            <div class="notification-title ${severityClass}">
+                                                <div class="notification-icon-wrapper notification-icon-${severityClass}">
+                                                    ${severityIcon}
+                                                </div>
+                                                <span>${notification.title || 'Без заголовка'}</span>
+                                            </div>
+                                            <div class="notification-message">${formattedMessage}</div>
+                                            <div class="text-xs text-gray-400 mt-2">
+                                                Отправлено ${userIds.length} пользователям
+                                            </div>
+                                        </div>
+                                    `;
+                                    
+                                    recentNotificationsContainer.appendChild(notificationEl);
+                                } catch (e) {
+                                    console.error('Ошибка при обработке лога:', e);
+                                }
+                            });
+                        } else {
+                            recentNotificationsContainer.innerHTML = '<div class="text-center py-6 text-gray-500"><p>Нет отправленных уведомлений</p></div>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка при загрузке последних уведомлений:', error);
+                        recentNotificationsContainer.innerHTML = '<div class="text-center py-6 text-gray-500"><p class="text-red-500">Ошибка при загрузке последних уведомлений</p></div>';
+                    });
+            }
+            
+            // Загружаем последние отправленные уведомления при загрузке страницы
+            loadRecentNotifications();
+        });
+    </script>
+</body>
+</html>

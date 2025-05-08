@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Логи системы | ROXIN Studio</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .admin-sidebar {
+            background: linear-gradient(135deg, #6366F1, #8B5CF6);
+            transition: transform 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+                z-index: 50;
+            }
+            
+            .admin-sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }   
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Mobile Menu Button -->
+    <div class="fixed top-4 left-4 z-50 md:hidden">
+        <button id="menuToggle" class="bg-indigo-600 text-white rounded-md p-2 focus:outline-none">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+    
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 bg-gradient-to-b from-indigo-600 to-purple-600 w-64 text-white transition-all duration-300 transform admin-sidebar shadow-lg overflow-y-auto">
+        <div class="p-6">
+            <div class="flex items-center space-x-3">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="ROXIN Studio" class="w-10 h-10 rounded-full">
+                <span class="text-xl font-bold">ROXIN Admin</span>
+            </div>
+        </div>
+        
+        <nav class="mt-6">
+            <div class="px-6 py-4 border-t border-indigo-800">
+                <p class="text-xs text-indigo-200 uppercase tracking-wider">Основное</p>
+            </div>
+            <a href="{{ url_for('admin.admin_dashboard') }}" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-chart-line mr-3"></i>
+                <span>Панель управления</span>
+            </a>
+            <a href="{{ url_for('admin.admin_users') }}" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-users mr-3"></i>
+                <span>Пользователи</span>
+            </a>
+            <a href="{{ url_for('admin.admin_logs') }}" class="flex items-center px-6 py-3 text-white bg-indigo-800 bg-opacity-50">
+                <i class="fas fa-clipboard-list mr-3"></i>
+                <span>Логи системы</span>
+            </a>
+            
+            <div class="px-6 py-4 border-t border-indigo-800">
+                <p class="text-xs text-indigo-200 uppercase tracking-wider">Коммуникации</p>
+            </div>
+            <a href="{{ url_for('admin.admin_notifications') }}" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-bell mr-3"></i>
+                <span>Уведомления</span>
+            </a>
+            
+            <div class="px-6 py-4 border-t border-indigo-800">
+                <p class="text-xs text-indigo-200 uppercase tracking-wider">Система</p>
+            </div>
+            <a href="#" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-cog mr-3"></i>
+                <span>Настройки</span>
+            </a>
+            <a href="{{ url_for('logout.logout') }}" class="flex items-center px-6 py-3 text-white hover:bg-indigo-800 hover:bg-opacity-50 transition-colors duration-200">
+                <i class="fas fa-sign-out-alt mr-3"></i>
+                <span>Выйти</span>
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="ml-64 p-4 md:p-8 main-content">
+        <!-- Top Navigation -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+            <h1 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-0">Логи системы</h1>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center">
+                    <img src="{{ url_for('static', filename='images/' + current_user_avatar) }}" alt="{{ current_user_username }}" class="w-8 h-8 rounded-full mr-2">
+                    <span class="text-sm font-medium text-gray-700">{{ current_user_username }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Logs Management Content -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+            <div class="p-4 md:p-6 border-b border-gray-200">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 md:mb-0">Системные логи</h2>
+                    <div class="flex flex-wrap gap-2 mt-2 md:mt-0">
+                        <button id="clearFiltersBtn" class="flex items-center px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
+                            <i class="fas fa-undo mr-2"></i>
+                            <span>Сбросить</span>
+                        </button>
+                        <div class="relative">
+                            <button id="realTimeBtn" class="flex items-center px-3 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                                <i class="fas fa-sync-alt mr-2"></i>
+                                <span>Живое обновление</span>
+                            </button>
+                            <span id="liveIndicator" class="absolute h-3 w-3 bg-green-500 rounded-full -top-1 -right-1 hidden"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                
+            <!-- Filters -->
+            <div class="p-4 md:p-6 border-b border-gray-200">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div class="w-full md:w-48">
+                        <label for="levelFilter" class="block text-sm font-medium text-gray-700 mb-1">Уровень</label>
+                        <select id="levelFilter" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <option value="">Все</option>
+                            <option value="INFO">INFO</option>
+                            <option value="WARNING">WARNING</option>
+                            <option value="ERROR">ERROR</option>
+                            <option value="CRITICAL">CRITICAL</option>
+                        </select>
+                    </div>
+                    <div class="w-full md:w-48">
+                        <label for="sourceFilter" class="block text-sm font-medium text-gray-700 mb-1">Источник</label>
+                        <select id="sourceFilter" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <option value="">Все</option>
+                            {% for source in sources %}
+                                <option value="{{ source }}">{{ source }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="w-full md:w-48">
+                        <label for="startDateFilter" class="block text-sm font-medium text-gray-700 mb-1">Начальная дата</label>
+                        <input type="date" id="startDateFilter" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    </div>
+                    <div class="w-full md:w-48">
+                        <label for="endDateFilter" class="block text-sm font-medium text-gray-700 mb-1">Конечная дата</label>
+                        <input type="date" id="endDateFilter" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    </div>
+                    <div class="flex items-end">
+                        <button id="applyFilters" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                            Применить
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Logs Table -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Время</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Уровень</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Источник</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Сообщение</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">IP-адрес</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">ID польз.</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Данные будут загружены через JavaScript -->
+                        <tr>
+                            <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                                Загрузка данных...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                <div class="text-sm text-gray-700">
+                    Показано <span id="displayedRange">0-0</span> из <span id="totalLogs">0</span> записей
+                </div>
+                <div class="flex space-x-2">
+                    <button id="prevPage" class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button id="nextPage" class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Log Details Modal -->
+        <div id="logDetailsModal" class="fixed inset-0 z-50 overflow-y-auto hidden">
+            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                    <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                </div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Детали лога</h3>
+                        <div id="logDetailsContent">
+                            <!-- Содержимое будет добавлено через JavaScript -->
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button id="closeModalBtn" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Закрыть
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Состояние для пагинации и фильтрации
+        const state = {
+            page: 1,
+            limit: 50,
+            level: '',
+            source: '',
+            startDate: '',
+            endDate: '',
+            totalLogs: 0,
+            totalPages: 0,
+            liveUpdate: false,
+            refreshInterval: null
+        };
+        
+        // Функция для загрузки логов
+        function loadLogs() {
+            const logsTableBody = document.getElementById('logsTableBody');
+            logsTableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                        <i class="fas fa-spinner fa-spin mr-2"></i> Загрузка данных...
+                    </td>
+                </tr>
+            `;
+            
+            // Формируем URL с параметрами
+            let url = `/api/admin/logs?page=${state.page}&limit=${state.limit}`;
+            if (state.level) url += `&level=${encodeURIComponent(state.level)}`;
+            if (state.source) url += `&source=${encodeURIComponent(state.source)}`;
+            if (state.startDate) url += `&start_date=${encodeURIComponent(state.startDate)}`;
+            if (state.endDate) url += `&end_date=${encodeURIComponent(state.endDate)}`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    // Обновляем состояние
+                    state.totalLogs = data.total;
+                    state.totalPages = data.pages;
+                    
+                    // Обновляем информацию о пагинации
+                    const start = (state.page - 1) * state.limit + 1;
+                    const end = Math.min(state.page * state.limit, state.totalLogs);
+                    document.getElementById('displayedRange').textContent = `${start}-${end}`;
+                    document.getElementById('totalLogs').textContent = state.totalLogs;
+                    
+                    // Обновляем состояние кнопок пагинации
+                    document.getElementById('prevPage').disabled = state.page === 1;
+                    document.getElementById('nextPage').disabled = state.page === state.totalPages;
+                    
+                    // Заполняем таблицу данными
+                    if (data.logs.length === 0) {
+                        logsTableBody.innerHTML = `
+                            <tr>
+                                <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                                    Логи не найдены
+                                </td>
+                            </tr>
+                        `;
+                        return;
+                    }
+                    
+                    logsTableBody.innerHTML = '';
+                    data.logs.forEach(log => {
+                        // Определяем цвет для уровня лога
+                        let levelClass = 'bg-blue-100 text-blue-800';
+                        if (log.level === 'WARNING') levelClass = 'bg-yellow-100 text-yellow-800';
+                        if (log.level === 'ERROR') levelClass = 'bg-red-100 text-red-800';
+                        if (log.level === 'CRITICAL') levelClass = 'bg-pink-100 text-pink-800';
+                        
+                        const row = document.createElement('tr');
+                        row.className = 'hover:bg-gray-50 cursor-pointer';
+                        row.dataset.logId = log.id;
+                        row.innerHTML = `
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${log.created_at}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${levelClass}">
+                                    ${log.level}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${log.source}</td>
+                            <td class="px-6 py-4 text-sm text-gray-700">${log.message}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${log.ip_address || 'Н/Д'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${log.user_id || 'Н/Д'}</td>
+                        `;
+                        logsTableBody.appendChild(row);
+                        
+                        // Добавляем обработчик для просмотра деталей лога
+                        row.addEventListener('click', () => showLogDetails(log));
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading logs:', error);
+                    logsTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="px-6 py-4 text-center text-sm text-red-500">
+                                Ошибка при загрузке данных. Пожалуйста, попробуйте позже.
+                            </td>
+                        </tr>
+                    `;
+                });
+        }
+        
+        // Функция для отображения деталей лога
+        function showLogDetails(log) {
+            const content = document.getElementById('logDetailsContent');
+            
+            // Определяем цвет для уровня лога
+            let levelClass = 'bg-blue-100 text-blue-800';
+            if (log.level === 'WARNING') levelClass = 'bg-yellow-100 text-yellow-800';
+            if (log.level === 'ERROR') levelClass = 'bg-red-100 text-red-800';
+            if (log.level === 'CRITICAL') levelClass = 'bg-pink-100 text-pink-800';
+            
+            content.innerHTML = `
+                <div class="bg-gray-50 p-4 rounded-md mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${levelClass}">
+                            ${log.level}
+                        </span>
+                        <span class="text-sm text-gray-500">${log.created_at}</span>
+                    </div>
+                    <div class="text-sm font-medium text-gray-900">Источник: ${log.source}</div>
+                    <div class="mt-2 text-sm text-gray-700">IP: ${log.ip_address || 'Не указан'}</div>
+                    <div class="text-sm text-gray-700">ID пользователя: ${log.user_id || 'Не указан'}</div>
+                </div>
+                <div class="mb-4">
+                    <h4 class="text-sm font-medium text-gray-700 mb-1">Сообщение:</h4>
+                    <div class="bg-gray-50 p-3 rounded-md text-sm text-gray-800 whitespace-pre-wrap">${log.message}</div>
+                </div>
+                ${log.details ? `
+                <div>
+                    <h4 class="text-sm font-medium text-gray-700 mb-1">Дополнительные детали:</h4>
+                    <div class="bg-gray-50 p-3 rounded-md text-sm text-gray-800 font-mono whitespace-pre-wrap overflow-x-auto">${JSON.stringify(log.details, null, 2)}</div>
+                </div>
+                ` : ''}
+            `;
+            
+            // Показываем модальное окно
+            document.getElementById('logDetailsModal').classList.remove('hidden');
+        }
+        
+        // Функция для включения/выключения живого обновления
+        function toggleLiveUpdate() {
+            state.liveUpdate = !state.liveUpdate;
+            const indicator = document.getElementById('liveIndicator');
+            
+            if (state.liveUpdate) {
+                indicator.classList.remove('hidden');
+                indicator.classList.add('animate-pulse');
+                
+                state.refreshInterval = setInterval(loadLogs, 5000);
+            } else {
+                indicator.classList.add('hidden');
+                indicator.classList.remove('animate-pulse');
+                
+                clearInterval(state.refreshInterval);
+            }
+        }
+        
+        // Инициализация страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            // Загружаем логи при загрузке страницы
+            loadLogs();
+            
+            // Обработчик для кнопки "Применить фильтры"
+            document.getElementById('applyFilters').addEventListener('click', () => {
+                state.level = document.getElementById('levelFilter').value;
+                state.source = document.getElementById('sourceFilter').value;
+                state.startDate = document.getElementById('startDateFilter').value;
+                state.endDate = document.getElementById('endDateFilter').value;
+                state.page = 1; // Сбрасываем на первую страницу
+                loadLogs();
+            });
+            
+            // Обработчик для кнопки "Сбросить фильтры"
+            document.getElementById('clearFiltersBtn').addEventListener('click', () => {
+                document.getElementById('levelFilter').value = '';
+                document.getElementById('sourceFilter').value = '';
+                document.getElementById('startDateFilter').value = '';
+                document.getElementById('endDateFilter').value = '';
+                
+                state.level = '';
+                state.source = '';
+                state.startDate = '';
+                state.endDate = '';
+                state.page = 1;
+                
+                loadLogs();
+            });
+            
+            // Обработчики для кнопок пагинации
+            document.getElementById('prevPage').addEventListener('click', () => {
+                if (state.page > 1) {
+                    state.page--;
+                    loadLogs();
+                }
+            });
+            
+            document.getElementById('nextPage').addEventListener('click', () => {
+                if (state.page < state.totalPages) {
+                    state.page++;
+                    loadLogs();
+                }
+            });
+            
+            // Обработчик для кнопки "Живое обновление"
+            document.getElementById('realTimeBtn').addEventListener('click', toggleLiveUpdate);
+            
+            // Обработчик для закрытия модального окна
+            document.getElementById('closeModalBtn').addEventListener('click', () => {
+                document.getElementById('logDetailsModal').classList.add('hidden');
+            });
+            
+            // Закрытие модального окна при клике вне его содержимого
+            document.getElementById('logDetailsModal').addEventListener('click', (event) => {
+                if (event.target === document.getElementById('logDetailsModal')) {
+                    document.getElementById('logDetailsModal').classList.add('hidden');
+                }
+            });
+            
+            // Mobile menu toggle
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            
+            if (menuToggle && sidebar) {
+                menuToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                });
+            }
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth <= 768 && 
+                    !sidebar.contains(event.target) && 
+                    !menuToggle.contains(event.target) && 
+                    sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

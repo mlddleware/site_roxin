@@ -1,0 +1,63 @@
+<!-- user_orders.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои заказы</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/my_orders.css') }}">
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            fetch("/set_timezone", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ timezone: userTimezone }),
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Мои заказы</h1>
+    {% if orders %}
+    <table>
+        <thead>
+            <tr>
+                <th>Услуга</th>
+                <th>Техническое задание</th>
+                <th>Бюджет</th>
+                <th>Дата создания</th>
+                <th>Статус</th> <!-- Статус заказа -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.service }}</td>
+                <td>{{ order.tech_assignment }}</td>
+                <td>{{ order.budget }}</td>
+                <td>{{ order.created_at }}</td>
+                <td>
+                    {% if order.status == 'pending' %}
+                        <span class="status pending">Ожидает ответа</span>
+                    {% elif order.status == 'under_review' %}
+                        <span class="status under_review">На рассмотрении</span>
+                    {% elif order.status == 'accepted' %}
+                        <span class="status accepted">Принят</span>
+                    {% elif order.status == 'rejected' %}
+                        <span class="status rejected">Отклонен</span>
+                    {% else %}
+                        <span class="status unknown">Неизвестный статус</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>У вас пока нет заказов.</p>
+    {% endif %}
+</body>
+</html>

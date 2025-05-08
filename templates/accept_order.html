@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Принять заказ | ROXIN Studio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link href="[https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"](https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap") rel="stylesheet">
+    <script src="{{ url_for('static', filename='icons/lucide/dist/umd/lucide.js') }}"></script>
+    <style>
+        /* Core styles */
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--color-background);
+            background-image: radial-gradient(circle at top right, rgba(139, 92, 246, 0.05), transparent 60%),
+                            radial-gradient(circle at bottom left, rgba(30, 41, 59, 0.1), transparent 40%);
+            color: var(--color-text);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        /* Form container */
+        .form-container {
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.85), rgba(10, 10, 18, 0.95));
+            backdrop-filter: blur(15px);
+            border-radius: 1.5rem;
+            overflow: hidden;
+            width: 100%;
+            max-width: 550px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .form-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-secondary), var(--color-primary-light));
+            z-index: 2;
+        }
+        
+        /* Form header */
+        .form-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+        
+        .form-header h2 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            font-size: 2rem;
+            margin: 0;
+            background: linear-gradient(90deg, var(--color-text), var(--color-primary-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+            letter-spacing: -0.02em;
+        }
+        
+        .order-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(124, 58, 237, 0.2));
+            color: var(--color-primary-light);
+            border-radius: 2rem;
+            padding: 0.35rem 1rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 0.75rem;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            box-shadow: 0 2px 10px rgba(139, 92, 246, 0.15);
+        }
+        
+        .form-subheader {
+            color: var(--color-text-muted);
+            margin-top: 0.75rem;
+            font-size: 1rem;
+        }
+        
+        /* Form fields */
+        .form-group {
+            margin-bottom: 1.75rem;
+            position: relative;
+        }
+        
+        .form-label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            color: var(--color-text);
+            font-size: 1rem;
+        }
+
+        .label-icon {
+            color: var(--color-primary-light);
+            margin-right: 0.5rem;
+            opacity: 0.9;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.85rem 1.25rem;
+            font-size: 1rem;
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            border-radius: 0.75rem;
+            color: var(--color-text);
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) inset;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25), 0 2px 4px rgba(0, 0, 0, 0.1) inset;
+            background: rgba(30, 41, 59, 0.5);
+        }
+        
+        /* Custom select styling */
+        .custom-select-container {
+            position: relative;
+            width: 100%;
+        }
+
+        select.form-control {
+            appearance: none;
+            padding-right: 2.5rem;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='[http://www.w3.org/2000/svg'](http://www.w3.org/2000/svg') width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a78bfa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            transition: all 0.3s ease;
+        }
+
+        select.form-control:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25);
+        }
+
+        select.form-control option {
+            background-color: #0f172a;
+            color: var(--color-text);
+            padding: 10px;
+        }
+        
+        /* Date/time input styling */
+        input[type="datetime-local"] {
+            cursor: pointer;
+        }
+        
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.8) brightness(1.5) saturate(2) hue-rotate(-10deg);
+            opacity: 0.8;
+            cursor: pointer;
+            padding: 4px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        
+        /* Button styles */
+        .button-container {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .btn-primary {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.6s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.5);
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary:active {
+            transform: translateY(1px);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
+        }
+        
+        .btn-secondary {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            background: rgba(30, 41, 59, 0.4);
+            color: var(--color-text);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(30, 41, 59, 0.6);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary:active {
+            transform: translateY(1px);
+        }
+        
+        /* Icon styles */
+        .form-icon {
+            stroke-width: 2px;
+        }
+
+        .icon-purple {
+            color: var(--color-primary-light);
+        }
+
+        .icon-gold {
+            color: #f59e0b;
+        }
+
+        .icon-blue {
+            color: #3b82f6;
+        }
+
+        /* Footer spacing */
+        .footer {
+            margin-top: 0;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .form-container {
+                padding: 2rem 1.5rem;
+            }
+            
+            .form-header h2 {
+                font-size: 1.75rem;
+            }
+            
+            .button-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% include 'components/simple_navbar.html' %}
+    
+    <div class="main-content">
+        <div class="form-container">
+            <div class="form-header">
+                <h2>Принять заказ <span class="order-badge">#{{ order_id }}</span></h2>
+                <p class="form-subheader">Назначьте разработчика и укажите детали заказа</p>
+            </div>
+            
+            <form method="POST">
+                <div class="form-group">
+                    <label for="coder_id" class="form-label">
+                        <i data-lucide="user-check" class="label-icon"></i>
+                        Исполнитель
+                    </label>
+                    <div class="custom-select-container">
+                        <select name="coder_id" id="coder_id" class="form-control" required>
+                            <option value="" disabled selected>Выберите исполнителя</option>
+                            {% for user in users %}
+                                <option value="{{ user[0] }}">{{ user[1] }} ({{ user[2] }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="payment" class="form-label">
+                        <i data-lucide="wallet" class="label-icon icon-gold"></i>
+                        Стоимость работы
+                    </label>
+                    <input type="number" name="payment" id="payment" class="form-control" min="1" max="1000000" placeholder="Укажите стоимость в рублях" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="required_skills" class="form-label">
+                        <i data-lucide="code" class="label-icon icon-blue"></i>
+                        Необходимые навыки
+                    </label>
+                    <input type="text" name="required_skills" id="required_skills" class="form-control" placeholder="Например: JavaScript, React, Node.js" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="assigned_time" class="form-label">
+                        <i data-lucide="calendar-clock" class="label-icon icon-purple"></i>
+                        Срок выполнения
+                    </label>
+                    <input type="datetime-local" name="assigned_time" id="assigned_time" class="form-control" required>
+                </div>
+                
+                <div class="button-container">
+                    <button type="submit" class="btn-primary">
+                        <i data-lucide="check-circle" class="form-icon"></i>
+                        Подтвердить
+                    </button>
+                    <a href="{{ url_for('orders_view.orders_view') }}" class="btn-secondary">
+                        <i data-lucide="x" class="form-icon"></i>
+                        Отменить
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    {% include 'components/footer.html' %}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Инициализация иконок
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons({
+                    attrs: {
+                        'stroke-width': 1.5
+                    }
+                });
+            }
+            
+            // Установка текущего времени как минимального в выборе даты
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            const minDateTime = now.toISOString().slice(0, 16);
+            document.getElementById('assigned_time').min = minDateTime;
+            
+            // Анимация для элементов формы
+            const formControls = document.querySelectorAll('.form-control');
+            formControls.forEach(control => {
+                control.addEventListener('focus', function() {
+                    this.closest('.form-group').classList.add('focused');
+                });
+                
+                control.addEventListener('blur', function() {
+                    if (!this.value) {
+                        this.closest('.form-group').classList.remove('focused');
+                    }
+                });
+                
+                // Если поле уже заполнено
+                if (control.value) {
+                    control.closest('.form-group').classList.add('focused');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

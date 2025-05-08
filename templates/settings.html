@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ url_for('static', filename='icons/lucide/dist/umd/lucide.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/update_last_visit.js') }}"></script>
+</head>
+<body>
+    {% include 'components/simple_navbar.html' %}
+
+    <div class="settings-container">
+        <h1 class="settings-title">Настройки</h1>
+        
+        <!-- Секция оповещений -->
+        <div class="settings-card glass-effect">
+            <div class="settings-card-header">
+                <i data-lucide="bell" class="icon-blue glow-effect"></i>
+                <h2>Оповещения</h2>
+            </div>
+            <div class="settings-card-content">
+                <p>Мы будем оповещать вас о непрочитанных сообщениях.</p>
+                
+                <div class="settings-section glass-effect">
+                    <div class="telegram-settings">
+                        <div class="telegram-header">
+                            <i data-lucide="send" class="icon-primary glow-effect"></i>
+                            <h3>Telegram</h3>
+                        </div>
+                        <p class="telegram-description">
+                            Оповещения присылает наш самый пунктуальный телеграм-бот, непунктуальных мы разобрали на запчасти.
+                        </p>
+                        
+                        {% if telegram_connected %}
+                        <div class="telegram-status connected">
+                            <i data-lucide="check-circle" class="icon-green glow-effect"></i>
+                            <span>Аккаунт привязан: {{ telegram_username }}</span>
+                        </div>
+                        {% else %}
+                        <div class="telegram-status">
+                            <i data-lucide="link" class="icon-gold glow-effect"></i>
+                            <span>Необходимо привязать аккаунт</span>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="telegram-actions">
+                            {% if telegram_connected %}
+                            <a href="{{ url_for('settings.unlink_telegram') }}" class="button-secondary glass-effect">
+                                Отвязать аккаунт
+                            </a>
+                            {% else %}
+                            <a href="{{ telegram_bot_link }}" target="_blank" class="button-primary glass-effect">
+                                Привязать аккаунт
+                                <i data-lucide="external-link" class="button-icon"></i>
+                            </a>
+                            {% endif %}
+                            
+                            <div class="notifications-toggle">
+                                <span>Уведомления:</span>
+                                <div class="toggle-buttons">
+                                    <button id="enableNotifications" class="toggle-button {% if telegram_connected and notifications_enabled %}active{% endif %}" {% if not telegram_connected %}disabled{% endif %}>
+                                        Включить
+                                    </button>
+                                    <button id="disableNotifications" class="toggle-button {% if telegram_connected and not notifications_enabled %}active{% endif %}" {% if not telegram_connected %}disabled{% endif %}>
+                                        Отключить
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'components/footer.html' %}
+
+    <script>
+        lucide.createIcons();
+        
+        function toggleDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                const dropdown = document.getElementById('userDropdown');
+                const button = document.querySelector('.user-dropdown-button');
+                if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+        }
+        
+        // Обработчики для кнопок включения/выключения уведомлений
+        document.addEventListener('DOMContentLoaded', function() {
+            const enableBtn = document.getElementById('enableNotifications');
+            const disableBtn = document.getElementById('disableNotifications');
+            
+            if (enableBtn && disableBtn) {
+                enableBtn.addEventListener('click', function() {
+                    if (!this.disabled) {
+                        setNotificationStatus(true);
+                    }
+                });
+                
+                disableBtn.addEventListener('click', function() {
+                    if (!this.disabled) {
+                        setNotificationStatus(false);
+                    }
+                });
+            }
+            
+            function setNotificationStatus(enabled) {
+                fetch('/settings/notifications', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ enabled: enabled })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        enableBtn.classList.toggle('active', enabled);
+                        disableBtn.classList.toggle('active', !enabled);
+                        
+                        // Показываем уведомление об успешном обновлении
+                        showNotification(enabled ? 'Уведомления включены' : 'Уведомления отключены', 'success');
+                    } else {
+                        showNotification('Ошибка: ' + data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    showNotification('Произошла ошибка при обновлении настроек', 'error');
+                });
+            }
+            
+            function showNotification(message, type) {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.innerHTML = `
+                    <div class="notification-content">
+                        <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="notification-icon"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
+                
+                document.body.appendChild(notification);
+                lucide.createIcons();
+                
+                // Показываем уведомление
+                setTimeout(() => {
+                    notification.classList.add('show');
+                }, 10);
+                
+                // Удаляем уведомление через 3 секунды
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 300);
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

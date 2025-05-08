@@ -1,0 +1,298 @@
+/* components.css - Общие стили для компонентов navbar и footer */
+
+:root {
+    /* Общие переменные для всех компонентов */
+    --color-background: #0f0f1a;
+    --color-surface: #171727;
+    --color-surface-light: #222236;
+    --color-text: #f9fafb;
+    --color-text-muted: #9ca3af;
+    --color-primary: #8b5cf6;
+    --color-primary-light: #a78bfa;
+    --color-overlay: rgba(15, 15, 26, 0.8);
+    --color-green: #34d399;
+    --color-red: #f87171;
+    --color-yellow: #facc15;
+    --color-orange: #f97316;
+}
+
+/* Стили для navbar */
+.navbar {
+    background: var(--color-overlay, rgba(15, 15, 26, 0.8));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 0 !important;
+}
+
+.navbar-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-logo {
+    height: 26px;
+    width: auto;
+}
+
+.navbar-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-dropdown {
+    position: relative;
+}
+
+.user-dropdown-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    border-radius: 0.5rem;
+    transition: background-color 0.3s ease;
+}
+
+.user-dropdown-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--color-text-secondary, #9ca3af);
+}
+
+/* Стили для выпадающего меню */
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    width: 250px;
+    background: var(--color-overlay);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 0.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.dropdown-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    text-decoration: none;
+    color: var(--color-text);
+    border-radius: 0.5rem;
+    transition: background-color 0.3s ease;
+}
+
+.dropdown-profile:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dropdown-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.dropdown-profile-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.dropdown-username {
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.dropdown-role {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+.dropdown-items {
+    margin-top: 0.5rem;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    text-decoration: none;
+    color: var(--color-text);
+    border-radius: 0.5rem;
+    transition: background-color 0.3s ease;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dropdown-item.danger {
+    color: var(--color-red);
+}
+
+.dropdown-item.danger:hover {
+    background-color: rgba(248, 113, 113, 0.1);
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0.5rem 0;
+}
+
+/* Стили для footer */
+.footer {
+    background-color: rgba(11, 17, 32, 0.8);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 3rem 0 1.5rem;
+    margin-top: auto;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.footer-brand .logo {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    background: linear-gradient(90deg, #ffffff, var(--color-primary-light));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+}
+
+.footer-brand p {
+    color: var(--color-text-muted);
+    margin-top: 0.5rem;
+}
+
+.footer-links h3 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+}
+
+.footer-links ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 0.75rem;
+}
+
+.footer-links a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: color 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.footer-links a:hover {
+    color: var(--color-primary);
+}
+
+.footer-contact h3 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+}
+
+.telegram-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2rem;
+    color: var(--color-text);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.telegram-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+}
+
+.footer-bottom a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-bottom a:hover {
+    color: var(--color-primary);
+}
+
+/* Адаптивная верстка footer */
+@media (max-width: 991px) {
+    .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .footer-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .footer-bottom {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+}

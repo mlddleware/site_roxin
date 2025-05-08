@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Финансы | ROXIN Studio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ url_for('static', filename='icons/lucide/dist/umd/lucide.js') }}"></script>
+    <style>
+        :root {
+            --color-primary: #8b5cf6;
+            --color-primary-light: #a78bfa;
+            --color-primary-dark: #7c3aed;
+            --color-bg-dark: rgba(10, 10, 18, 0.95);
+            --color-bg-light: rgba(30, 30, 46, 0.8);
+            --color-text: #e2e8f0;
+            --color-text-muted: #94a3b8;
+            --color-border: rgba(139, 92, 246, 0.2);
+            --color-success: #10b981;
+            --color-warning: #f59e0b;
+            --color-danger: #ef4444;
+            --color-info: #3b82f6;
+        }
+        
+        body {
+            background-color: #0f172a;
+            color: var(--color-text);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        
+        .finance-header {
+            margin: 2rem 0;
+            text-align: center;
+        }
+        
+        .finance-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--color-text);
+            margin-bottom: 0.5rem;
+        }
+        
+        .finance-subtitle {
+            font-size: 1.1rem;
+            color: var(--color-text-muted);
+        }
+        
+        .finance-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (max-width: 992px) {
+            .finance-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .finance-card {
+            background: var(--color-bg-dark);
+            border-radius: 1rem;
+            border: 1px solid var(--color-border);
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .finance-card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            gap: 0.75rem;
+        }
+        
+        .finance-card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+        
+        .finance-card-icon {
+            color: var(--color-primary);
+        }
+        
+        .balance-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 0;
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.05));
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            margin-bottom: 1.5rem;
+        }
+        
+        .balance-label {
+            font-size: 1rem;
+            color: var(--color-text-muted);
+            margin-bottom: 0.5rem;
+        }
+        
+        .balance-amount {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-text);
+        }
+        
+        .finance-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--color-border);
+            margin-bottom: 1.5rem;
+        }
+        
+        .finance-tab {
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--color-text-muted);
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .finance-tab.active {
+            color: var(--color-primary-light);
+            border-bottom: 2px solid var(--color-primary);
+        }
+        
+        .finance-tab:hover:not(.active) {
+            color: var(--color-text);
+            border-bottom: 2px solid var(--color-border);
+        }
+        
+        .finance-content {
+            padding: 1rem 0;
+        }
+        
+        .finance-content > div {
+            display: none;
+        }
+        
+        .finance-content > div.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .finance-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .form-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+        }
+        
+        .form-input {
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid var(--color-border);
+            color: var(--color-text);
+            font-size: 1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25);
+        }
+        
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .payment-method {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--color-border);
+            background: rgba(30, 41, 59, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-method.selected {
+            border-color: var(--color-primary);
+            background: rgba(139, 92, 246, 0.1);
+        }
+        
+        .payment-method:hover:not(.selected) {
+            background: rgba(30, 41, 59, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .payment-method-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--color-text-muted);
+        }
+        
+        .payment-method.selected .payment-method-icon {
+            color: var(--color-primary-light);
+        }
+        
+        .payment-method-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--color-text);
+            text-align: center;
+        }
+        
+        .payment-method-fee {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            margin-top: 0.25rem;
+        }
+        
+        .button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .button-primary {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+            color: white;
+        }
+        
+        .button-primary:hover {
+            background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary-dark));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+        
+        .button-secondary {
+            background: rgba(30, 41, 59, 0.5);
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+        }
+        
+        .button-secondary:hover {
+            background: rgba(30, 41, 59, 0.7);
+            transform: translateY(-2px);
+        }
+        
+        /* Будет продолжено в дополнительных стилях */
+    </style>
+</head>
+<body>
+    {% include 'components/simple_navbar.html' %}
+    
+    <div class="container">
+        <header class="finance-header">
+            <h1 class="finance-title">Финансовый центр</h1>
+            <p class="finance-subtitle">Управляйте вашими финансами, пополняйте баланс и выводите средства</p>
+        </header>
+        
+        <div class="finance-grid">
+            <!-- Левая колонка: Баланс и быстрые действия -->
+            <div class="finance-column">
+                <div class="finance-card">
+                    <div class="finance-card-header">
+                        <i data-lucide="wallet" class="finance-card-icon" width="24" height="24"></i>
+                        <h2 class="finance-card-title">Ваш баланс</h2>
+                    </div>
+                    
+                    <div class="balance-display">
+                        <span class="balance-label">Доступно средств</span>
+                        <span class="balance-amount">{{ balance }} ₽</span>
+                    </div>
+                    
+                    <div class="quick-actions">
+                        <button class="button button-primary w-full mb-3" onclick="document.getElementById('depositTab').click()">
+                            <i data-lucide="plus-circle" width="18" height="18"></i>
+                            Пополнить баланс
+                        </button>
+                        <button class="button button-secondary w-full" onclick="document.getElementById('withdrawTab').click()">
+                            <i data-lucide="minus-circle" width="18" height="18"></i>
+                            Вывести средства
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Статистика -->
+                <div class="finance-card mt-6">
+                    <div class="finance-card-header">
+                        <i data-lucide="bar-chart" class="finance-card-icon" width="24" height="24"></i>
+                        <h2 class="finance-card-title">Статистика</h2>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Пополнено за месяц</span>
+                            <span class="stat-value">{{ monthly_deposit }} ₽</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Выведено за месяц</span>
+                            <span class="stat-value">{{ monthly_withdraw }} ₽</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Всего транзакций</span>
+                            <span class="stat-value">{{ transactions_count }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Правая колонка: Операции с финансами -->
+            <div class="finance-column">
+                <div class="finance-card">
+                    <div class="finance-tabs">
+                        <div class="finance-tab active" id="depositTab" onclick="switchTab('deposit')">Пополнение</div>
+                        <div class="finance-tab" id="withdrawTab" onclick="switchTab('withdraw')">Вывод средств</div>
+                        <div class="finance-tab" id="historyTab" onclick="switchTab('history')">История операций</div>
+                    </div>
+                    
+                    <div class="finance-content">
+                        <!-- Пополнение -->
+                        <div id="deposit" class="active">
+                            <form class="finance-form" id="depositForm" action="/finances/deposit" method="post">
+                                <div class="form-group">
+                                    <label class="form-label">Сумма пополнения (₽)</label>
+                                    <input type="number" name="amount" class="form-input" placeholder="Введите сумму" min="100" required>
+                                    <small class="form-hint">Минимальная сумма: 100 ₽</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Выберите способ оплаты</label>
+                                    <div class="payment-methods">
+                                        {% for method in payment_methods %}
+                                        {% if method.enabled and method.type == 'deposit' %}
+                                        <div class="payment-method" onclick="selectPaymentMethod(this, 'depositMethod')" data-method-id="{{ method.id }}">
+                                            <i data-lucide="{{ method.icon }}" class="payment-method-icon" width="24" height="24"></i>
+                                            <span class="payment-method-name">{{ method.name }}</span>
+                                            <span class="payment-method-fee">{{ method.fee }}% комиссия</span>
+                                        </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <input type="hidden" id="depositMethod" name="payment_method" required>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="button button-primary w-full">
+                                        Пополнить
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Вывод средств -->
+                        <div id="withdraw">
+                            <form class="finance-form" id="withdrawForm" action="/finances/withdraw" method="post">
+                                <div class="form-group">
+                                    <label class="form-label">Сумма вывода (₽)</label>
+                                    <input type="number" name="amount" class="form-input" placeholder="Введите сумму" min="500" max="{{ balance }}" required>
+                                    <small class="form-hint">Минимальная сумма: 500 ₽. Доступно: {{ balance }} ₽</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Выберите способ вывода</label>
+                                    <div class="payment-methods">
+                                        {% for method in payment_methods %}
+                                        {% if method.enabled and method.type == 'withdraw' %}
+                                        <div class="payment-method" onclick="selectPaymentMethod(this, 'withdrawMethod')" data-method-id="{{ method.id }}">
+                                            <i data-lucide="{{ method.icon }}" class="payment-method-icon" width="24" height="24"></i>
+                                            <span class="payment-method-name">{{ method.name }}</span>
+                                            <span class="payment-method-fee">{{ method.fee }}% комиссия</span>
+                                        </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <input type="hidden" id="withdrawMethod" name="payment_method" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Реквизиты для вывода</label>
+                                    <input type="text" name="details" class="form-input" placeholder="Номер карты / кошелька / счета" required>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="button button-primary w-full">
+                                        Вывести средства
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- История операций -->
+                        <div id="history">
+                            <div class="transactions-container">
+                                {% if transactions|length > 0 %}
+                                <div class="transactions-list">
+                                    {% for transaction in transactions %}
+                                    <div class="transaction-item">
+                                        <div class="transaction-icon">
+                                            {% if transaction.type == 'deposit' %}
+                                            <i data-lucide="arrow-down-circle" class="transaction-icon-deposit" width="20" height="20"></i>
+                                            {% elif transaction.type == 'withdraw' %}
+                                            <i data-lucide="arrow-up-circle" class="transaction-icon-withdraw" width="20" height="20"></i>
+                                            {% else %}
+                                            <i data-lucide="circle" class="transaction-icon-other" width="20" height="20"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="transaction-details">
+                                            <span class="transaction-title">{{ transaction.description }}</span>
+                                            <span class="transaction-date">{{ transaction.created_at }}</span>
+                                        </div>
+                                        <div class="transaction-amount {{ transaction.type }}">
+                                            {% if transaction.type == 'deposit' %}+{% else %}-{% endif %}{{ transaction.amount }} ₽
+                                        </div>
+                                        <div class="transaction-status {{ transaction.status }}">
+                                            {{ transaction.status }}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="empty-state">
+                                    <i data-lucide="receipt" width="48" height="48"></i>
+                                    <h3>История пуста</h3>
+                                    <p>У вас пока нет финансовых операций</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% include 'components/footer.html' %}
+    
+    <script>
+        // Инициализация иконок
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons({
+                attrs: {
+                    'stroke-width': 1.5
+                }
+            });
+        });
+        
+        // Переключение вкладок
+        function switchTab(tabId) {
+            // Убираем активный класс у всех вкладок и контента
+            document.querySelectorAll('.finance-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.finance-content > div').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Добавляем активный класс выбранной вкладке и соответствующему контенту
+            document.getElementById(tabId + 'Tab').classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+        
+        // Выбор способа оплаты
+        function selectPaymentMethod(element, inputId) {
+            // Убираем выделение у всех методов в той же группе
+            element.parentNode.querySelectorAll('.payment-method').forEach(method => {
+                method.classList.remove('selected');
+            });
+            
+            // Выделяем выбранный метод
+            element.classList.add('selected');
+            
+            // Устанавливаем значение в скрытом поле
+            document.getElementById(inputId).value = element.getAttribute('data-method-id');
+        }
+    </script>
+</body>
+</html>

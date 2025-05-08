@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Чат</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Mobile navigation -->
+    <div class="mobile-nav">
+      <button id="showChats" class="active"><i class="fas fa-comments"></i></button>
+      <button id="showMessages"><i class="fas fa-comment-dots"></i></button>
+      <button id="showProfile"><i class="fas fa-user"></i></button>
+    </div>
+
+    <div class="chat-container">
+      <!-- Sidebar - Chat list -->
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <h3>Сообщения</h3>
+        </div>
+        <div class="search-container">
+          <div class="search-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="searchChats" placeholder="Поиск...">
+          </div>
+        </div>
+        <ul id="chatList" class="chat-list"></ul>
+      </div>
+
+      <!-- Main chat area -->
+      <div class="main-chat" id="mainChat">
+        <div class="chat-header" id="chatHeader">
+          <div class="back-button" id="backButton">
+            <i class="fas fa-arrow-left"></i>
+          </div>
+          <img id="chatAvatar" src="/static/images/user.png" alt="Аватар" class="chat-avatar">
+          <div class="chat-header-info">
+            <h3 id="activeChatTitle">Выберите чат</h3>
+            <span class="online-status">{{ online_status }}</span>
+          </div>
+          <div class="chat-actions">
+            <button><i class="fas fa-ellipsis-v"></i></button>
+          </div>
+        </div>
+      
+        <div id="messagesContainer" class="messages-container">
+          <!-- Default message when no chat is selected -->
+          <div class="welcome-message">
+            <div class="welcome-icon">
+              <i class="fas fa-comments"></i>
+            </div>
+            <h3>Выберите диалог</h3>
+            <p>Уверены, у вас всё получится</p>
+          </div>
+        </div>
+
+        <div class="message-input">
+          <button class="attachment-btn"><i class="fas fa-paperclip"></i></button>
+          <textarea id="messageInput" placeholder="Введите сообщение..." rows="1"></textarea>
+          <button id="sendMessageBtn">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- User profile sidebar -->
+      <div class="profile-sidebar" id="profileSidebar">
+        <div class="profile-header">
+          <h3>Информация</h3>
+          <button class="close-profile" id="closeProfile">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="profile-content">
+          <div class="profile-picture">
+            <img id="profileAvatar" src="/static/images/user.png" alt="Аватар">
+          </div>
+          <h3 id="profileName">Имя пользователя</h3>
+          <div class="profile-info" id="userInfo">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
+  <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Set timezone
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      fetch("/set_timezone", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ timezone: userTimezone }),
+      });
+  
+      // Mobile navigation
+      const showChats = document.getElementById('showChats');
+      const showMessages = document.getElementById('showMessages');
+      const showProfile = document.getElementById('showProfile');
+      const sidebar = document.getElementById('sidebar');
+      const mainChat = document.getElementById('mainChat');
+      const profileSidebar = document.getElementById('profileSidebar');
+      const backButton = document.getElementById('backButton');
+      const closeProfile = document.getElementById('closeProfile');
+  
+      // Handle navigation
+      showChats.addEventListener('click', () => {
+        sidebar.classList.add('active');
+        mainChat.classList.remove('active');
+        profileSidebar.classList.remove('active');
+        updateActiveNav(showChats);
+      });
+  
+      showMessages.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        mainChat.classList.add('active');
+        profileSidebar.classList.remove('active');
+        updateActiveNav(showMessages);
+      });
+  
+      showProfile.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        mainChat.classList.remove('active');
+        profileSidebar.classList.add('active');
+        updateActiveNav(showProfile);
+      });
+  
+      backButton.addEventListener('click', () => {
+        sidebar.classList.add('active');
+        mainChat.classList.remove('active');
+        updateActiveNav(showChats);
+      });
+  
+      closeProfile.addEventListener('click', () => {
+        profileSidebar.classList.remove('active');
+        mainChat.classList.add('active');
+        updateActiveNav(showMessages);
+      });
+  
+      function updateActiveNav(activeButton) {
+        [showChats, showMessages, showProfile].forEach(btn => {
+          btn.classList.remove('active');
+        });
+        activeButton.classList.add('active');
+      }
+  
+      // On desktop, show both sidebar and main chat by default
+      function adjustLayoutForScreenSize() {
+        if (window.innerWidth >= 768) {
+          sidebar.classList.add('active');
+          if (window.currentChatUserId) {
+            mainChat.classList.add('active');
+          }
+        } else {
+          // On mobile, start with chat list view
+          sidebar.classList.add('active');
+          mainChat.classList.remove('active');
+          profileSidebar.classList.remove('active');
+        }
+      }
+  
+      window.addEventListener('resize', adjustLayoutForScreenSize);
+      adjustLayoutForScreenSize();
+  
+      // Вместо прямого вызова selectChat, создаем событие
+      const chatPath = window.location.pathname.match(/\/chat\/(\d+)/);
+      if (chatPath) {
+        const chatId = chatPath[1];
+        // Используем событие, чтобы передать информацию в chat.js
+        setTimeout(() => {
+          // Даем время загрузиться chat.js
+          window.dispatchEvent(new CustomEvent('openChatById', { 
+            detail: { chatId: chatId }
+          }));
+        }, 500);
+      }
+    });
+  </script>
+</body>
+</html>
