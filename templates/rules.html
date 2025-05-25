@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Правила сайта | ROXIN Studio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="{{ url_for('static', filename='icons/lucide/dist/umd/lucide.js') }}"></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            background-color: #0f0f1a;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .roxin-navbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+        
+        .content-area {
+            flex: 1 0 auto;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .footer {
+            flex-shrink: 0;
+            margin-top: 40px;
+            width: 100%;
+        }
+        
+        .rules-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: var(--color-card-bg);
+            backdrop-filter: blur(15px);
+            border-radius: 1rem;
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .rules-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        .rules-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .rules-header::after {
+            content: '';
+            position: absolute;
+            bottom: -1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: var(--gradient-primary);
+            border-radius: 3px;
+        }
+        
+        .rules-content {
+            line-height: 1.7;
+        }
+        
+        .rules-content h2 {
+            font-size: 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: var(--color-primary-light);
+        }
+        
+        .rules-content p {
+            margin-bottom: 1rem;
+        }
+        
+        .rules-content ul {
+            margin-bottom: 1.5rem;
+            margin-left: 1.5rem;
+        }
+        
+        .rules-content li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .rules-footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--color-border);
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: var(--color-primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            color: var(--color-primary-light);
+            transform: translateX(-5px);
+        }
+        
+        .back-link svg {
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+        
+        .important-rule {
+            background: rgba(139, 92, 246, 0.1);
+            border-left: 3px solid var(--color-primary);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0.5rem;
+        }
+        
+        /* Фоновые элементы */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            filter: blur(80px);
+        }
+        
+        .circle-1 {
+            width: 40rem;
+            height: 40rem;
+            background-color: var(--color-primary);
+            top: -20%;
+            left: -10%;
+        }
+        
+        .circle-2 {
+            width: 30rem;
+            height: 30rem;
+            background-color: var(--color-secondary);
+            bottom: -10%;
+            right: -10%;
+        }
+    </style>
+</head>
+<body>
+    <div class="background">
+        <div class="circle circle-1"></div>
+        <div class="circle circle-2"></div>
+    </div>
+    
+    <div class="roxin-navbar">
+        {% include 'components/simple_navbar.html' %}
+    </div>
+    
+    <div class="content-area">
+        <div class="rules-container">
+            <div class="rules-header">
+                <h1>Правила сайта</h1>
+                <p>Последнее обновление: {{ current_date }}</p>
+            </div>
+        
+        <div class="rules-content">
+            <p>Данные правила устанавливают нормы поведения и взаимодействия всех пользователей ROXIN Studio. Соблюдение этих правил обязательно для всех пользователей платформы.</p>
+            
+            <div class="important-rule">
+                <p><strong>Важно:</strong> Регистрируясь на сайте, вы подтверждаете свое согласие с настоящими правилами и обязуетесь их соблюдать. Нарушение правил может привести к ограничению доступа к сервисам или блокировке аккаунта.</p>
+            </div>
+            
+            <h2>1. Общие правила поведения</h2>
+            <p>1.1. Уважайте других пользователей платформы. Запрещены оскорбления, угрозы, преследования, дискриминация по любому признаку.</p>
+            <p>1.2. Не публикуйте материалы, нарушающие законодательство РФ или международное право.</p>
+            <p>1.3. Запрещено распространение спама, рекламы без согласования с Администрацией сайта.</p>
+            <p>1.4. Не используйте сервисы ROXIN Studio для мошеннических действий, обмана пользователей или нарушения прав третьих лиц.</p>
+            
+            <h2>2. Правила размещения заказов</h2>
+            <p>2.1. Размещайте заказы только с четким и понятным описанием требуемых работ.</p>
+            <p>2.2. Указывайте реалистичные сроки выполнения работ.</p>
+            <p>2.3. Не размещайте заказы на выполнение работ, нарушающих законодательство или правила сайта.</p>
+            <p>2.4. При изменении требований к заказу своевременно обсуждайте изменения с исполнителем.</p>
+            
+            <h2>3. Правила выполнения заказов</h2>
+            <p>3.1. Принимайте только те заказы, которые можете выполнить качественно и в срок.</p>
+            <p>3.2. Своевременно информируйте заказчика о возможных задержках.</p>
+            <p>3.3. Не передавайте выполнение заказа третьим лицам без согласования с заказчиком.</p>
+            <p>3.4. Соблюдайте конфиденциальность информации, полученной в процессе выполнения заказа.</p>
+            
+            <h2>4. Правила коммуникации</h2>
+            <p>4.1. Ведите общение в рамках деловой этики.</p>
+            <p>4.2. Старайтесь оперативно отвечать на сообщения по активным заказам.</p>
+            <p>4.3. Все спорные вопросы решайте в конструктивном диалоге.</p>
+            <p>4.4. В случае невозможности разрешения спора самостоятельно, обращайтесь в Службу поддержки.</p>
+            
+            <h2>5. Финансовые правила</h2>
+            <p>5.1. Оплата производится строго через платежную систему сайта.</p>
+            <p>5.2. Запрещены любые предложения оплаты в обход системы сайта.</p>
+            <p>5.3. Исполнитель получает оплату только после принятия работы заказчиком или после решения арбитража в пользу исполнителя.</p>
+            <p>5.4. Заказчик имеет право отказаться от заказа до начала его выполнения с полным возвратом средств.</p>
+            
+            <h2>6. Интеллектуальная собственность</h2>
+            <p>6.1. Уважайте авторские права других пользователей и третьих лиц.</p>
+            <p>6.2. Передача прав на результаты работы происходит только после полной оплаты заказа.</p>
+            <p>6.3. Запрещено использование материалов, защищенных авторским правом, без разрешения правообладателя.</p>
+            
+            <h2>7. Ответственность</h2>
+            <p>7.1. Пользователи несут полную ответственность за свои действия на платформе.</p>
+            <p>7.2. Администрация вправе удалять контент, нарушающий правила сайта.</p>
+            <p>7.3. При систематическом нарушении правил Администрация оставляет за собой право ограничить доступ пользователя к сервисам или заблокировать аккаунт.</p>
+            <p>7.4. Администрация оставляет за собой право вносить изменения в правила сайта, уведомляя об этом пользователей.</p>
+        </div>
+        
+        <div class="rules-footer">
+            <p>&copy; {{ current_year }} ROXIN Studio. Все права защищены.</p>
+            <a href="javascript:history.back()" class="back-link">
+                <i data-lucide="arrow-left" width="18" height="18"></i> Вернуться назад
+            </a>
+        </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        {% include 'components/footer.html' %}
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/update_last_visit.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons({
+                attrs: {
+                    'stroke-width': 1.5
+                }
+            });
+        });
+    </script>
+</body>
+</html>

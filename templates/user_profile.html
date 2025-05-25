@@ -3,698 +3,700 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Профиль пользователя</title>
+    <title>{{ target_username }} | ROXIN Studio</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/user_profile.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
-    <script src="{{ url_for('static', filename='icons/lucide/dist/umd/lucide.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='icons/lucide/dist/umd/lucide.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/update_last_visit.js') }}"></script>
     <style>
+        /* Минималистичные CSS переменные */
         :root {
-            --color-primary: #8B5CF6;
-            --color-primary-light: rgba(139, 92, 246, 0.2);
-            --color-primary-glow: rgba(139, 92, 246, 0.15);
-            --color-background: #0A0A12;
-            --color-card-bg: rgba(15, 15, 25, 0.85);
-            --color-text: #FFFFFF;
-            --color-text-secondary: #A0A0C0;
-            --color-border: rgba(139, 92, 246, 0.2);
-            --gradient-purple: linear-gradient(135deg, #8B5CF6, #6366F1);
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #111118;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #6366f1;
+            --accent-light: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Простой фон без частиц */
+        .profile-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0f 0%, #111118 50%, #0a0a0f 100%);
+            z-index: -1;
         }
         
-        /* Core responsive layout improvements */
+        /* Основной контейнер */
         .profile-container {
-            width: 100%;
             max-width: 1200px;
             margin: 2rem auto;
             padding: 0 1.5rem;
+            position: relative;
+            z-index: 1;
         }
         
-        /* Font styles to match user profile */
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background-color: var(--color-background);
-            color: var(--color-text);
-        }
-        
-        h1, h2, h3, .user-name {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-weight: 800;
-        }
-        
-        /* Enhanced profile card */
+        /* Профильная карточка */
         .profile-card {
-            background: var(--color-card-bg);
-            border-radius: 1.5rem;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
             overflow: hidden;
-            border: 1px solid var(--color-border);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 15px var(--color-primary-glow);
-            transition: all 0.3s ease;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
         
-        .profile-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3), 0 0 20px var(--color-primary-glow);
-            border-color: rgba(139, 92, 246, 0.4);
-        }
-        
-        /* Profile header with gradient */
+        /* Хедер профиля */
         .profile-header {
-            background: var(--gradient-purple);
-            height: 250px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+            height: 200px;
             position: relative;
             display: flex;
+            align-items: flex-end;
             justify-content: flex-end;
-            padding: 1rem;
-            box-shadow: inset 0 -10px 20px rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
         }
-        
-        /* Profile avatar */
-        .profile-avatar-wrapper {
+
+        /* Действия в хедере - показываем кнопку сообщения */
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .action-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        /* Аватар */
+        .profile-avatar-container {
             position: absolute;
             left: 2rem;
-            bottom: -75px;
-            width: 150px;
-            height: 150px;
+            bottom: -60px;
+            width: 170px;
+            height: 170px;
             border-radius: 50%;
-            border: 5px solid var(--color-card-bg);
-            outline: 1px solid var(--color-primary-light);
+            border: 4px solid var(--bg-primary);
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2), 0 0 15px var(--color-primary-glow);
-            background-color: var(--color-card-bg);
-            z-index: 20;
+            background: var(--bg-secondary);
         }
         
         .profile-avatar {
             width: 100%;
             height: 100%;
-            border-radius: 50%;
             object-fit: cover;
-            transition: transform 0.3s ease;
         }
         
-        .profile-avatar:hover {
-            transform: scale(1.05);
+        /* Информация профиля */
+        .profile-info {
+            padding: 5rem 2rem 2rem;
         }
         
-        /* Flex header for better responsiveness */
-        .info-header {
+        .profile-main {
             display: flex;
-            flex-wrap: wrap;
             justify-content: space-between;
-            align-items: center;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            align-items: flex-start;
+            margin-bottom: 3rem;
+            gap: 2rem;
         }
         
-        /* User name styling */
-        .user-name {
-            font-size: 2rem;
-            color: var(--color-text);
-            margin-bottom: 0.25rem;
-            text-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+        .profile-details h1 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
         }
         
-        .user-role {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 500;
-            color: var(--color-text-secondary);
-            margin: 0;
-        }
-        
-        /* Enhanced status indicator */
-        .online-indicator {
-            display: flex;
+        .profile-status {
+            display: inline-flex;
             align-items: center;
             gap: 0.5rem;
             padding: 0.5rem 1rem;
-            border-radius: 2rem;
-            background: rgba(15, 15, 25, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(139, 92, 246, 0.2);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 15px rgba(139, 92, 246, 0.15);
-            transition: all 0.3s ease;
+            border-radius: 50px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
         }
         
-        .online-indicator:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
-        }
-        
-        /* Online status dot */
-        .online-dot {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
+        .status-dot {
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            margin-right: 8px;
-            vertical-align: middle;
+            background: var(--success);
         }
 
-        .online-dot.online {
-            background-color: #4CAF50;
-            animation: pulse-dot 1.5s infinite;
-        }
-
-        .online-dot.offline {
-            background-color: rgba(255,255,255,0.3);
-        }
-
-        @keyframes pulse-dot {
-            0% { 
-                transform: scale(1); 
-                opacity: 0.7; 
-                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
-            }
-            50% { 
-                transform: scale(1.2); 
-                opacity: 1; 
-                box-shadow: 0 0 0 5px rgba(76, 175, 80, 0.0);
-            }
-            100% { 
-                transform: scale(1); 
-                opacity: 0.7; 
-                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.0);
-            }
-        }
-
-        .status-text {
-            transition: color 0.3s ease;
-            font-weight: 600;
-        }
-
-        .status-text.online {
-            color: #4CAF50 !important;
-        }
-
-        .status-text.offline {
-            color: #aaabbe;
-        }
-        
-        /* Profile info section */
-        .profile-info {
-            padding: 5.5rem 2rem 2rem;
-            position: relative;
-        }
-        
-        /* Stats grid layout */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .stats-column {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        
-        /* Stat items styling */
-        .stat-item {
+        .online-status {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            border-radius: 1rem;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 50px;
+            font-weight: 500;
+        }
+
+        .online-status.online {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--success);
+        }
+
+        .online-status.offline {
+            background: rgba(113, 113, 122, 0.1);
+            border: 1px solid rgba(113, 113, 122, 0.3);
+            color: var(--text-muted);
+        }
+
+        .status-dot.online {
+            background: var(--success);
         }
         
-        .stat-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        .status-dot.offline {
+            background: var(--text-muted);
         }
         
-        /* Stats cards responsive grid */
-        .stats-grid {
+        /* Статистика профиля */
+        .profile-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.5rem;
             margin: 2rem 0;
         }
         
-        .stat-card {
+        .stats-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
             padding: 1.5rem;
-            border-radius: 1rem;
+        }
+        
+        .stats-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            text-align: center;
-            transition: all 0.3s ease;
-            background: rgba(139, 92, 246, 0.05);
-            border: 1px solid rgba(139, 92, 246, 0.15);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
+            gap: 0.5rem;
         }
         
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1), 0 0 15px rgba(139, 92, 246, 0.15);
-            background: rgba(139, 92, 246, 0.1);
-            border-color: rgba(139, 92, 246, 0.3);
+        /* Отзывы */
+        .reviews-section {
+            margin-top: 3rem;
         }
         
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0.5rem 0 0.25rem;
-            color: var(--color-text);
+        /* Контейнер для отзывов - отдельный от профиля */
+        .reviews-container {
+            margin: 2rem 0;
+            padding: 0;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
         
-        .stat-label {
-            font-size: 0.875rem;
-            color: var(--color-text-muted);
+        .reviews-container .reviews-section {
             margin: 0;
+            padding: 2rem;
         }
         
-        /* Header action buttons */
-        .header-actions {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            display: flex;
-            gap: 0.75rem;
-            z-index: 10;
-        }
-        
-        .action-button {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: rgba(139, 92, 246, 0.1);
-            border: 1px solid rgba(139, 92, 246, 0.2);
-            color: var(--color-text);
-            cursor: pointer;
-            transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .action-button:hover {
-            transform: scale(1.1);
-            background: rgba(139, 92, 246, 0.2);
-            box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
-        }
-        
-        /* Message buttons */
-        .message-btn-container {
-            margin-left: 1.5rem;
-        }
-        
-        .desktop-message-btn {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 50%;
-            background: var(--gradient-purple);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 15px rgba(139, 92, 246, 0.4);
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: none;
-            z-index: 10;
-        }
-        
-        .desktop-message-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4), 0 0 20px rgba(139, 92, 246, 0.6);
-        }
-        
-        /* Username container */
-        .username-container {
-            flex-direction: row;
-            align-items: center;
-        }
-        
-        /* Floating message button for mobile */
-        .floating-message-btn {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: var(--gradient-purple);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 15px rgba(139, 92, 246, 0.4);
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            z-index: 100;
-        }
-        
-        .floating-message-btn:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2), 0 0 20px rgba(139, 92, 246, 0.6);
-        }
-        
-        /* Achievements section */
-        .achievements-card {
-            margin-top: 2rem;
-            border-radius: 1.5rem;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            background: rgba(11, 17, 32, 0.7);
-            backdrop-filter: blur(10px);
-        }
-        
-        .achievements-header {
+        .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1.25rem 1.5rem;
-            background: rgba(255, 255, 255, 0.03);
-            cursor: pointer;
-            width: 100%;
-            border: none;
-            text-align: left;
+            margin-bottom: 1.5rem;
         }
         
-        .header-title {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
+        .section-title {
+            font-size: 1.5rem;
             font-weight: 600;
-            font-size: 1.1rem;
-            color: var(--color-text);
+            color: var(--text-primary);
         }
         
-        .chevron {
-            transition: transform 0.3s ease;
+        .reviews-count {
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
         }
-        
-        .achievements-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-        
-        .achievements-content.show {
-            max-height: 1000px;
-        }
-        
-        .achievement-item {
-            display: flex;
-            align-items: center;
+
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 1.5rem;
-            padding: 1.5rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            transition: background-color 0.3s ease;
         }
         
-        .achievement-item:hover {
+        .review-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .review-card:hover {
             background: rgba(255, 255, 255, 0.03);
         }
         
-        .achievement-icon {
-            background: rgba(255, 255, 255, 0.05);
-            width: 3.5rem;
-            height: 3.5rem;
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .reviewer {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .reviewer-avatar {
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
+            overflow: hidden;
         }
         
-        .achievement-info {
-            flex: 1;
+        .reviewer-info h4 {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
         }
         
-        .achievement-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-        
-        .achievement-header h3 {
-            margin: 0;
-            font-size: 1.1rem;
-            color: var(--color-text);
-        }
-        
-        .achievement-header span {
-            margin-left: 0.75rem;
+        .review-date {
             font-size: 0.875rem;
-            color: var(--color-text-muted);
+            color: var(--text-muted);
         }
         
-        /* Responsive styles */
-        @media (max-width: 640px) {
-            .profile-avatar-wrapper {
+        .review-rating {
+            display: flex;
+            gap: 0.25rem;
+        }
+        
+        .review-text {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Пустое состояние */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .profile-container {
+                margin: 1rem auto;
+                padding: 0 1rem;
+            }
+        
+            .profile-main {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        
+            .profile-details h1 {
+                font-size: 2rem;
+            }
+        
+            .profile-avatar-container {
                 left: 50%;
                 transform: translateX(-50%);
+                width: 120px;
+                height: 120px;
+                bottom: -40px;
             }
-            
+        
             .profile-info {
-                padding-top: 4.5rem;
                 text-align: center;
+                padding-top: 3rem;
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
             }
-            
-            .user-name-wrapper {
-                width: 100%;
-                text-align: center;
-                margin-top: 1rem;
+        
+            .reviews-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: center;
             }
-            
-            .user-role {
-                justify-content: center;
+
+            .profile-stats {
+                grid-template-columns: 1fr;
+                gap: 1rem;
             }
-            
-            .online-indicator {
-                margin: 1rem auto;
-                justify-content: center;
+
+            .reviews-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
             }
-            
+
+            .review-card {
+                padding: 1.25rem;
+            }
+
             .header-actions {
-                top: 0.5rem;
-                right: 0.5rem;
                 gap: 0.5rem;
             }
-            
-            .action-button {
-                width: 2.5rem;
-                height: 2.5rem;
+
+            .action-btn {
+                width: 36px;
+                height: 36px;
+            }
+
+            .profile-header {
+                height: 160px;
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .profile-container {
+                margin: 0.5rem auto;
+                padding: 0 0.75rem;
+            }
+
+            .profile-details h1 {
+                font-size: 1.75rem;
+            }
+
+            .profile-avatar-container {
+                width: 100px;
+                height: 100px;
+                bottom: -35px;
+            }
+
+            .profile-info {
+                padding-top: 2.5rem;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .review-card {
+                padding: 1rem;
+            }
+
+            .reviews-container {
+                margin: 1.5rem 0;
+            }
+
+            .reviews-container .reviews-section {
+                padding: 1.5rem;
+            }
+
+            .section-title {
+                font-size: 1.25rem;
+            }
+
+            .profile-header {
+                height: 140px;
+            }
+
+            .action-btn {
+                width: 32px;
+                height: 32px;
+            }
+        }
+
+        /* Иконки */
+        .icon-blue { color: #3b82f6; }
+        .icon-green { color: #10b981; }
+        .icon-yellow { color: #f59e0b; }
+        .icon-gold { color: #f59e0b; }
+        .icon-purple { color: #8b5cf6; }
+        .icon-red { color: #ef4444; }
+        .icon-gray { color: #6b7280; }
+
+        /* Регистрация - минималистичный дизайн */
+        .registration-info {
+            margin-top: 1rem;
             }
             
-            .stats-column {
-                margin-bottom: 1.5rem;
-            }
-            
-            .floating-message-btn {
+        .registration-card {
                 display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition: all 0.2s ease;
             }
             
-            .desktop-message-btn {
-                display: none;
+        .registration-card:hover {
+            background: rgba(255, 255, 255, 0.05);
             }
             
-            .username-container {
-                flex-direction: column;
+        .registration-card i {
+            font-size: 1.25rem;
+        }
+
+        .registration-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+            }
+            
+        .registration-date {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Отзывы с рейтингом */
+        .reviews-meta {
+            display: flex;
                 align-items: center;
-                text-align: center;
-            }
-            
-            .username-container h1 {
-                margin-right: 0;
-            }
-            
-            .message-btn-container {
-                justify-content: center;
-                margin-left: 0;
-                margin-top: 0.5rem;
-            }
-            
-            .achievement-item {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
                 gap: 1rem;
             }
             
-            .achievement-info {
-                width: 100%;
-            }
-            
-            .achievement-header {
-                justify-content: center;
+        .average-rating {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+        }
+
+        .rating-stars {
                 display: flex;
-                flex-direction: column;
                 gap: 0.25rem;
             }
             
-            .achievement-header span {
-                margin-left: 0;
+        .star-filled {
+            color: #f59e0b;
+            font-size: 0.875rem;
+        }
+
+        .star-empty {
+            color: #6b7280;
+            font-size: 0.875rem;
             }
             
+        .rating-value {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        /* Footer на всю ширину */
+        .footer {
+            width: 100vw;
+            position: relative;
+            left: 50%;
+            right: 50%;
+            margin-left: -50vw;
+            margin-right: -50vw;
+        }
+        
+        .footer .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
         }
     </style>
 </head>
 <body>
+    <div class="profile-bg"></div>
+    
     {% include 'components/simple_navbar.html' %}
     
     <div class="profile-container">
         <div class="profile-card">
+            <!-- Хедер профиля -->
             <div class="profile-header">
                 <div class="header-actions">
-                    <button class="action-button glass-effect">
-                        <i data-lucide="share-2" class="icon-gray"></i>
+                    <button class="action-btn" onclick="startChat('{{ target_user_id }}')" title="Написать сообщение">
+                        <i data-lucide="message-circle"></i>
                     </button>
                 </div>
-                <div class="profile-avatar-wrapper">
-                    <img src="{{ url_for('static', filename='images/' + avatar) }}" alt="Avatar" class="profile-avatar">
-                </div>
-            </div>
-
-            <div class="profile-info">
-                <div class="info-header">
-                    <div class="user-name-wrapper">
-                        <div class="username-container">
-                            <h1 class="user-name">{{ username }}</h1>
-                            <!-- Message button positioned next to username -->
-                            <div class="message-btn-container">
-                                <button class="desktop-message-btn" onclick="startChat('{{ user_id }}')">
-                                    <i data-lucide="message-circle" class="icon-white" style="width: 1.5rem; height: 1.5rem;"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <p class="user-role">
-                            <i data-lucide="user" class="icon-purple glow-effect"></i>
-                            {% if status == "admin" %}CEO{% elif status == "user" %}Пользователь{% elif status == "coder" %}Разработчик{% endif %}
-                        </p>
-                    </div>
-                    <div class="online-indicator">
-                        <span class="online-dot {{ 'online' if online_status == 'Онлайн' else 'offline' }}"></span>
-                        <span class="status-text {{ 'online' if online_status == 'Онлайн' else 'offline' }}">{{ online_status }}</span>
-                    </div>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="stats-column">
-                        {% if status == "coder" and direction %}
-                        <div class="stat-item glass-effect">
-                            <i data-lucide="target" class="icon-blue glow-effect"></i>
-                            <span>Направление: {{ direction }}</span>
-                        </div>
-                        {% endif %}                        
-                        <div class="stat-item glass-effect">
-                            <i data-lucide="calendar" class="icon-purple glow-effect"></i>
-                            <span>Присоединился: {{ registration_date_info }}</span>
-                        </div>
-                        <div class="stat-item glass-effect">
-                            <img src="{{ url_for('static', filename='images/Flag_Of_Russia.webp') }}" alt="Флаг России" class="icon-gold glow-effect" width="24" height="16">
-                            <div class="rank-progress">
-                                <span class="rank-title">Страна: Россия</span>
-                            </div>
-                        </div>
-                    </div>
                 
-                    {% if status == "coder" %}
-                    <div class="stats-column">
-                        <div class="stat-item glass-effect">
-                            <i data-lucide="star" class="icon-yellow glow-effect"></i>
-                            <span>Рейтинг: {{ rating }}</span>
-                        </div>
-                        <div class="stat-item glass-effect">
-                            <i data-lucide="trophy" class="icon-gold glow-effect"></i>
-                            <span>Выполнено заказов: {{ completed_orders }}</span>
-                        </div>
-                        <div class="stat-item glass-effect">
-                            <i data-lucide="clock" class="icon-blue glow-effect"></i>
-                            <span>Среднее время: {{ avg_completion_time }}</span>
-                        </div>
-                    </div>
-                    {% endif %}
+                <!-- Аватар -->
+                <div class="profile-avatar-container">
+                    <img src="{{ url_for('static', filename='images/' + target_avatar) }}" alt="Avatar" class="profile-avatar">
                 </div>
             </div>
 
-            {% if status == "coder" %}
-            <div class="stats-cards">
-                <div class="stat-card glass-effect">
-                    <i data-lucide="trophy" class="icon-gold glow-effect"></i>
-                    <p class="stat-value">{{ completed_orders }}</p>
-                    <p class="stat-label">Заказов</p>
+            <!-- Информация профиля -->
+            <div class="profile-info">
+                <div class="profile-main">
+                    <div class="profile-details">
+                        <h1>{{ target_username }}</h1>
+                        
+                        <div class="profile-status">
+                            {% if target_status == "admin" %}
+                            <i data-lucide="shield" class="icon-yellow"></i>
+                            <span>CEO</span>
+                            {% elif target_status == "support" %}
+                            <i data-lucide="headphones" class="icon-blue"></i>
+                            <span>Поддержка</span>
+                            {% elif target_status == "partner" %}
+                            <i data-lucide="handshake" class="icon-green"></i>
+                            <span>Партнёр</span>
+                            {% elif target_status == "user" %}
+                            <i data-lucide="user" class="icon-blue"></i>
+                            <span>Пользователь</span>
+                            {% elif target_status == "coder" %}
+                            <i data-lucide="code-2" class="icon-purple"></i>
+                            <span>Разработчик</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="online-status {% if target_is_offline %}offline{% else %}online{% endif %}">
+                        <span class="status-dot {% if target_is_offline %}offline{% else %}online{% endif %}"></span>
+                        <span>{{ target_online_status }}</span>
+                    </div>
                 </div>
-                <div class="stat-card glass-effect">
-                    <i data-lucide="heart" class="icon-red glow-effect"></i>
-                    <p class="stat-value">{{ reviews_count }}</p>
-                    <p class="stat-label">Отзывов</p>
-                </div>
-                <div class="stat-card glass-effect">
-                    <i data-lucide="star" class="icon-yellow glow-effect"></i>
-                    <p class="stat-value">{{ rating }}</p>
-                    <p class="stat-label">Рейтинг</p>
-                </div>
-                <div class="stat-card glass-effect">
-                    <i data-lucide="shield" class="icon-green glow-effect"></i>
-                    <p class="stat-value">{{ warn }}</p>
-                    <p class="stat-label">Предупреждений</p>
+
+                <!-- Статистика профиля -->
+                <div class="profile-stats">
+                    <!-- Дата регистрации -->
+                    <div class="stats-section">
+                        <div class="registration-info">
+                            <div class="registration-card">
+                                <i data-lucide="calendar" class="icon-blue"></i>
+                                <div class="registration-content">
+                                    <div class="registration-label">Регистрация</div>
+                                    <div class="registration-date">{{ target_registration_date_info }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            {% endif %}
         </div>
 
-        {% if status == "coder" %}
-        <!-- Achievements section -->
-        <div class="achievements-card">
-            <button class="achievements-header glass-effect" onclick="toggleAchievements()">
-                <div class="header-title">
-                    <i data-lucide="trophy" class="icon-gold glow-effect"></i>
-                    <span>Достижения</span>
-                </div>
-                <i data-lucide="chevron-down" class="chevron"></i>
-            </button>
-            <div class="achievements-content" id="achievementsContent">
-                <div class="achievement-item glass-effect">
-                    <div class="achievement-icon">
-                        <i data-lucide="crown" class="icon-gold glow-effect"></i>
-                    </div>
-                    <div class="achievement-info">
-                        <div class="achievement-header">
-                            <h3>Разработчик месяца</h3>
-                            <span>• Март 2025</span>
+        <!-- Отзывы для разработчика в отдельном контейнере -->
+        {% if target_status == "coder" %}
+        <div class="reviews-container">
+            <div class="reviews-section">
+                <div class="section-header">
+                    <h2 class="section-title">Отзывы клиентов</h2>
+                    <div class="reviews-meta">
+                        {% if target_reviews|length > 0 %}
+                        {% set ratings = [] %}
+                        {% for review in target_reviews %}
+                            {% set _ = ratings.append(review.rating|int) %}
+                        {% endfor %}
+                        {% set total_rating = ratings|sum %}
+                        {% set average_rating = (total_rating / target_reviews|length) | round(1) %}
+                        <div class="average-rating">
+                            <div class="rating-stars">
+                                {% for i in range(5) %}
+                                    {% if i < average_rating %}
+                                        <i data-lucide="star" class="star-filled"></i>
+                                    {% else %}
+                                        <i data-lucide="star" class="star-empty"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <span class="rating-value">{{ average_rating }}</span>
                         </div>
-                        <p>Лучший разработчик по оценкам пользователей</p>
+                        {% endif %}
+                        <span class="reviews-count">{{ target_reviews|length }} отзывов</span>
                     </div>
                 </div>
+
+                {% if target_reviews|length > 0 %}
+                <div class="reviews-grid">
+                    {% for review in target_reviews %}
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="reviewer">
+                                <div class="reviewer-avatar">
+                                    <img src="{{ url_for('static', filename='images/' + review.reviewer_avatar) }}" alt="{{ review.reviewer_name }}">
+                                </div>
+                                <div class="reviewer-info">
+                                    <h4>{{ review.reviewer_name }}</h4>
+                                    <div class="review-date">{{ review.date }}</div>
+                                </div>
+                            </div>
+                            <div class="review-rating">
+                                {% for i in range(5) %}
+                                    {% if i < review.rating %}
+                                        <i data-lucide="star" class="icon-yellow"></i>
+                                    {% else %}
+                                        <i data-lucide="star" class="icon-gray"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="review-text">{{ review.text }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i data-lucide="message-square"></i>
+                    <h3>Пока нет отзывов</h3>
+                    <p>После выполнения заказов здесь появятся отзывы клиентов</p>
+                </div>
+                {% endif %}
             </div>
         </div>
         {% endif %}
     </div>
 
-    <!-- Floating message button for mobile -->
-    <button class="floating-message-btn" onclick="startChat('{{ user_id }}')">
-        <i data-lucide="message-circle" class="icon-white" style="width: 1.5rem; height: 1.5rem;"></i>
-    </button>
-
-    {% include 'components/footer.html' %}
-
     <script>
+        // Инициализация иконок Lucide
         lucide.createIcons();
         
-        // Toggle achievements section
-        function toggleAchievements() {
-            const content = document.getElementById('achievementsContent');
-            const chevron = document.querySelector('.chevron');
-            content.classList.toggle('show');
-            chevron.style.transform = content.classList.contains('show') ? 'rotate(180deg)' : '';
-        }
-        
-        // Initialize chat
+        // Функция для создания чата
         function startChat(userId) {
             fetch(`/chat/start/${userId}`, {
                 method: "POST",
@@ -708,51 +710,13 @@
                     alert("Ошибка: " + (data.error || "Не удалось создать чат"));
                 }
             })
-            .catch(error => console.error("Ошибка при создании чата:", error));
-        }
-        
-        // Toggle dropdown menu
-        function toggleDropdown() {
-            const dropdown = document.getElementById('userDropdown');
-            dropdown.classList.toggle('show');
-            
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function(event) {
-                const dropdown = document.getElementById('userDropdown');
-                const button = document.querySelector('.user-dropdown-button');
-                if (!button.contains(event.target) && !dropdown.contains(event.target)) {
-                    dropdown.classList.remove('show');
-                }
+            .catch(error => {
+                console.error("Ошибка при создании чата:", error);
+                alert("Произошла ошибка при создании чата");
             });
         }
-        
-        // Handle responsive layout
-        document.addEventListener('DOMContentLoaded', function() {
-            // Pulse animation for online status
-            const statusDot = document.querySelector('.online-dot');
-            if (statusDot && statusDot.classList.contains('online')) {
-                statusDot.style.animation = 'pulse-dot 1.5s infinite';
-            }
-            
-            // Responsive adjustments based on screen size
-            function adjustLayout() {
-                const width = window.innerWidth;
-                const userNameWrapper = document.querySelector('.user-name-wrapper');
-                const onlineIndicator = document.querySelector('.online-indicator');
-                
-                if (width <= 640) {
-                    if (userNameWrapper) userNameWrapper.style.textAlign = 'center';
-                    if (onlineIndicator) onlineIndicator.style.margin = '0 auto';
-                } else {
-                    if (userNameWrapper) userNameWrapper.style.textAlign = '';
-                    if (onlineIndicator) onlineIndicator.style.margin = '';
-                }
-            }
-            
-            // Initial call and window resize listener
-            adjustLayout();
-            window.addEventListener('resize', adjustLayout);
-        });
     </script>
+
+    {% include 'components/footer.html' %}
 </body>
 </html>

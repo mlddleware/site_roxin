@@ -3,46 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Профиль</title>
+    <title>Профиль | ROXIN Studio</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         // Функции для модальных окон
         function openEditModal() {
-            document.getElementById('editModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden'; // Блокируем прокрутку страницы
+            const modal = document.getElementById('editModal');
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => modal.classList.add('show'), 10);
         }
         
         function closeEditModal() {
-            document.getElementById('editModal').style.display = 'none';
-            document.body.style.overflow = ''; // Разблокируем прокрутку страницы
+            const modal = document.getElementById('editModal');
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+            }, 300);
         }
         
         function openSettingsModal() {
-            document.getElementById('settingsModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden'; // Блокируем прокрутку страницы
+            const modal = document.getElementById('settingsModal');
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => modal.classList.add('show'), 10);
         }
         
         function closeSettingsModal() {
-            document.getElementById('settingsModal').style.display = 'none';
-            document.body.style.overflow = ''; // Разблокируем прокрутку страницы
-        }
-        
-        // Функция для предпросмотра аватара при загрузке
-        function previewAvatar(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    document.getElementById('avatarPreview').src = e.target.result;
-                }
-                
-                reader.readAsDataURL(input.files[0]);
-            }
+            const modal = document.getElementById('settingsModal');
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+            }, 300);
         }
         
         // Обработчики для закрытия модальных окон при клике вне их области
@@ -51,16 +49,10 @@
             const settingsModal = document.getElementById('settingsModal');
             
             window.addEventListener('click', function(event) {
-                if (event.target === editModal) {
-                    closeEditModal();
-                }
-                
-                if (event.target === settingsModal) {
-                    closeSettingsModal();
-                }
+                if (event.target === editModal) closeEditModal();
+                if (event.target === settingsModal) closeSettingsModal();
             });
             
-            // Обновляем иконки после добавления новых элементов
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
@@ -69,791 +61,316 @@
     <script src="{{ url_for('static', filename='icons/lucide/dist/umd/lucide.js') }}"></script>
     <script src="{{ url_for('static', filename='js/update_last_visit.js') }}"></script>
     <style>
+        /* Минималистичные CSS переменные */
         :root {
-            --color-primary: #8B5CF6;
-            --color-primary-light: rgba(139, 92, 246, 0.2);
-            --color-primary-glow: rgba(139, 92, 246, 0.15);
-            --color-background: #0A0A12;
-            --color-card-bg: rgba(15, 15, 25, 0.85);
-            --color-text: #FFFFFF;
-            --color-text-secondary: #A0A0C0;
-            --color-border: rgba(139, 92, 246, 0.2);
-            --gradient-purple: linear-gradient(135deg, #8B5CF6, #6366F1);
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #111118;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #6366f1;
+            --accent-light: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Простой фон без частиц */
+        .profile-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0f 0%, #111118 50%, #0a0a0f 100%);
+            z-index: -1;
         }
         
-        /* Core responsive layout improvements */
+        /* Основной контейнер */
         .profile-container {
-            width: 100%;
             max-width: 1200px;
             margin: 2rem auto;
             padding: 0 1.5rem;
+            position: relative;
+            z-index: 1;
         }
-        
-        /* Font styles to match user profile */
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background-color: var(--color-background);
-            color: var(--color-text);
-        }
-        
-        h1, h2, h3, .user-name {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-weight: 800;
-        }
-        
-        /* Enhanced profile card */
+
+        /* Профильная карточка */
         .profile-card {
-            background: var(--color-card-bg);
-            border-radius: 1.5rem;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
             overflow: hidden;
-            border: 1px solid var(--color-border);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 15px var(--color-primary-glow);
-            transition: all 0.3s ease;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
         
-        .profile-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3), 0 0 20px var(--color-primary-glow);
-            border-color: rgba(139, 92, 246, 0.4);
-        }
-        
-        .profile-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-        }
-        
-        /* Profile header with gradient */
+        /* Хедер профиля */
         .profile-header {
-            background: var(--gradient-purple);
-            height: 250px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+            height: 200px;
             position: relative;
             display: flex;
+            align-items: flex-end;
             justify-content: flex-end;
-            padding: 1rem;
-            box-shadow: inset 0 -10px 20px rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
         }
-        
-        /* Avatar styling */
-        .avatar-upload-wrapper {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            overflow: hidden;
-            position: relative;
-            margin: 0 auto 1.5rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2), 0 0 15px var(--color-primary-glow);
-            border: 3px solid var(--color-primary-light);
+
+        /* Действия в хедере */
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
         }
-        
-        .profile-avatar-wrapper {
+
+        .action-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        /* Аватар */
+        .profile-avatar-container {
             position: absolute;
             left: 2rem;
-            bottom: -75px;
-            width: 150px;
-            height: 150px;
+            bottom: -60px;
+            width: 170px;
+            height: 170px;
             border-radius: 50%;
-            border: 5px solid var(--color-card-bg);
-            outline: 1px solid var(--color-primary-light);
+            border: 4px solid var(--bg-primary);
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2), 0 0 15px var(--color-primary-glow);
-            background-color: var(--color-card-bg);
-            z-index: 20;
+            background: var(--bg-secondary);
         }
         
         .profile-avatar {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.3s ease;
+        }
+
+        /* Информация профиля */
+        .profile-info {
+            padding: 5rem 2rem 2rem;
         }
         
-        .profile-avatar:hover {
-            transform: scale(1.05);
-        }
-        
-        /* Online indicator styling */
-        .online-indicator, .status-badge {
+        .profile-main {
             display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 3rem;
+            gap: 2rem;
+        }
+
+        .profile-details h1 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-status {
+            display: inline-flex;
             align-items: center;
             gap: 0.5rem;
             padding: 0.5rem 1rem;
-            border-radius: 2rem;
-            background: rgba(11, 17, 32, 0.7);
-            backdrop-filter: blur(12px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
         }
         
-        .online-indicator:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
         }
-        
-        /* Profile info section */
-        .profile-info {
-            padding: 5.5rem 2rem 2rem;
-        }
-        
-        /* User name and role */
-        .user-name {
-            font-size: 2rem;
-            margin: 0 0 0.5rem;
-            background: linear-gradient(90deg, var(--color-text), var(--color-primary-light));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: inline-block;
-        }
-        
-        .user-role {
+
+        .online-status {
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 50px;
             font-weight: 500;
-            color: var(--color-text-secondary);
-            margin: 0;
+        }
+
+        .online-status.online {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--success);
+        }
+
+        .online-status.offline {
+            background: rgba(113, 113, 122, 0.1);
+            border: 1px solid rgba(113, 113, 122, 0.3);
+            color: var(--text-muted);
         }
         
-        /* Better avatar positioning for small screens */
-        @media (max-width: 640px) {
-            .profile-avatar-wrapper {
-                left: 50%;
-                transform: translateX(-50%);
-            }
-            
-            .profile-info {
-                padding-top: 5.5rem;
-                text-align: center;
-            }
-            
-            .user-name-wrapper {
-                width: 100%;
-                text-align: center;
-                margin-top: 1rem;
-            }
-            
-            .user-role {
-                justify-content: center;
-            }
-            
-            .status-badge {
-                margin: 1rem auto;
-                justify-content: center;
-            }
-            
-            .header-actions {
-                top: 0.5rem;
-                right: 0.5rem;
-                gap: 0.5rem;
-            }
-            
-            .action-button {
-                width: 2.5rem;
-                height: 2.5rem;
-            }
-            
-            .stats-column {
-                margin-bottom: 1.5rem;
-            }
+        .status-dot.online {
+            background: var(--success);
+        }
+
+        .status-dot.offline {
+            background: var(--text-muted);
         }
         
-        /* Medium screens adjustments */
-        @media (min-width: 641px) and (max-width: 1024px) {
-            .stats-grid {
-                gap: 1.5rem;
-            }
-            
-            .profile-info {
-                padding: 5.5rem 1.5rem 1.5rem;
-            }
+        /* Статистика профиля */
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
         }
         
-        /* Improved flex header for better responsiveness */
-        .info-header {
+        .stats-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+        }
+        
+        .stats-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
             display: flex;
-            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* Старые стили удалены - оставлен только минималистичный дизайн */
+        
+        /* Отзывы */
+        .reviews-section {
+            margin-top: 3rem;
+        }
+        
+        /* Контейнер для отзывов - отдельный от профиля */
+        .reviews-container {
+            margin: 2rem 0;
+            padding: 0;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        .reviews-container .reviews-section {
+            margin: 0;
+            padding: 2rem;
+        }
+        
+        .section-header {
+            display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        /* Enhanced online dot animation */
-        .online-dot {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 8px;
-            vertical-align: middle;
-        }
-
-        .online-dot.online {
-            background-color: #4CAF50;
-            animation: pulse-dot 1.5s infinite;
-        }
-
-        .online-dot.offline {
-            background-color: rgba(255,255,255,0.3);
-        }
-
-        @keyframes pulse-dot {
-            0% { 
-                transform: scale(1); 
-                opacity: 0.7; 
-                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
-            }
-            50% { 
-                transform: scale(1.2); 
-                opacity: 1; 
-                box-shadow: 0 0 0 5px rgba(76, 175, 80, 0.0);
-            }
-            100% { 
-                transform: scale(1); 
-                opacity: 0.7; 
-                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.0);
-            }
-        }
-
-        .status-text {
-            transition: color 0.3s ease;
-            font-weight: 600;
-        }
-
-        .status-text.online {
-            color: #4CAF50 !important;
-        }
-
-        .status-text.offline {
-            color: #aaabbe;
-        }
-        
-        /* Stats grid layout */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
             margin-bottom: 1.5rem;
         }
         
-        .stats-column {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
         }
         
-        /* Stat items styling */
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            border-radius: 1rem;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            background: rgba(139, 92, 246, 0.05);
-            border: 1px solid rgba(139, 92, 246, 0.15);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
+        .reviews-count {
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
         }
         
-        .stat-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-        }
-        
-        /* Stats cards responsive grid */
-        .stats-cards {
+        .reviews-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .review-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
             padding: 1.5rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+        }
+        
+        .review-card:hover {
             background: rgba(255, 255, 255, 0.03);
         }
         
-        .stat-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            padding: 1.5rem 1rem;
-            border-radius: 1rem;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            background: rgba(139, 92, 246, 0.05);
-            border: 1px solid rgba(139, 92, 246, 0.15);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
-            background: rgba(255, 255, 255, 0.07);
-        }
-        
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0.5rem 0 0.25rem;
-            color: var(--color-text);
-        }
-        
-        .stat-label {
-            font-size: 0.875rem;
-            color: var(--color-text-muted);
-            margin: 0;
-        }
-        
-        /* Header action buttons */
-        .header-actions {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            display: flex;
-            gap: 0.75rem;
-            z-index: 10;
-        }
-        
-        .action-button {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border: none;
-            transition: transform 0.3s ease, background-color 0.3s ease;
-            background-color: rgba(139, 92, 246, 0.1);
-            border: 1px solid rgba(139, 92, 246, 0.2);
-            color: var(--color-text);
-        }
-        
-        .action-button:hover {
-            transform: scale(1.1);
-            background: rgba(139, 92, 246, 0.2);
-            box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
-        }
-        
-        /* Achievements section */
-        .achievements-card {
-            margin-top: 2rem;
-            border-radius: 1.5rem;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            background: rgba(11, 17, 32, 0.7);
-            backdrop-filter: blur(10px);
-        }
-        
-        .achievements-header {
+        .review-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            padding: 1.25rem 1.5rem;
-            background: rgba(255, 255, 255, 0.03);
-            cursor: pointer;
-            width: 100%;
-            border: none;
-            text-align: left;
+            align-items: flex-start;
+            margin-bottom: 1rem;
         }
         
-        .header-title {
+        .reviewer {
             display: flex;
-            align-items: center;
             gap: 0.75rem;
-            font-weight: 600;
-            font-size: 1.1rem;
-            color: var(--color-text);
         }
         
-        .chevron {
-            transition: transform 0.3s ease;
-        }
-        
-        .achievements-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-        
-        .achievements-content.show {
-            max-height: 1000px;
-        }
-        
-        .achievement-item {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            padding: 1.5rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            transition: background-color 0.3s ease;
-            background: rgba(139, 92, 246, 0.05);
-            border: 1px solid rgba(139, 92, 246, 0.15);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-        }
-        
-        .achievement-item:hover {
-            background: rgba(255, 255, 255, 0.03);
-        }
-        
-        .achievement-icon {
-            background: rgba(255, 255, 255, 0.05);
-            width: 3.5rem;
-            height: 3.5rem;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        
-        .achievement-info {
-            flex: 1;
-        }
-        
-        .achievement-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-        
-        .achievement-header h3 {
-            margin: 0;
-            font-size: 1.1rem;
-            color: var(--color-text);
-        }
-        
-        .achievement-header span {
-            margin-left: 0.75rem;
-            font-size: 0.875rem;
-            color: var(--color-text-muted);
-        }
-        
-        /* Modal responsive improvements */
-        @media (max-width: 640px) {
-            .modal-content {
-                width: 90%;
-                max-width: none;
-                margin: 1rem;
-                padding: 1.5rem;
-            }
-            
-            .edit-section {
-                margin-bottom: 1.5rem;
-            }
-            
-            .modal-header h2 {
-                font-size: 1.25rem;
-            }
-            
-            .settings-option {
-                padding: 0.75rem;
-            }
-            
-            .achievement-item {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-                gap: 1rem;
-            }
-            
-            .achievement-info {
-                width: 100%;
-            }
-            
-            .achievement-header {
-                justify-content: center;
-                display: flex;
-                flex-direction: column;
-                gap: 0.25rem;
-            }
-            
-            .achievement-header span {
-                margin-left: 0;
-            }
-        }
-        
-
-        
-        /* Уведомления */
-        .notifications-dropdown {
-            position: relative;
-        }
-        
-        .notification-button {
-            background: none;
-            border: none;
-            color: var(--color-text);
-            position: relative;
-            cursor: pointer;
+        .reviewer-avatar {
             width: 40px;
             height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             border-radius: 50%;
-            transition: all 0.3s ease;
-            background-color: rgba(139, 92, 246, 0.15);
-            border: 1px solid rgba(139, 92, 246, 0.3);
-            z-index: 10;
-            color: var(--color-text);
-        }
-        
-        .notification-button:hover {
-            background-color: rgba(139, 92, 246, 0.25);
-            transform: rotate(30deg);
-            box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
-        }
-        
-        .notification-icon {
-            width: 20px;
-            height: 20px;
-        }
-        
-        .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: linear-gradient(135deg, #f43f5e, #ec4899);
-            color: white;
-            font-size: 10px;
-            font-weight: bold;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: pulse 2s infinite;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
-        }
-        
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.7);
-            }
-            70% {
-                box-shadow: 0 0 0 6px rgba(236, 72, 153, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(236, 72, 153, 0);
-            }
-        }
-        
-        .notification-dropdown-menu {
-            position: absolute;
-            right: 0;
-            top: calc(100% + 10px);
-            width: 360px;
-            max-width: 90vw;
-            background: rgba(17, 24, 39, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 1000;
             overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
         }
         
-        .notification-dropdown-menu.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        
-        .notification-header {
-            padding: 15px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(17, 24, 39, 0.8);
-        }
-        
-        .notification-header h3 {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-weight: 700;
-            font-size: 16px;
-            color: #fff;
-            margin: 0;
-            background: linear-gradient(45deg, #e9e9e9, #e9e9e9);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .notification-list {
-            max-height: 400px;
-            overflow-y: auto;
-            /* Стилизация скроллбара */
-            scrollbar-width: thin;
-            scrollbar-color: rgba(99, 102, 241, 0.3) rgba(17, 24, 39, 0.8);
-        }
-        
-        /* Стили для WebKit (Chrome, Safari, новые версии Edge) */
-        .notification-list::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .notification-list::-webkit-scrollbar-track {
-            background: rgba(17, 24, 39, 0.8);
-            border-radius: 10px;
-        }
-        
-        .notification-list::-webkit-scrollbar-thumb {
-            background: linear-gradient(to bottom, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.3));
-            border-radius: 10px;
-            border: 2px solid transparent;
-            background-clip: padding-box;
-        }
-        
-        .notification-list::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(to bottom, rgba(99, 102, 241, 0.5), rgba(139, 92, 246, 0.5));
-            background-clip: padding-box;
-        }
-        
-        .notification-item {
-            padding: 16px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            position: relative;
-            transition: all 0.3s ease;
-            background: rgba(139, 92, 246, 0.05);
-            border: 1px solid rgba(139, 92, 246, 0.15);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-        }
-        
-        .notification-item:hover {
-            background: rgba(255, 255, 255, 0.03);
-        }
-        
-        .notification-date {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.4);
-            margin-bottom: 8px;
-            letter-spacing: 0.5px;
-        }
-        
-        .notification-title {
+        .reviewer-info h4 {
             font-weight: 600;
-            font-size: 14px;
-            margin-bottom: 10px;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .review-date {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        
+        .review-rating {
             display: flex;
-            align-items: center;
+            gap: 0.25rem;
         }
         
-        .notification-icon-wrapper {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 10px;
-        }
-        
-        .notification-icon-info {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2));
-        }
-        
-        .notification-icon-warning {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2));
-        }
-        
-        .notification-icon-error {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2));
-        }
-        
-        .notification-message {
-            font-size: 13px;
+        .review-text {
+            color: var(--text-secondary);
             line-height: 1.6;
-            color: rgba(255, 255, 255, 0.7);
-            white-space: pre-line;
-            word-break: break-word;
-        }
-        
-        .notification-item.info {
-            border-left: 3px solid #3B82F6;
-        }
-        
-        .notification-item.warning {
-            border-left: 3px solid #F59E0B;
-        }
-        
-        .notification-item.error {
-            border-left: 3px solid #EF4444;
-        }
-        
-        .notification-title.info {
-            color: #60A5FA;
-        }
-        
-        .notification-title.warning {
-            color: #FBBF24;
-        }
-        
-        .notification-title.error {
-            color: #F87171;
-        }
-        
-        .empty-notifications {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
-            color: rgba(255, 255, 255, 0.5);
-        }
-        
-        .empty-notifications-icon {
-            font-size: 40px;
-            margin-bottom: 15px;
-            opacity: 0.5;
-        }
-        
-        .empty-notifications-text {
-            font-size: 14px;
-            text-align: center;
-        }
-        
-        /* CSS для user-dropdown */
-        .dropdown-menu {
-            position: absolute;
-            right: 0;
-            top: calc(100% + 10px);
-            width: 300px;
-            max-width: 90vw;
-            background: rgba(17, 24, 39, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 1000;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-        }
-        
-        .dropdown-menu.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        
-        /* Позиционирование для user-dropdown */
-        .user-dropdown {
-            position: relative;
         }
         
         /* Модальные окна */
@@ -864,447 +381,453 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(10, 10, 18, 0.7);
+            background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             z-index: 1000;
-            justify-content: center;
             align-items: center;
-            overflow-y: auto;
-            padding: 2rem 1rem;
+            justify-content: center;
         }
         
         .modal-content {
-            background-color: var(--color-card-bg, rgba(255, 255, 255, 0.05));
-            border-radius: 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
             width: 90%;
-            max-width: 600px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            animation: modalFadeIn 0.3s ease;
-            padding: 0;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
         }
         
         .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1.5rem 2rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        .modal-header h2 {
-            margin: 0;
+        .modal-title {
+            font-size: 1.25rem;
             font-weight: 600;
-            font-size: 1.5rem;
-            color: var(--color-text, #fff);
+            color: var(--text-primary);
         }
         
-        .close-button {
+        .close-btn {
             background: none;
             border: none;
-            font-size: 1.5rem;
+            color: var(--text-secondary);
             cursor: pointer;
-            color: var(--color-text-muted, #a0a0a0);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: color 0.2s;
-        }
-        
-        .close-button:hover {
-            color: var(--color-text, #fff);
+            padding: 0.5rem;
         }
         
         .modal-body {
+            padding: 1.5rem;
+        }
+
+        .coming-soon {
+            text-align: center;
             padding: 2rem;
+            color: var(--text-secondary);
         }
         
-        .form-group {
-            margin-bottom: 1.5rem;
+        /* Пустое состояние */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
         }
         
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: var(--color-text, #fff);
-        }
-        
-        .form-control {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            background-color: rgba(15, 15, 25, 0.5);
-            border: 1px solid rgba(139, 92, 246, 0.2);
-            color: var(--color-text);
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-        
-        .form-control:focus {
-            background-color: rgba(15, 15, 25, 0.7);
-            border-color: rgba(139, 92, 246, 0.5);
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
-            outline: none;
-        }
-        
-        textarea.form-control {
-            min-height: 100px;
-            resize: vertical;
-        }
-        
-        .form-hint {
-            display: block;
-            font-size: 0.85rem;
-            margin-top: 0.25rem;
-            color: var(--color-text-muted, #a0a0a0);
-        }
-        
-        .form-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-        
-        .save-button, .cancel-button {
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .save-button {
-            background: var(--gradient-purple);
-            color: white;
-            border: none;
-            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
-        }
-        
-        .save-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(139, 92, 246, 0.4);
-        }
-        
-        .cancel-button {
-            background-color: rgba(255, 255, 255, 0.05);
-            color: var(--color-text);
-            border: 1px solid rgba(139, 92, 246, 0.2);
-        }
-        
-        .cancel-button:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-color: rgba(139, 92, 246, 0.3);
-        }
-        
-        .avatar-upload-container {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            margin: 0 auto;
-            cursor: pointer;
-            overflow: hidden;
-        }
-        
-        #avatarPreview {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .avatar-upload-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-        
-        .avatar-upload-container:hover .avatar-upload-overlay {
-            opacity: 1;
-        }
-        
-        #avatarUpload {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-        
-        .settings-section {
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .settings-section h3 {
-            font-size: 1.25rem;
+        .empty-state i {
+            font-size: 3rem;
             margin-bottom: 1rem;
-            color: var(--color-text, #fff);
+            opacity: 0.5;
         }
         
-        .toggle-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .profile-container {
+                margin: 1rem auto;
+                padding: 0 1rem;
+            }
         
-        .toggle-label {
+            .profile-main {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        
+            .profile-details h1 {
+                font-size: 2rem;
+            }
+        
+            .profile-avatar-container {
+                left: 50%;
+                transform: translateX(-50%);
+                width: 120px;
+                height: 120px;
+                bottom: -40px;
+            }
+        
+            .profile-info {
+                text-align: center;
+                padding-top: 3rem;
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+        
+            .reviews-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: center;
+            }
+
+            .profile-stats {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .reviews-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .review-card {
+                padding: 1.25rem;
+            }
+
+            .header-actions {
+                gap: 0.5rem;
+            }
+
+            .action-btn {
+                width: 36px;
+                height: 36px;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 0 auto;
+            }
+
+            .profile-header {
+                height: 160px;
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .profile-container {
+                margin: 0.5rem auto;
+                padding: 0 0.75rem;
+            }
+
+            .profile-details h1 {
+                font-size: 1.75rem;
+            }
+
+            .profile-avatar-container {
+                width: 100px;
+                height: 100px;
+                bottom: -35px;
+            }
+
+            .profile-info {
+                padding-top: 2.5rem;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .review-card {
+                padding: 1rem;
+            }
+
+            .reviews-container {
+                margin: 1.5rem 0;
+            }
+
+            .reviews-container .reviews-section {
+                padding: 1.5rem;
+            }
+
+            .section-title {
+                font-size: 1.25rem;
+            }
+
+            .registration-card {
+                padding: 1rem;
+                flex-direction: column;
+                text-align: center;
+                gap: 0.75rem;
+            }
+
+            .profile-header {
+                height: 140px;
+            }
+        }
+
+        /* Иконки */
+        .icon-blue { color: #3b82f6; }
+        .icon-green { color: #10b981; }
+        .icon-yellow { color: #f59e0b; }
+        .icon-gold { color: #f59e0b; }
+        .icon-purple { color: #8b5cf6; }
+        .icon-red { color: #ef4444; }
+        .icon-gray { color: #6b7280; }
+
+        /* Регистрация - минималистичный дизайн */
+        .registration-info {
+            margin-top: 1rem;
+        }
+
+        .registration-card {
             display: flex;
             align-items: center;
-            cursor: pointer;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition: all 0.2s ease;
+        }
+
+        .registration-card:hover {
+            background: rgba(255, 255, 255, 0.05);
         }
         
-        .toggle-label input[type="checkbox"] {
-            margin-right: 0.75rem;
+        .registration-card i {
+            font-size: 1.25rem;
+        }
+
+        .registration-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
         }
         
-        .change-password-button {
-            padding: 0.75rem 1.5rem;
-            background-color: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: var(--color-text, #fff);
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
+        .registration-date {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
         }
         
-        .change-password-button:hover {
-            background-color: rgba(139, 92, 246, 0.15);
-            box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
-            border-color: rgba(139, 92, 246, 0.3);
-        }
-        
-        @keyframes modalFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .disabled-edit {
-            cursor: not-allowed !important;
-            opacity: 0.7;
-        }
-        
-        .disabled-edit .edit-banner-overlay,
-        .disabled-edit .edit-avatar-overlay {
-            pointer-events: none;
-        }
-        
-        .settings-hint {
+        /* Отзывы с рейтингом */
+        .reviews-meta {
             display: flex;
             align-items: center;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            background-color: rgba(79, 70, 229, 0.1);
-            border-left: 4px solid var(--color-primary, #7c3aed);
-            border-radius: 8px;
-            backdrop-filter: blur(10px);
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            gap: 1rem;
         }
         
-        .settings-hint .info-icon {
-            color: var(--color-primary, #7c3aed);
-            margin-right: 1rem;
-            flex-shrink: 0;
+        .average-rating {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 50px;
         }
         
-        .settings-hint p {
-            margin: 0;
-            color: var(--color-text, #fff);
-            font-size: 0.95rem;
+        .rating-stars {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .star-filled {
+            color: #f59e0b;
+            font-size: 0.875rem;
+        }
+        
+        .star-empty {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        .rating-value {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        /* Footer на всю ширину */
+        .footer {
+            width: 100vw;
+            position: relative;
+            left: 50%;
+            right: 50%;
+            margin-left: -50vw;
+            margin-right: -50vw;
+        }
+        
+        .footer .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
         }
     </style>
 </head>
 <body>
+    <div class="profile-bg"></div>
+    
     {% include 'components/simple_navbar.html' %}
 
-    <!-- Обновленный верхний бар -->
     <div class="profile-container">
         <div class="profile-card">
+            <!-- Хедер профиля -->
             <div class="profile-header">
                 <div class="header-actions">
-                    <button class="action-button glass-effect">
-                        <i data-lucide="share-2" class="icon-gray"></i>
+                    <button class="action-btn" title="Поделиться">
+                        <i data-lucide="share-2"></i>
                     </button>
-                    <button class="action-button glass-effect" onclick="openEditModal()">
-                        <i data-lucide="edit" class="icon-gray"></i>
+                    <button class="action-btn" onclick="openEditModal()" title="Редактировать">
+                        <i data-lucide="edit"></i>
                     </button>
-                    <button class="action-button glass-effect" onclick="openSettingsModal()">
-                        <i data-lucide="settings" class="icon-gray"></i>
+                    <button class="action-btn" onclick="openSettingsModal()" title="Настройки">
+                        <i data-lucide="settings"></i>
                     </button>
                 </div>
-                <div class="profile-avatar-wrapper">
+                
+                <!-- Аватар -->
+                <div class="profile-avatar-container">
                     <img src="{{ url_for('static', filename='images/' + avatar) }}" alt="Avatar" class="profile-avatar">
                 </div>
             </div>
 
+            <!-- Информация профиля -->
             <div class="profile-info">
-                <div class="info-header">
-                    <div class="user-name-wrapper">
-                        <h1 class="user-name">{{ username }}</h1>
-                        <p class="user-role">
-                            <i data-lucide="user" class="icon-purple glow-effect"></i>
-                            {% if status == "admin" %}CEO{% elif status == "user" %}Пользователь{% elif status == "coder" %}Разработчик{% endif %}
-                        </p>
+                <div class="profile-main">
+                    <div class="profile-details">
+                        <h1>{{ username }}</h1>
+                        
+                        <div class="profile-status">
+                            {% if status == "admin" %}
+                            <i data-lucide="shield" class="icon-yellow"></i>
+                            <span>CEO</span>
+                            {% elif status == "support" %}
+                            <i data-lucide="headphones" class="icon-blue"></i>
+                            <span>Поддержка</span>
+                            {% elif status == "partner" %}
+                            <i data-lucide="handshake" class="icon-green"></i>
+                            <span>Партнёр</span>
+                            {% elif status == "user" %}
+                            <i data-lucide="user" class="icon-blue"></i>
+                            <span>Пользователь</span>
+                            {% elif status == "coder" %}
+                            <i data-lucide="code-2" class="icon-purple"></i>
+                            <span>Разработчик</span>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="online-indicator">
-                        <span class="online-dot {{ 'online' if online_status == 'Онлайн' else 'offline' }}"></span>
-                        <span class="status-text {{ 'online' if online_status == 'Онлайн' else 'offline' }}">{{ online_status }}</span>
+
+                    <div class="online-status {% if is_offline %}offline{% else %}online{% endif %}">
+                        <span class="status-dot {% if is_offline %}offline{% else %}online{% endif %}"></span>
+                        <span>{{ online_status }}</span>
                     </div>
                 </div>
 
-                <div class="stats-grid">
-                    <div class="stats-column">
-                        {% if status != "admin" and status != "user" %}
-                        <div class="stat-item glass-effect">
-                            <i data-lucide="target" class="icon-blue glow-effect"></i>
-                            <span>{{ employees_data.direction }}</span>
-                        </div>
-                        {% endif %}
-                        <div class="stat-item glass-effect">
-                            <i data-lucide="calendar" class="icon-purple glow-effect"></i>
-                            <span>Присоединился: {{ registration_date_info }}</span>
-                        </div>
-                        <div class="stat-item glass-effect">
-                            <img src="{{ url_for('static', filename='images/Flag_Of_Russia.webp') }}" alt="Флаг России" class="icon-gold glow-effect" width="24" height="16">
-                            <div class="rank-progress">
-                                <span class="rank-title">Страна: Россия</span>
+                <!-- Статистика профиля -->
+                <div class="profile-stats">
+                    <!-- Дата регистрации -->
+                    <div class="stats-section">
+                        <div class="registration-info">
+                            <div class="registration-card">
+                                <i data-lucide="calendar" class="icon-blue"></i>
+                                <div class="registration-content">
+                                    <div class="registration-label">Регистрация</div>
+                                    <div class="registration-date">{{ registration_date_info }}</div>
+                                </div>
                             </div>
                         </div>
                     </div>
-
-                    {% if status == "user" %}
-                    <div class="stats-column">
-                        <div class="stat-item glass-effect">
-                            <i data-lucide="package" class="icon-blue glow-effect"></i>
-                            <span>Заказал: {{ user_orders_count }}</span>
-                        </div>
-                    </div>
-                    {% elif status != "admin" %}
-                    <div class="stats-column">
-                        <div class="stat-item glass-effect">
-                            <i data-lucide="trophy" class="icon-gold glow-effect"></i>
-                            <span>Выполнено заказов: {{ employees_data.completed_orders }}</span>
-                        </div>
-                        <div class="stat-item glass-effect">
-                            <i data-lucide="clock" class="icon-blue glow-effect"></i>
-                            <span>Среднее время: {{ employees_data.avg_completion_time }}</span>
-                        </div>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
-
-            {% if status != "admin" and status != "user" %}
-            <div class="stats-cards">
-                <div class="stat-card glass-effect">
-                    <i data-lucide="trophy" class="icon-gold glow-effect"></i>
-                    <p class="stat-value">{{ employees_data.completed_orders }}</p>
-                    <p class="stat-label">Заказов</p>
-                </div>
-                <div class="stat-card glass-effect">
-                    <i data-lucide="heart" class="icon-red glow-effect"></i>
-                    <p class="stat-value">{{ employees_data.reviews_count }}</p>
-                    <p class="stat-label">Отзывов</p>
-                </div>
-                <div class="stat-card glass-effect">
-                    <i data-lucide="star" class="icon-yellow glow-effect"></i>
-                    <p class="stat-value">{{ employees_data.rating }}</p>
-                    <p class="stat-label">Рейтинг</p>
-                </div>
-                <div class="stat-card glass-effect">
-                    <i data-lucide="shield" class="icon-green glow-effect"></i>
-                    <p class="stat-value">{{ employees_data.warn }}</p>
-                    <p class="stat-label">Предупреждений</p>
-                </div>
-            </div>
-            {% endif %}
         </div>
 
-        {% if status != "admin" and status != "user" %}
-        <!-- Достижения -->
-        <div class="achievements-card">
-            <button class="achievements-header glass-effect" onclick="toggleAchievements()">
-                <div class="header-title">
-                    <i data-lucide="trophy" class="icon-gold glow-effect"></i>
-                    <span>Достижения</span>
-                </div>
-                <i data-lucide="chevron-down" class="chevron"></i>
-            </button>
-            <div class="achievements-content" id="achievementsContent">
-                <div class="achievement-item glass-effect">
-                    <div class="achievement-icon">
-                        <i data-lucide="crown" class="icon-gold glow-effect"></i>
-                    </div>
-                    <div class="achievement-info">
-                        <div class="achievement-header">
-                            <h3>Разработчик месяца</h3>
-                            <span>• Март 2025</span>
+        <!-- Отзывы для разработчика в отдельном контейнере -->
+        {% if status == "coder" %}
+        <div class="reviews-container">
+            <div class="reviews-section">
+                <div class="section-header">
+                    <h2 class="section-title">Отзывы клиентов</h2>
+                    <div class="reviews-meta">
+                        {% if reviews|length > 0 %}
+                        {% set ratings = [] %}
+                        {% for review in reviews %}
+                            {% set _ = ratings.append(review.rating|int) %}
+                        {% endfor %}
+                        {% set total_rating = ratings|sum %}
+                        {% set average_rating = (total_rating / reviews|length) | round(1) %}
+                        <div class="average-rating">
+                            <div class="rating-stars">
+                                {% for i in range(5) %}
+                                    {% if i < average_rating %}
+                                        <i data-lucide="star" class="star-filled"></i>
+                                    {% else %}
+                                        <i data-lucide="star" class="star-empty"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <span class="rating-value">{{ average_rating }}</span>
                         </div>
-                        <p>Лучший разработчик по оценкам пользователей</p>
+                        {% endif %}
+                        <span class="reviews-count">{{ reviews|length }} отзывов</span>
                     </div>
                 </div>
+
+                {% if reviews|length > 0 %}
+                <div class="reviews-grid">
+                    {% for review in reviews %}
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="reviewer">
+                                <div class="reviewer-avatar">
+                                    <img src="{{ url_for('static', filename='images/' + review.reviewer_avatar) }}" alt="{{ review.reviewer_name }}">
+                                </div>
+                                <div class="reviewer-info">
+                                    <h4>{{ review.reviewer_name }}</h4>
+                                    <div class="review-date">{{ review.date }}</div>
+                                </div>
+                            </div>
+                            <div class="review-rating">
+                                {% for i in range(5) %}
+                                    {% if i < review.rating %}
+                                        <i data-lucide="star" class="icon-yellow"></i>
+                                    {% else %}
+                                        <i data-lucide="star" class="icon-gray"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="review-text">{{ review.text }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i data-lucide="message-square"></i>
+                    <h3>Пока нет отзывов</h3>
+                    <p>После выполнения заказов здесь появятся отзывы клиентов</p>
+                </div>
+                {% endif %}
             </div>
         </div>
         {% endif %}
     </div>
+    </div>
 
     <!-- Модальное окно редактирования -->
     <div id="editModal" class="modal">
-        <div class="modal-content glass-effect">
+        <div class="modal-content">
             <div class="modal-header">
-                <h2>Редактировать профиль</h2>
-                <button onclick="closeEditModal()">
-                    <i data-lucide="x" class="icon-white"></i>
+                <h3 class="modal-title">Редактировать профиль</h3>
+                <button class="close-btn" onclick="closeEditModal()">
+                    <i data-lucide="x"></i>
                 </button>
             </div>
             <div class="modal-body">
-                <div class="edit-section">
-                    <label for="edit-avatar">Аватар</label>
-                    <div class="edit-avatar glass-effect disabled-edit">
-                        <div class="edit-avatar-overlay">
-                            <i data-lucide="camera" class="icon-white glow-effect"></i>
-                        </div>
-                    </div>
-                    <p class="edit-hint">Аватар (скоро)</p>
-                </div>
-
-                <div class="edit-section">
-                    <div class="edit-banner glass-effect disabled-edit">
-                        <div class="edit-banner-overlay">
-                            <i data-lucide="camera" class="icon-white glow-effect"></i>
-                        </div>
-                    </div>
-                    <p class="edit-hint">Баннер профиля (скоро)</p>
-                </div>
-
-                <div class="settings-hint glass-effect">
-                    <p>Функции настроек профиля будут доступны в ближайшее время</p>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="button" class="cancel-button" onclick="closeEditModal()">Закрыть</button>
+                <div class="coming-soon">
+                    <i data-lucide="wrench" class="icon-gray"></i>
+                    <h4>Функция в разработке</h4>
+                    <p>Редактирование профиля будет доступно в ближайшее время</p>
                 </div>
             </div>
         </div>
@@ -1312,340 +835,28 @@
 
     <!-- Модальное окно настроек -->
     <div id="settingsModal" class="modal">
-        <div class="modal-content glass-effect">
+        <div class="modal-content">
             <div class="modal-header">
-                <h2>Настройки</h2>
-                <button onclick="closeSettingsModal()">
-                    <i data-lucide="x" class="icon-white"></i>
+                <h3 class="modal-title">Настройки</h3>
+                <button class="close-btn" onclick="closeSettingsModal()">
+                    <i data-lucide="x"></i>
                 </button>
             </div>
             <div class="modal-body">
-                <div class="settings-option glass-effect disabled">
-                    <i data-lucide="mail" class="icon-blue glow-effect"></i>
-                    <span>Изменить email</span>
-                </div>
-                
-                <div class="settings-option glass-effect disabled">
-                    <i data-lucide="key" class="icon-gold glow-effect"></i>
-                    <span>Изменить пароль</span>
-                </div>
-                
-                <div class="settings-option glass-effect disabled">
-                    <i data-lucide="lock" class="icon-purple glow-effect"></i>
-                    <span>Безопасность</span>
-                </div>
-
-                <div class="settings-hint glass-effect">
-                    Функции настроек будут доступны в ближайшее время
+                <div class="coming-soon">
+                    <i data-lucide="settings" class="icon-gray"></i>
+                    <h4>Функция в разработке</h4>
+                    <p>Настройки профиля будут доступны в ближайшее время</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>lucide.createIcons();</script>
     <script>
-        // Инициализация уведомлений
-        function initializeNotifications() {
-            const notificationButton = document.getElementById('notificationButton');
-            const notificationDropdown = document.getElementById('notificationDropdown');
-            const notificationsList = document.getElementById('notificationsList');
-            const notificationBadge = document.getElementById('notificationBadge');
-            
-            if (!notificationButton || !notificationDropdown || !notificationsList) {
-                console.error('Элементы уведомлений не найдены!');
-                return;
-            }
-
-            console.log('Инициализация системы уведомлений...');
-            
-            // Показать/скрыть выпадающее меню уведомлений
-            notificationButton.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const isVisible = notificationDropdown.classList.contains('show');
-                
-                if (isVisible) {
-                    notificationDropdown.classList.remove('show');
-                } else {
-                    notificationDropdown.classList.add('show');
-                    fetchNotifications();
-                    markAllNotificationsAsRead();
-                }
-            });
-            
-            // Закрыть уведомления при клике вне меню
-            document.addEventListener('click', function(e) {
-                if (notificationDropdown.classList.contains('show')) {
-                    if (!notificationDropdown.contains(e.target) && e.target !== notificationButton) {
-                        notificationDropdown.classList.remove('show');
-                    }
-                }
-            });
-
-            // Функция для получения уведомлений
-            function fetchNotifications() {
-                console.log('Запрос уведомлений...');
-                
-                fetch('/api/notifications')
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`Ошибка HTTP: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('Получены данные уведомлений:', data);
-                        
-                        // Очищаем список уведомлений
-                        notificationsList.innerHTML = '';
-                        
-                        // Обновляем счетчик непрочитанных уведомлений
-                        if (data.unread_count && data.unread_count > 0) {
-                            notificationBadge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
-                            notificationBadge.style.display = 'flex';
-                        } else {
-                            notificationBadge.style.display = 'none';
-                        }
-                        
-                        // Проверяем, есть ли уведомления
-                        if (!data.notifications || data.notifications.length === 0) {
-                            // Показываем сообщение, что нет уведомлений
-                            const emptyMessage = document.createElement('div');
-                            emptyMessage.className = 'empty-notifications';
-                            emptyMessage.innerHTML = `
-                                <div class="empty-notifications-icon">
-                                    <i class="far fa-bell-slash"></i>
-                                </div>
-                                <div class="empty-notifications-text">
-                                    У вас пока нет уведомлений
-                                </div>
-                            `;
-                            notificationsList.appendChild(emptyMessage);
-                        } else {
-                            // Отображаем уведомления
-                            data.notifications.forEach(notification => {
-                                const item = document.createElement('div');
-                                item.className = `notification-item ${notification.severity}`;
-                                
-                                // Форматируем дату для красивого отображения с учетом часового пояса пользователя
-                                // Предполагаем, что время приходит в UTC, добавляем +5 часов для GMT+5
-                                const utcDate = new Date(notification.created_at);
-                                
-                                // Создаем дату напрямую с добавлением 5 часов для корректировки под GMT+5
-                                const localDate = new Date(utcDate.getTime() + (5 * 60 * 60 * 1000));
-                                
-                                // Форматирование даты в понятном виде
-                                const formattedDate = new Intl.DateTimeFormat('ru-RU', {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                    second: '2-digit',
-                                    hour12: false
-                                }).format(localDate);
-                                
-                                // Обрабатываем абзацы в сообщении (заменяем \n на <br>)
-                                const formattedMessage = notification.message.replace(/\n/g, '<br>');
-                                
-                                // Определяем иконку в зависимости от типа уведомления
-                                let severityIcon = '';
-                                
-                                switch (notification.severity) {
-                                    case 'info':
-                                        severityIcon = '<i class="fas fa-info-circle"></i>';
-                                        break;
-                                    case 'warning':
-                                        severityIcon = '<i class="fas fa-exclamation-triangle"></i>';
-                                        break;
-                                    case 'error':
-                                        severityIcon = '<i class="fas fa-exclamation-circle"></i>';
-                                        break;
-                                    default:
-                                        severityIcon = '<i class="fas fa-info-circle"></i>';
-                                }
-                                
-                                // Используем новый HTML-шаблон для уведомлений
-                                item.innerHTML = `
-                                    <div class="notification-date">${formattedDate}</div>
-                                    <div class="notification-title ${notification.severity}">
-                                        <div class="notification-icon-wrapper notification-icon-${notification.severity}">
-                                            ${severityIcon}
-                                        </div>
-                                        ${notification.title}
-                                    </div>
-                                    <div class="notification-message">${formattedMessage}</div>
-                                `;
-                                
-                                notificationsList.appendChild(item);
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Ошибка при получении уведомлений:', error);
-                        
-                        // Более подробное логирование для отладки
-                        if (error.message) {
-                            console.error('Сообщение об ошибке:', error.message);
-                        }
-                        
-                        // Показываем сообщение об ошибке в списке уведомлений
-                        notificationsList.innerHTML = `
-                            <div class="empty-notifications">
-                                <div class="empty-notifications-icon">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                </div>
-                                <div class="empty-notifications-text">
-                                    Не удалось загрузить уведомления
-                                </div>
-                            </div>
-                        `;
-                    });
-            }
-            
-            // Функция для отметки всех уведомлений как прочитанных
-            function markAllNotificationsAsRead() {
-                fetch('/api/notifications/read-all', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Ошибка HTTP: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Все уведомления отмечены как прочитанные:', data);
-                    
-                    // Скрываем счетчик уведомлений
-                    notificationBadge.style.display = 'none';
-                })
-                .catch(error => {
-                    console.error('Ошибка при отметке уведомлений как прочитанных:', error);
-                });
-            }
-            
-            // Первичная проверка уведомлений при загрузке страницы
-            fetchNotifications();
-        }
-        
-        // Запуск инициализации после загрузки страницы
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM загружен, инициализация компонентов...');
-            initializeNotifications();
-            
-            // Закрытие dropdown при клике вне его
-            document.addEventListener('click', function(e) {
-                const userDropdown = document.getElementById('userDropdown');
-                const userButton = document.querySelector('.user-dropdown-button');
-                
-                if (userDropdown && userDropdown.classList.contains('show') && 
-                    !userDropdown.contains(e.target) && e.target !== userButton && 
-                    !userButton.contains(e.target)) {
-                    userDropdown.classList.remove('show');
-                }
-            });
-        });
+        // Инициализация иконок Lucide
+        lucide.createIcons();
     </script>
+
     {% include 'components/footer.html' %}
-    
-    <!-- Модальное окно редактирования профиля -->
-    <div id="editProfileModal" class="modal">
-        <div class="modal-content glass-effect">
-            <div class="modal-header">
-                <h2>Редактирование профиля</h2>
-                <button class="close-button" onclick="closeEditModal()">
-                    <i data-lucide="x" class="icon-gray"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="profileEditForm" action="/profile/update" method="POST" enctype="multipart/form-data">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
-                    
-                    <div class="form-group">
-                        <label for="avatarUpload">Сменить аватар</label>
-                        <div class="avatar-upload-container">
-                            <img id="avatarPreview" src="{{ url_for('static', filename='images/' + avatar) }}" alt="Avatar Preview">
-                            <div class="avatar-upload-overlay">
-                                <i data-lucide="upload" class="icon-white"></i>
-                            </div>
-                            <input type="file" id="avatarUpload" name="avatar" accept="image/*" onchange="previewAvatar(this)">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="usernameEdit">Имя пользователя</label>
-                        <input type="text" id="usernameEdit" name="username" value="{{ username }}" class="form-control">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="bioEdit">О себе</label>
-                        <textarea id="bioEdit" name="bio" class="form-control">{{ bio }}</textarea>
-                    </div>
-                    
-                    <div class="form-actions">
-                        <button type="button" class="cancel-button" onclick="closeEditModal()">Отмена</button>
-                        <button type="submit" class="save-button">Сохранить</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Модальное окно настроек -->
-    <div id="settingsModal" class="modal">
-        <div class="modal-content glass-effect">
-            <div class="modal-header">
-                <h2>Настройки</h2>
-                <button class="close-button" onclick="closeSettingsModal()">
-                    <i data-lucide="x" class="icon-gray"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="settingsForm" action="/profile/settings" method="POST">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
-                    
-                    <div class="settings-section">
-                        <h3>Общие настройки</h3>
-                        
-                        <div class="form-group">
-                            <label for="emailSettings">Email</label>
-                            <input type="email" id="emailSettings" name="email" value="{{ email }}" class="form-control" disabled>
-                            <small class="form-hint">Для изменения email обратитесь в поддержку</small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Уведомления</label>
-                            <div class="toggle-group">
-                                <label class="toggle-label">
-                                    <input type="checkbox" name="email_notifications" {{ 'checked' if email_notifications else '' }}>
-                                    <span>Email-уведомления</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="settings-section">
-                        <h3>Безопасность</h3>
-                        
-                        <div class="form-group">
-                            <button type="button" class="change-password-button">
-                                Сменить пароль
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="form-actions">
-                        <button type="button" class="cancel-button" onclick="closeSettingsModal()">Отмена</button>
-                        <button type="submit" class="save-button">Сохранить</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 </body>
 </html>

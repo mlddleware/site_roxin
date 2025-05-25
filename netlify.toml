@@ -1,8 +1,0 @@
-[build]
-  publish = "static"
-  command = "echo 'This is a Flask application that requires a server runtime'"
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200

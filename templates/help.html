@@ -13,12 +13,13 @@
     <style>
         :root {
             --color-background: #0f0f1a;
-            --color-card-bg: rgba(255, 255, 255, 0.05);
+            --color-card-bg: rgba(20, 20, 35, 0.7);
             --color-text: #ffffff;
             --color-text-muted: #a0a0a0;
             --color-primary: #7c3aed;
             --color-primary-dark: #6d28d9;
             --color-border: rgba(255, 255, 255, 0.1);
+            --color-accent: #10b981;
         }
         
         body {
@@ -32,6 +33,10 @@
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
+            position: relative;
+            background-image: 
+                radial-gradient(circle at 20% 10%, rgba(124, 58, 237, 0.15) 0%, transparent 30%),
+                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 30%);
         }
         
         h1, h2, h3, h4 {
@@ -43,17 +48,21 @@
             max-width: 1000px;  
             margin: 0 auto;
             padding: 3rem 1.5rem;
+            position: relative;
+            z-index: 1;
         }
         
         .page-title {
-            font-size: 2.5rem;
+            font-size: 2.75rem;
             margin-bottom: 1rem;
             text-align: center;
             background: linear-gradient(90deg, var(--color-primary), #9f7aea);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-weight: 700;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 15px rgba(124, 58, 237, 0.5);
         }
         
         .page-subtitle {
@@ -61,10 +70,20 @@
             text-align: center;
             color: var(--color-text-muted);
             margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            letter-spacing: 0.3px;
         }
         
         .faq-section {
             margin-bottom: 3rem;
+            backdrop-filter: blur(10px);
+            background-color: rgba(20, 20, 35, 0.4);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid rgba(124, 58, 237, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
         
         .faq-title {
@@ -72,6 +91,13 @@
             margin-bottom: 1.5rem;
             color: var(--color-primary);
             font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .faq-title-icon {
+            color: var(--color-primary);
         }
         
         .faq-items {
@@ -89,8 +115,9 @@
         }
         
         .faq-item:hover {
-            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.1);
+            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.2);
             transform: translateY(-2px);
+            border-color: rgba(124, 58, 237, 0.3);
         }
         
         .faq-question {
@@ -99,27 +126,50 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-weight: 500;
+            font-weight: 600;
             color: var(--color-text);
+            letter-spacing: 0.2px;
         }
         
         .faq-question i {
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, color 0.3s ease;
+            color: var(--color-text-muted);
+        }
+        
+        .faq-item:hover .faq-question i {
+            color: var(--color-primary);
         }
         
         .faq-answer {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.3s ease;
+            transition: max-height 0.5s ease;
         }
         
         .faq-answer-content {
             padding: 0 1.25rem 1.25rem;
             color: var(--color-text-muted);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+        
+        .faq-answer-content p {
+            margin-bottom: 1rem;
+        }
+        
+        .faq-answer-content ul, 
+        .faq-answer-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .faq-answer-content li {
+            margin-bottom: 0.5rem;
         }
         
         .faq-item.active .faq-question i {
             transform: rotate(180deg);
+            color: var(--color-primary);
         }
         
         .faq-item.active .faq-answer {
@@ -127,7 +177,8 @@
         }
         
         .faq-item.active {
-            border-color: rgba(124, 58, 237, 0.3);
+            border-color: rgba(124, 58, 237, 0.4);
+            box-shadow: 0 6px 24px rgba(124, 58, 237, 0.15);
         }
         
         .contact-support {
@@ -138,9 +189,10 @@
             border-radius: 16px;
             padding: 2.5rem;
             text-align: center;
-            border: 1px solid var(--color-border);
+            border: 1px solid rgba(16, 185, 129, 0.3);
             position: relative;
             overflow: hidden;
+            backdrop-filter: blur(10px);
         }
         
         .contact-support::before {
@@ -150,37 +202,44 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(90deg, var(--color-primary), #9f7aea);
+            background: linear-gradient(90deg, var(--color-accent), var(--color-primary));
         }
         
         .contact-title {
-            font-size: 1.5rem;
+            font-size: 1.75rem;
             margin-bottom: 1rem;
+            background: linear-gradient(90deg, var(--color-accent), var(--color-primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         
         .contact-desc {
             margin-bottom: 1.5rem;
             color: var(--color-text-muted);
             max-width: 600px;
+            font-size: 1.05rem;
+            line-height: 1.7;
         }
         
         .support-btn {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark));
+            background: linear-gradient(90deg, var(--color-accent), var(--color-primary));
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
+            padding: 0.85rem 1.75rem;
+            border-radius: 10px;
             font-weight: 500;
             transition: all 0.3s ease;
             border: none;
             cursor: pointer;
+            font-size: 1.05rem;
         }
         
         .support-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
         }
         
         .support-btn i {
@@ -198,23 +257,23 @@
         .decoration {
             position: absolute;
             border-radius: 50%;
-            filter: blur(60px);
+            filter: blur(80px);
             z-index: -1;
             opacity: 0.15;
         }
         
         .decoration-1 {
-            width: 300px;
-            height: 300px;
+            width: 350px;
+            height: 350px;
             background-color: var(--color-primary);
             top: 5%;
             left: -5%;
         }
         
         .decoration-2 {
-            width: 250px;
-            height: 250px;
-            background-color: #9f7aea;
+            width: 300px;
+            height: 300px;
+            background-color: var(--color-accent);
             bottom: 10%;
             right: -5%;
         }
@@ -295,7 +354,7 @@
         
         .form-control {
             width: 100%;
-            padding: 0.75rem 1rem;
+            padding: 0.85rem 1rem;
             background-color: rgba(0, 0, 0, 0.2);
             border: 1px solid var(--color-border);
             border-radius: 8px;
@@ -376,129 +435,10 @@
                 padding: 1.5rem;
             }
         }
-        
-        .user-dropdown-button {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.25rem;
-            background: none;
-            border: none;
-            cursor: pointer;
-            border-radius: 2rem;
-            transition: all 0.3s ease;
-        }
-        
-        .user-dropdown-button:hover {
-            background: var(--color-surface);
-        }
-        
-
-        
-        /* Dropdown menu styles */
-        .user-dropdown {
-            position: relative;
-        }
-        
-        .dropdown-icon {
-            color: var(--color-text-muted);
-            transition: transform 0.3s ease;
-        }
-        
-        .dropdown-menu {
-            position: absolute;
-            top: calc(100% + 0.5rem);
-            right: 0;
-            width: 240px;
-            background-color: var(--bg-tertiary);
-            border-radius: 0.5rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            overflow: hidden;
-            visibility: hidden;
-            opacity: 0;
-            transform: translateY(-10px);
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-        
-        .dropdown-menu.show {
-            visibility: visible;
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        .dropdown-profile {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            text-decoration: none;
-        }
-        
-        .dropdown-avatar {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-        
-        .dropdown-profile-info {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .dropdown-username {
-            font-weight: 600;
-            color: var(--color-text);
-        }
-        
-        .dropdown-role {
-            font-size: 0.85rem;
-            color: var(--color-text-muted);
-        }
-        
-        .dropdown-divider {
-            height: 1px;
-            background-color: rgba(255, 255, 255, 0.1);
-            margin: 0.5rem 0;
-        }
-        
-        .dropdown-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            color: var(--color-text);
-            text-decoration: none;
-            transition: all 0.2s ease;
-        }
-        
-        .dropdown-item:hover {
-            background-color: rgba(124, 58, 237, 0.1);
-            color: var(--color-primary);
-        }
-        
-        .login-button {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark));
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-        
-        .login-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.4);
-        }
     </style>
 </head>
 <body>
-    <!-- Подключаем общий навбар -->
+    <!-- Подключаем общий навбар с передачей переменных пользователя -->
     {% include 'components/simple_navbar.html' %}
     
     <!-- Содержимое страницы -->
@@ -507,10 +447,13 @@
         <div class="decoration decoration-2"></div>
         
         <h1 class="page-title">Центр помощи</h1>
-        <p class="page-subtitle">Ответы на часто задаваемые вопросы и поддержка пользователей</p>
+        <p class="page-subtitle">Ответы на часто задаваемые вопросы и поддержка пользователей платформы ROXIN Studio</p>
         
         <section class="faq-section">
-            <h2 class="faq-title">Часто задаваемые вопросы</h2>
+            <h2 class="faq-title">
+                <i data-lucide="help-circle" class="faq-title-icon" width="28" height="28"></i>
+                Часто задаваемые вопросы
+            </h2>
             
             <div class="faq-items">
                 <div class="faq-item">
@@ -633,9 +576,9 @@
         
         <section class="contact-support">
             <h2 class="contact-title">Не нашли ответ на свой вопрос?</h2>
-            <p class="contact-desc">Свяжитесь с нашей службой поддержки, и мы постараемся помочь вам в кратчайшие сроки. Наши специалисты доступны 24/7.</p>
-            <button class="support-btn" onclick="openSupportModal()">
-                <i data-lucide="message-circle"></i>
+            <p class="contact-desc">Свяжитесь с нашей службой поддержки, и мы постараемся помочь вам в кратчайшие сроки. Наши специалисты доступны 24/7 и готовы оказать профессиональную консультацию.</p>
+            <button class="support-btn" onclick="window.location.href='/tickets'">
+                <i data-lucide="message-circle" width="20" height="20"></i>
                 <span>Написать в поддержку</span>
             </button>
         </section>
@@ -654,7 +597,7 @@
                 <form id="supportForm" onsubmit="submitSupportForm(event)">
                     <div class="form-group">
                         <label for="supportName">Ваше имя</label>
-                        <input type="text" id="supportName" class="form-control" required>
+                        <input type="text" id="supportName" class="form-control" required value="{{ username if username else '' }}">
                     </div>
                     
                     <div class="form-group">
@@ -681,7 +624,10 @@
                     
                     <div class="form-actions">
                         <button type="button" class="cancel-button" onclick="closeSupportModal()">Отмена</button>
-                        <button type="submit" class="send-button">Отправить</button>
+                        <button type="submit" class="send-button">
+                            <i data-lucide="send" width="16" height="16"></i>
+                            Отправить
+                        </button>
                     </div>
                 </form>
             </div>
@@ -700,26 +646,16 @@
             document.querySelectorAll('.faq-question').forEach(question => {
                 question.addEventListener('click', () => {
                     const item = question.parentNode;
+                    // Close all other items
+                    document.querySelectorAll('.faq-item').forEach(otherItem => {
+                        if (otherItem !== item && otherItem.classList.contains('active')) {
+                            otherItem.classList.remove('active');
+                        }
+                    });
+                    // Toggle the clicked item
                     item.classList.toggle('active');
                 });
             });
-            
-            // Toggle dropdown menu
-            window.toggleDropdown = function() {
-                const dropdown = document.getElementById('userDropdown');
-                if (dropdown) {
-                    dropdown.classList.toggle('show');
-                    
-                    // Close dropdown when clicking outside
-                    document.addEventListener('click', function(event) {
-                        const dropdown = document.getElementById('userDropdown');
-                        const button = document.querySelector('.user-dropdown-button');
-                        if (dropdown && button && !button.contains(event.target) && !dropdown.contains(event.target)) {
-                            dropdown.classList.remove('show');
-                        }
-                    });
-                }
-            }
         });
         
         // Модальное окно поддержки

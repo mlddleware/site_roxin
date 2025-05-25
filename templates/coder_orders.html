@@ -3,30 +3,624 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RoxinStudio - Панель Разработчика</title>
+    <title>Панель Разработчика | ROXIN Studio</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/coder_orders.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ url_for('static', filename='icons/lucide/dist/umd/lucide.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/update_last_visit.js') }}"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #111118;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #6366f1;
+            --accent-light: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .coder-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0f 0%, #111118 50%, #0a0a0f 100%);
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Stats Section */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.15);
+        }
+
+        .stat-card .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon.completed {
+            background: linear-gradient(135deg, var(--success), #059669);
+        }
+
+        .stat-icon.in-progress {
+            background: linear-gradient(135deg, var(--warning), #d97706);
+        }
+
+        .stat-icon.earnings {
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+        }
+
+        .stat-info .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-info .stat-value {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            font-size: 2rem;
+            color: var(--text-primary);
+        }
+
+        /* Orders Section */
+        .orders-container {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            overflow: hidden;
+        }
+
+        .orders-header {
+            padding: 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .orders-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .order-search-container {
+            position: relative;
+            max-width: 300px;
+            flex: 1;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            z-index: 1;
+        }
+
+        .order-search-container input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .order-search-container input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Table Styles */
+        .orders-table-container {
+            overflow-x: auto;
+        }
+
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .orders-table th {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+            font-size: 0.875rem;
+        }
+
+        .orders-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+            vertical-align: middle;
+        }
+
+        .orders-table tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .status-badge.pending {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+
+        .status-badge.payment-pending {
+            background: linear-gradient(135deg, var(--warning), #d97706);
+            color: white;
+        }
+
+        .status-badge.in-progress {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+        }
+
+        .status-badge.completed {
+            background: linear-gradient(135deg, var(--accent-light), #7c3aed);
+            color: white;
+        }
+
+        .status-badge.review {
+            background: linear-gradient(135deg, var(--error), #dc2626);
+            color: white;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.8125rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            text-decoration: none;
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-view {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .btn-view:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .btn-accept {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+        }
+
+        .btn-accept:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-decline {
+            background: linear-gradient(135deg, var(--error), #dc2626);
+            color: white;
+        }
+
+        .btn-decline:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-revision {
+            background: linear-gradient(135deg, var(--warning), #d97706);
+            color: white;
+        }
+
+        .btn-revision:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--error), #dc2626);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            backdrop-filter: blur(20px);
+            position: relative;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Order Details Section */
+        .order-details-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 600;
+            font-size: 1.125rem;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .detail-item {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .detail-label {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .price-value {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.25rem;
+            color: var(--success);
+        }
+
+        .order-description {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            word-break: break-word;
+            line-height: 1.6;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* Form Styles */
+        .revision-form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Empty Message */
+        .empty-message {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .orders-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .orders-title {
+                font-size: 1.5rem;
+                text-align: center;
+            }
+
+            .orders-table-container {
+                border-radius: 8px;
+                overflow: hidden;
+            }
+
+            .orders-table th,
+            .orders-table td {
+                padding: 0.75rem 0.5rem;
+                font-size: 0.8125rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .modal-content {
+                margin: 1rem;
+                max-width: calc(100vw - 2rem);
+                padding: 1.5rem;
+            }
+
+            .modal-footer {
+                flex-direction: column;
+            }
+        }
+
+        /* Scrollbar */
+        .orders-table-container::-webkit-scrollbar,
+        .order-description::-webkit-scrollbar,
+        .modal-content::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .orders-table-container::-webkit-scrollbar-track,
+        .order-description::-webkit-scrollbar-track,
+        .modal-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .orders-table-container::-webkit-scrollbar-thumb,
+        .order-description::-webkit-scrollbar-thumb,
+        .modal-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        .orders-table-container::-webkit-scrollbar-thumb:hover,
+        .order-description::-webkit-scrollbar-thumb:hover,
+        .modal-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
 </head>
 <body>
+    <div class="coder-bg"></div>
+    
     {% include 'components/simple_navbar.html' %}
 
-    <div class="page-header">
-        <div class="container">
-            <h1 class="page-title">Панель Разработчика</h1>
-        </div>
-    </div>
-
-    <main class="container main-content">
-        <div class="dashboard-wrapper">
-            <!-- Dashboard Stats Cards -->
+    <main class="container">
+        <!-- Stats Section -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon completed">
-                        <i data-lucide="check-circle"></i>
+                    <i data-lucide="check-circle" width="24" height="24"></i>
                     </div>
                     <div class="stat-info">
                         <p class="stat-label">Выполнено заказов</p>
@@ -34,8 +628,8 @@
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">
-                        <i data-lucide="timer"></i>
+                    <div class="stat-icon in-progress">
+                    <i data-lucide="clock" width="24" height="24"></i>
                     </div>
                     <div class="stat-info">
                         <p class="stat-label">Заказов в работе</p>
@@ -44,21 +638,21 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon earnings">
-                        <i data-lucide="dollar-sign"></i>
+                    <i data-lucide="dollar-sign" width="24" height="24"></i>
                     </div>
                     <div class="stat-info">
                         <p class="stat-label">Общий доход</p>
                         <p class="stat-value">{{ total_earnings|default(0) }} ₽</p>
-                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- Orders Section -->
         <div class="orders-container">
             <div class="orders-header">
                 <h2 class="orders-title">Мои заказы</h2>
                 <div class="order-search-container">
-                    <span class="search-icon"><i data-lucide="search"></i></span>
+                    <span class="search-icon"><i data-lucide="search" width="16" height="16"></i></span>
                     <input type="text" id="orderSearch" onkeyup="filterOrders()" placeholder="Поиск заказа...">
                 </div>
             </div>
@@ -79,30 +673,30 @@
                     <tbody>
                         {% for order in coder_orders %}
                         <tr>
-                            <td>{{ order.id }}</td>
+                            <td><strong>#{{ order.id }}</strong></td>
                             <td>{{ order.service }}</td>
                             <td>{{ order.username }}</td>
                             <td>{{ order.tech_assignment|truncate(50) }}</td>
                             <td>
                                 {% if order.coder_response == 'pending' %}
                                 <span class="status-badge pending">
-                                    <i data-lucide="clock"></i> Ожидает
+                                    <i data-lucide="clock" width="14" height="14"></i> Ожидает
                                 </span>
-                                {% elif order.status == 'accepted' %}
-                                <span class="status-badge accepted">
-                                    <i data-lucide="loader"></i> В работе
+                                {% elif order.status == 'payment_pending' %}
+                                <span class="status-badge payment-pending">
+                                    <i data-lucide="credit-card" width="14" height="14"></i> Ожидание оплаты
                                 </span>
-                                {% elif order.status == 'rejected' %}
-                                <span class="status-badge rejected">
-                                    <i data-lucide="x"></i> Отклонен
-                                </span>
-                                {% elif order.status == 'revision_requested' %}
-                                <span class="status-badge review">
-                                    <i data-lucide="file-edit"></i> Доработка
+                                {% elif order.status == 'in_progress' %}
+                                <span class="status-badge in-progress">
+                                    <i data-lucide="loader" width="14" height="14"></i> В работе
                                 </span>
                                 {% elif order.status == 'completed' %}
-                                <span class="status-badge accepted">
-                                    <i data-lucide="check-circle"></i> Выполнен
+                                <span class="status-badge completed">
+                                    <i data-lucide="check-circle" width="14" height="14"></i> Выполнен
+                                </span>
+                                {% elif order.coder_response == 'revision_requested' %}
+                                <span class="status-badge review">
+                                    <i data-lucide="file-edit" width="14" height="14"></i> Ожидание правки
                                 </span>
                                 {% endif %}
                             </td>
@@ -110,21 +704,18 @@
                             <td>
                                 <div class="action-buttons">
                                     <button class="btn btn-sm btn-view" onclick="openModal('{{ order.id }}')">
-                                        <i data-lucide="eye"></i>
+                                        <i data-lucide="eye" width="14" height="14"></i> Детали
                                     </button>
                                     
                                     {% if order.coder_response == 'pending' %}
-                                    <a href="{{ url_for('coder_orders.coder_accept_order', order_id=order.id) }}" class="btn btn-sm btn-primary">
-                                        <i data-lucide="check"></i>
+                                    <a href="{{ url_for('coder_orders.coder_accept_order', order_id=order.id) }}" class="btn btn-sm btn-accept">
+                                        <i data-lucide="check" width="14" height="14"></i> Принять
                                     </a>
-                                    <a href="{{ url_for('coder_orders.coder_decline_order', order_id=order.id) }}" class="btn btn-sm btn-danger">
-                                        <i data-lucide="x"></i>
+                                    <a href="{{ url_for('coder_orders.coder_decline_order', order_id=order.id) }}" class="btn btn-sm btn-decline">
+                                        <i data-lucide="x" width="14" height="14"></i> Отклонить
                                     </a>
-                                    {% endif %}
-                                    
-                                    {% if order.coder_response == 'revision_requested' %}
-                                    <button class="btn btn-sm btn-secondary" onclick="openRevisionModal('{{ order.id }}')">
-                                        <i data-lucide="file-edit"></i>
+                                    <button class="btn btn-sm btn-revision" onclick="openRevisionModal('{{ order.id }}')" title="Внести правку">
+                                        <i data-lucide="edit" width="14" height="14"></i> Правка
                                     </button>
                                     {% endif %}
                                 </div>
@@ -136,18 +727,17 @@
             </div>
         </div>
 
+        <!-- Order Detail Modals -->
         {% for order in coder_orders %}
-        <!-- Modal for viewing order details -->
         <div id="modal-{{ order.id }}" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3 class="modal-title">Детали заказа #{{ order.id }}</h3>
                     <button class="close-btn" onclick="closeModal('{{ order.id }}')">
-                        <i data-lucide="x"></i>
+                        <i data-lucide="x" width="24" height="24"></i>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <!-- Order summary section -->
                     <div class="order-details-section">
                         <h4 class="section-title">Информация о заказе</h4>
                         <div class="details-grid">
@@ -164,23 +754,23 @@
                                 <div class="detail-value">
                                     {% if order.coder_response == 'pending' %}
                                     <span class="status-badge pending">
-                                        <i data-lucide="clock"></i> Ожидает
+                                        <i data-lucide="clock" width="14" height="14"></i> Ожидание вашего ответа
                                     </span>
-                                    {% elif order.coder_response == 'accepted' %}
-                                    <span class="status-badge accepted">
-                                        <i data-lucide="loader"></i> В работе
+                                    {% elif order.status == 'payment_pending' %}
+                                    <span class="status-badge payment-pending">
+                                        <i data-lucide="credit-card" width="14" height="14"></i> Ожидание оплаты клиента
                                     </span>
-                                    {% elif order.coder_response == 'rejected' %}
-                                    <span class="status-badge rejected">
-                                        <i data-lucide="x"></i> Отклонен
+                                    {% elif order.status == 'in_progress' %}
+                                    <span class="status-badge in-progress">
+                                        <i data-lucide="loader" width="14" height="14"></i> В работе
+                                    </span>
+                                    {% elif order.status == 'completed' %}
+                                    <span class="status-badge completed">
+                                        <i data-lucide="check-circle" width="14" height="14"></i> Выполнен
                                     </span>
                                     {% elif order.coder_response == 'revision_requested' %}
                                     <span class="status-badge review">
-                                        <i data-lucide="file-edit"></i> Доработка
-                                    </span>
-                                    {% elif order.coder_response == 'completed' %}
-                                    <span class="status-badge accepted">
-                                        <i data-lucide="check-circle"></i> Выполнен
+                                        <i data-lucide="file-edit" width="14" height="14"></i> На рассмотрении 
                                     </span>
                                     {% endif %}
                                 </div>
@@ -200,15 +790,11 @@
                         </div>
                     </div>
                     
-                    <!-- Order description section -->
                     <div class="order-details-section">
                         <h4 class="section-title">Описание заказа</h4>
-                            <div class="order-description">
-                            {{ order.tech_assignment|replace('\n', '<br>')|safe }}
-                        </div>
+                        <div class="order-description">{{ order.tech_assignment|replace('\n', '<br>')|safe }}</div>
                     </div>
                     
-                    <!-- Revision history section if applicable -->
                     {% if order.revision_requests %}
                     <div class="order-details-section">
                         <h4 class="section-title">История запросов на доработку</h4>
@@ -226,37 +812,33 @@
                     
                     {% if order.coder_response == 'pending' %}
                     <a href="{{ url_for('coder_orders.coder_accept_order', order_id=order.id) }}" class="btn btn-primary">
-                        <i data-lucide="check"></i> Принять заказ
+                        <i data-lucide="check" width="16" height="16"></i> Принять заказ
                     </a>
                     <a href="{{ url_for('coder_orders.coder_decline_order', order_id=order.id) }}" class="btn btn-danger">
-                        <i data-lucide="x"></i> Отклонить заказ
+                        <i data-lucide="x" width="16" height="16"></i> Отклонить заказ
                     </a>
-                    {% endif %}
-                    
-                    {% if order.coder_response == 'revision_requested' %}
-                    <button onclick="openRevisionModal('{{ order.id }}'); closeModal('{{ order.id }}')" class="btn btn-secondary">
-                        <i data-lucide="file-edit"></i> Внести правки
+                    <button onclick="openRevisionModal('{{ order.id }}'); closeModal('{{ order.id }}')" class="btn btn-revision">
+                        <i data-lucide="edit" width="16" height="16"></i> Внести правки
                     </button>
                     {% endif %}
                 </div>
             </div>
         </div>
         
-        <!-- Modal for revision request -->
-        {% if order.coder_response == 'revision_requested' or order.coder_response == 'pending' %}
+        <!-- Revision Request Modal -->
         <div id="revision-modal-{{ order.id }}" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3 class="modal-title">Внести правки в заказ #{{ order.id }}</h3>
                     <button class="close-btn" onclick="closeRevisionModal('{{ order.id }}')">
-                        <i data-lucide="x"></i>
+                        <i data-lucide="x" width="24" height="24"></i>
                     </button>
                 </div>
                 <div class="modal-body">
                     <form action="{{ url_for('coder_orders.request_revision', order_id=order.id) }}" method="post" enctype="multipart/form-data" id="revision-form-{{ order.id }}">
                         <div class="revision-form-group">
                             <label for="reason_{{ order.id }}" class="form-label">Причина изменения:</label>
-                            <textarea name="reason" id="reason_{{ order.id }}" class="form-textarea" required maxlength="100"></textarea>
+                            <textarea name="reason" id="reason_{{ order.id }}" class="form-textarea" required maxlength="100" placeholder="Опишите необходимые изменения..."></textarea>
                         </div>
                         
                         <div class="revision-form-group">
@@ -265,29 +847,36 @@
                         </div>
                         
                         <div class="revision-form-group">
-                            <label for="new_price_{{ order.id }}" class="form-label">Новая цена:</label>
-                            <input type="number" name="new_price" id="new_price_{{ order.id }}" class="form-input" required>
+                            <label for="new_price_{{ order.id }}" class="form-label">Новая цена (₽):</label>
+                            <input type="number" name="new_price" id="new_price_{{ order.id }}" class="form-input" required min="0" step="1">
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" onclick="closeRevisionModal('{{ order.id }}')" class="btn btn-outline">Отмена</button>
-                    <button type="submit" form="revision-form-{{ order.id }}" class="btn btn-primary">Отправить</button>
+                    <button type="submit" form="revision-form-{{ order.id }}" class="btn btn-primary">
+                        <i data-lucide="send" width="16" height="16"></i> Отправить
+                    </button>
                 </div>
             </div>
         </div>
-        {% endif %}
         {% endfor %}
     </main>
 
     {% include 'components/footer.html' %}
 
     <script>
-        // Initialize Lucide icons when document is ready
+        // Initialize Lucide icons
         document.addEventListener('DOMContentLoaded', function() {
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons({
+                    attrs: {
+                        'stroke-width': 1.5
+                    }
+                });
+            }
             
-            // Set up any date inputs with today's date if empty
+            // Set up date inputs with today's date if empty
             document.querySelectorAll('[id^="new_deadline_"]').forEach(input => {
                 if (!input.value) {
                     const today = new Date();
@@ -298,7 +887,7 @@
                 }
             });
             
-            // Add event listeners for all modals to close when clicking outside
+            // Modal event listeners
             document.querySelectorAll('.modal').forEach(modal => {
                 modal.addEventListener('click', function(event) {
                     if (event.target === this) {
@@ -312,23 +901,7 @@
                 });
             });
             
-            // Add event listeners for close buttons
-            document.querySelectorAll('.close-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    // Find parent modal element
-                    const modal = this.closest('.modal');
-                    if (modal) {
-                        const modalId = modal.id;
-                        if (modalId.startsWith('modal-')) {
-                            closeModal(modalId.replace('modal-', ''));
-                        } else if (modalId.startsWith('revision-modal-')) {
-                            closeRevisionModal(modalId.replace('revision-modal-', ''));
-                        }
-                    }
-                });
-            });
-            
-            // Listen for Escape key to close modals
+            // Escape key to close modals
             document.addEventListener('keydown', function(event) {
                 if (event.key === 'Escape') {
                     document.querySelectorAll('.modal').forEach(modal => {
@@ -345,41 +918,39 @@
             });
         });
         
-        // Function to open order details modal
+        // Modal functions
         function openModal(orderId) {
             const modal = document.getElementById("modal-" + orderId);
             if (modal) {
-                modal.style.display = "block";
-                document.body.style.overflow = "hidden"; // Prevent scrolling
+                modal.style.display = "flex";
+                document.body.style.overflow = "hidden";
                 setTimeout(() => {
                     modal.classList.add("show");
                 }, 10);
             }
         }
 
-        // Function to close order details modal
         function closeModal(orderId) {
             const modal = document.getElementById("modal-" + orderId);
             if (modal) {
                 modal.classList.remove("show");
                 setTimeout(() => {
                     modal.style.display = "none";
-                    document.body.style.overflow = ""; // Restore scrolling
+                    document.body.style.overflow = "";
                 }, 300);
             }
         }
 
-        // Function to open revision request modal
         function openRevisionModal(orderId) {
             const modal = document.getElementById("revision-modal-" + orderId);
             if (modal) {
-                modal.style.display = "block";
-                document.body.style.overflow = "hidden"; // Prevent scrolling
+                modal.style.display = "flex";
+                document.body.style.overflow = "hidden";
                 setTimeout(() => {
                     modal.classList.add("show");
                 }, 10);
                 
-                // Initialize the date field with today's date if it's not already set
+                // Set today's date if not already set
                 const dateInput = document.getElementById(`new_deadline_${orderId}`);
                 if (dateInput && !dateInput.value) {
                     const today = new Date();
@@ -391,34 +962,31 @@
             }
         }
 
-        // Function to close revision request modal
         function closeRevisionModal(orderId) {
             const modal = document.getElementById("revision-modal-" + orderId);
             if (modal) {
                 modal.classList.remove("show");
                 setTimeout(() => {
                     modal.style.display = "none";
-                    document.body.style.overflow = ""; // Restore scrolling
+                    document.body.style.overflow = "";
                 }, 300);
             }
         }
 
-        // Function to filter orders based on search input
+        // Search functionality
         function filterOrders() {
-            var input, filter, table, tr, td, i, txtValue;
-            input = document.getElementById("orderSearch");
-            filter = input.value.toUpperCase();
-            table = document.getElementById("ordersTable");
-            tr = table.getElementsByTagName("tr");
+            const input = document.getElementById("orderSearch");
+            const filter = input.value.toUpperCase();
+            const table = document.getElementById("ordersTable");
+            const tr = table.getElementsByTagName("tr");
 
-            // Loop through all table rows, start from index 1 to skip the header row
-            for (i = 1; i < tr.length; i++) {
-                // Check multiple columns for matches (project, client, description)
-                var visible = false;
-                for (var j = 1; j <= 4; j++) { // Check columns 1 (project), 2 (client), 4 (description)
-                    td = tr[i].getElementsByTagName("td")[j];
+            let visibleRows = 0;
+            for (let i = 1; i < tr.length; i++) {
+                let visible = false;
+                for (let j = 1; j <= 4; j++) {
+                    const td = tr[i].getElementsByTagName("td")[j];
                     if (td) {
-                        txtValue = td.textContent || td.innerText;
+                        const txtValue = td.textContent || td.innerText;
                         if (txtValue.toUpperCase().indexOf(filter) > -1) {
                             visible = true;
                             break;
@@ -426,22 +994,16 @@
                     }                    
                 }
                 tr[i].style.display = visible ? "" : "none";
-            }
-
-            // Check if no rows are visible and display a message for empty results
-            var visibleRows = 0;
-            for (i = 1; i < tr.length; i++) {
-                if (tr[i].style.display !== "none") {
-                    visibleRows++;
+                if (visible) visibleRows++;
                 }
-            }
 
-            var emptyMessage = document.querySelector(".empty-search-message");
+            // Handle empty search results
+            let emptyMessage = document.querySelector(".empty-search-message");
             if (visibleRows === 0 && filter !== "") {
                 if (!emptyMessage) {
                     emptyMessage = document.createElement("tr");
                     emptyMessage.className = "empty-search-message";
-                    var td = document.createElement("td");
+                    const td = document.createElement("td");
                     td.colSpan = 7;
                     td.className = "empty-message";
                     td.innerHTML = `Нет результатов по запросу "${input.value}"`;

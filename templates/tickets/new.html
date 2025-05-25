@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создание тикета | ROXIN Studio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ url_for('static', filename='icons/lucide/dist/umd/lucide.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/update_last_visit.js') }}"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #111118;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #6366f1;
+            --accent-light: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --radius: 16px;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .tickets-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0f 0%, #111118 50%, #0a0a0f 100%);
+            z-index: -1;
+        }
+        
+        .tickets-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            padding: 0.75rem 1.25rem;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            margin-bottom: 2rem;
+        }
+        
+        .back-link:hover {
+            color: var(--accent-light);
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-1px);
+        }
+        
+        .page-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .ticket-form {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2.5rem;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .form-help {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        
+        .form-control:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: rgba(0, 0, 0, 0.6);
+        }
+        
+        .form-textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .category-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+        
+        .category-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .category-item.selected {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--accent);
+        }
+        
+        .category-item i {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+            color: var(--accent-light);
+        }
+        
+        .category-item h4 {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .category-item p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+        
+        .priority-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+        
+        .priority-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+        }
+
+        .priority-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-1px);
+        }
+
+        .priority-item.selected {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--accent);
+        }
+        
+        .priority-item.low:hover,
+        .priority-item.low.selected {
+            border-color: var(--success);
+        }
+
+        .priority-item.medium:hover,
+        .priority-item.medium.selected {
+            border-color: var(--warning);
+        }
+        
+        .priority-item.high:hover,
+        .priority-item.high.selected {
+            border-color: var(--error);
+        }
+
+        .priority-item span {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .char-counter {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            text-align: right;
+            margin-top: 0.5rem;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2.5rem;
+        }
+        
+        .btn {
+            padding: 0.875rem 1.75rem;
+            border-radius: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .btn-cancel {
+            background: rgba(0, 0, 0, 0.4);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+        
+        .btn-submit {
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            color: white;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(99, 102, 241, 0.4);
+        }
+        
+        .form-section {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .tickets-container {
+                margin: 1rem auto;
+                padding: 0 1rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .ticket-form {
+                padding: 1.5rem;
+            }
+            
+            .category-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .priority-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="tickets-bg"></div>
+    
+    {% include 'components/simple_navbar.html' %}
+    
+    <div class="tickets-container">
+                <a href="{{ url_for('tickets.tickets_list') }}" class="back-link">
+            <i data-lucide="arrow-left" width="20" height="20"></i>
+            <span>Назад к тикетам</span>
+                </a>
+
+        <h1 class="page-title">Создание тикета</h1>
+        <p class="page-subtitle">Опишите вашу проблему или вопрос, и наши специалисты помогут вам в кратчайшие сроки</p>
+                
+        <form method="POST" class="ticket-form">
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i data-lucide="folder" width="20" height="20"></i>
+                    Категория обращения
+                </h3>
+                <div class="category-grid">
+                    <div class="category-item" data-category="technical">
+                        <i data-lucide="settings"></i>
+                        <h4>Техническая проблема</h4>
+                        <p>Ошибки, баги, проблемы с работой сайта</p>
+                            </div>
+                    <div class="category-item" data-category="billing">
+                                <i data-lucide="credit-card"></i>
+                        <h4>Вопросы по оплате</h4>
+                        <p>Платежи, возвраты, счета</p>
+                            </div>
+                    <div class="category-item" data-category="account">
+                                <i data-lucide="user"></i>
+                        <h4>Аккаунт</h4>
+                        <p>Восстановление, настройки профиля</p>
+                    </div>
+                    <div class="category-item" data-category="order">
+                        <i data-lucide="shopping-cart"></i>
+                        <h4>Заказы</h4>
+                        <p>Статус заказа, изменения, отмена</p>
+                    </div>
+                    <div class="category-item" data-category="feedback">
+                        <i data-lucide="message-square"></i>
+                        <h4>Отзыв или предложение</h4>
+                        <p>Улучшения, новые возможности</p>
+                            </div>
+                            <div class="category-item" data-category="other">
+                                <i data-lucide="help-circle"></i>
+                                <h4>Другое</h4>
+                        <p>Прочие вопросы</p>
+                            </div>
+                        </div>
+                <input type="hidden" name="category" id="category" required>
+            </div>
+
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i data-lucide="flag" width="20" height="20"></i>
+                    Приоритет
+                </h3>
+                <div class="priority-grid">
+                    <div class="priority-item low" data-priority="low">
+                        <span>Низкий</span>
+                    </div>
+                    <div class="priority-item medium" data-priority="medium">
+                        <span>Средний</span>
+                    </div>
+                    <div class="priority-item high" data-priority="high">
+                        <span>Высокий</span>
+                    </div>
+                </div>
+                <input type="hidden" name="priority" id="priority" value="medium">
+                    </div>
+                    
+                    <div class="form-group">
+                <label for="subject" class="form-label">Тема обращения</label>
+                <p class="form-help">Кратко опишите суть вашего вопроса или проблемы</p>
+                <input type="text" id="subject" name="subject" class="form-control" 
+                       placeholder="Например: Не могу войти в аккаунт" required maxlength="200">
+                <div class="char-counter">
+                    <span id="subject-count">0</span>/200 символов
+                </div>
+                        </div>
+                        
+            <div class="form-group">
+                <label for="message" class="form-label">Подробное описание</label>
+                <p class="form-help">Опишите проблему как можно подробнее. Укажите шаги для воспроизведения, скриншоты или другую полезную информацию</p>
+                <textarea id="message" name="message" class="form-textarea" 
+                          placeholder="Подробно опишите вашу проблему или вопрос..." required maxlength="2000"></textarea>
+                <div class="char-counter">
+                    <span id="message-count">0</span>/2000 символов
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                <a href="{{ url_for('tickets.tickets_list') }}" class="btn btn-cancel">
+                    <i data-lucide="x" width="16" height="16"></i>
+                    Отмена
+                        </a>
+                <button type="submit" class="btn btn-submit">
+                    <i data-lucide="send" width="16" height="16"></i>
+                    Создать тикет
+                        </button>
+                    </div>
+                </form>
+    </div>
+    
+    {% include 'components/footer.html' %}
+    
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // Category selection
+        document.querySelectorAll('.category-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.category-item').forEach(el => el.classList.remove('selected'));
+                this.classList.add('selected');
+                document.getElementById('category').value = this.dataset.category;
+            });
+        });
+        
+        // Priority selection
+        document.querySelectorAll('.priority-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.priority-item').forEach(el => el.classList.remove('selected'));
+                this.classList.add('selected');
+                document.getElementById('priority').value = this.dataset.priority;
+            });
+        });
+        
+        // Set default priority
+        document.querySelector('.priority-item[data-priority="medium"]').classList.add('selected');
+
+        // Character counters
+        function updateCounter(inputId, counterId, maxLength) {
+            const input = document.getElementById(inputId);
+            const counter = document.getElementById(counterId);
+            
+            function update() {
+                const length = input.value.length;
+                counter.textContent = length;
+                
+                if (length > maxLength * 0.9) {
+                    counter.style.color = 'var(--error)';
+                } else if (length > maxLength * 0.8) {
+                    counter.style.color = 'var(--warning)';
+            } else {
+                    counter.style.color = 'var(--text-muted)';
+            }
+            }
+            
+            input.addEventListener('input', update);
+            update();
+        }
+
+        updateCounter('subject', 'subject-count', 200);
+        updateCounter('message', 'message-count', 2000);
+            
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const category = document.getElementById('category').value;
+            if (!category) {
+                e.preventDefault();
+                alert('Пожалуйста, выберите категорию обращения');
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>

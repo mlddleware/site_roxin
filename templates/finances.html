@@ -7,361 +7,848 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="{{ url_for('static', filename='icons/lucide/dist/umd/lucide.js') }}"></script>
     <style>
+        /* Минималистичные CSS переменные */
         :root {
-            --color-primary: #8b5cf6;
-            --color-primary-light: #a78bfa;
-            --color-primary-dark: #7c3aed;
-            --color-bg-dark: rgba(10, 10, 18, 0.95);
-            --color-bg-light: rgba(30, 30, 46, 0.8);
-            --color-text: #e2e8f0;
-            --color-text-muted: #94a3b8;
-            --color-border: rgba(139, 92, 246, 0.2);
-            --color-success: #10b981;
-            --color-warning: #f59e0b;
-            --color-danger: #ef4444;
-            --color-info: #3b82f6;
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #111118;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #6366f1;
+            --accent-light: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --radius: 16px;
         }
-        
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background-color: #0f172a;
-            color: var(--color-text);
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Фон как у profile.html */
+        .finances-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0f 0%, #111118 50%, #0a0a0f 100%);
+            z-index: -1;
         }
         
-        .container {
+        /* Основной контейнер */
+        .finances-container {
             max-width: 1200px;
-            margin: 0 auto;
+            margin: 2rem auto;
             padding: 0 1.5rem;
+            position: relative;
+            z-index: 1;
         }
-        
-        .finance-header {
-            margin: 2rem 0;
+
+        /* Заголовок */
+        .finances-header {
             text-align: center;
+            margin-bottom: 3rem;
         }
-        
-        .finance-title {
+
+        .finances-title {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 2.5rem;
+            font-size: 3rem;
             font-weight: 700;
-            color: var(--color-text);
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 0.5rem;
         }
-        
-        .finance-subtitle {
-            font-size: 1.1rem;
-            color: var(--color-text-muted);
+
+        .finances-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
         }
-        
-        .finance-grid {
+
+        /* Сетка */
+        .finances-grid {
             display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 1.5rem;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 2rem;
             margin-bottom: 2rem;
         }
-        
-        @media (max-width: 992px) {
-            .finance-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
+
+        /* Карточки */
         .finance-card {
-            background: var(--color-bg-dark);
-            border-radius: 1rem;
-            border: 1px solid var(--color-border);
-            padding: 1.5rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
         }
-        
-        .finance-card-header {
+
+        .finance-card:hover {
+            background: rgba(0, 0, 0, 0.5);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Баланс карточка */
+        .balance-card {
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .card-header {
             display: flex;
             align-items: center;
-            margin-bottom: 1.5rem;
             gap: 0.75rem;
+            margin-bottom: 1.5rem;
         }
-        
-        .finance-card-title {
+
+        .card-title {
             font-size: 1.25rem;
             font-weight: 600;
-            color: var(--color-text);
+            color: var(--text-primary);
         }
-        
-        .finance-card-icon {
-            color: var(--color-primary);
+
+        .card-icon {
+            color: var(--accent);
         }
-        
+
+        /* Отображение баланса */
         .balance-display {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05));
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: var(--radius);
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .balance-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .balance-amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .balance-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .balance-action-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .balance-action-btn.deposit {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .balance-action-btn.withdraw {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .balance-action-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* Статистика */
+        .stats-section {
+            margin-top: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-icon.deposit {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .stat-icon.withdraw {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .stat-icon.transactions {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--accent);
+        }
+
+        .stat-info {
+            flex: 1;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            display: block;
+        }
+
+        .stat-value {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Советы */
+        .tips-card {
+            border-left: 3px solid var(--accent);
+        }
+
+        .tip-list {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            padding: 2rem 0;
-            border-radius: 0.75rem;
-            background: linear-gradient(145deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.05));
-            border: 1px solid rgba(139, 92, 246, 0.2);
-            margin-bottom: 1.5rem;
+            gap: 1rem;
         }
-        
-        .balance-label {
-            font-size: 1rem;
-            color: var(--color-text-muted);
-            margin-bottom: 0.5rem;
+
+        .tip-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition: all 0.3s ease;
         }
-        
-        .balance-amount {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--color-text);
+
+        .tip-item:hover {
+            background: rgba(255, 255, 255, 0.05);
         }
-        
+
+        .tip-item i {
+            color: var(--accent);
+            margin-top: 0.125rem;
+        }
+
+        /* Вкладки */
         .finance-tabs {
             display: flex;
-            border-bottom: 1px solid var(--color-border);
-            margin-bottom: 1.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.5rem;
+            margin-bottom: 2rem;
         }
-        
+
         .finance-tab {
-            padding: 0.75rem 1.5rem;
-            font-weight: 500;
+            flex: 1;
+            padding: 0.75rem 1rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
             cursor: pointer;
-            color: var(--color-text-muted);
+            border-radius: calc(var(--radius) - 4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-weight: 500;
             transition: all 0.3s ease;
-            border-bottom: 2px solid transparent;
         }
-        
+
         .finance-tab.active {
-            color: var(--color-primary-light);
-            border-bottom: 2px solid var(--color-primary);
+            background: var(--accent);
+            color: white;
         }
-        
+
         .finance-tab:hover:not(.active) {
-            color: var(--color-text);
-            border-bottom: 2px solid var(--color-border);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
         }
-        
-        .finance-content {
-            padding: 1rem 0;
-        }
-        
+
+        /* Контент */
         .finance-content > div {
             display: none;
         }
-        
+
         .finance-content > div.active {
             display: block;
             animation: fadeIn 0.3s ease;
         }
-        
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
+
+        /* Формы */
         .finance-form {
             display: flex;
             flex-direction: column;
-            gap: 1.25rem;
+            gap: 1.5rem;
         }
-        
+
         .form-group {
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
         }
-        
+
         .form-label {
-            font-size: 0.9rem;
             font-weight: 500;
-            color: var(--color-text-muted);
+            color: var(--text-primary);
         }
-        
+
+        .input-with-icon {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-with-icon i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+        }
+
         .form-input {
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid var(--color-border);
-            color: var(--color-text);
-            font-size: 1rem;
             width: 100%;
+            padding: 0.875rem 1rem 0.875rem 3.25rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-size: 1rem;
+            line-height: 1.5;
             transition: all 0.3s ease;
         }
-        
+
         .form-input:focus {
             outline: none;
-            border-color: var(--color-primary);
-            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25);
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.05);
         }
-        
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-hint {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        /* Способы оплаты */
         .payment-methods {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 1rem;
-            margin-bottom: 1rem;
         }
-        
+
         .payment-method {
             display: flex;
-            flex-direction: column;
             align-items: center;
+            gap: 1rem;
             padding: 1rem;
-            border-radius: 0.75rem;
-            border: 1px solid var(--color-border);
-            background: rgba(30, 41, 59, 0.3);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
+        .payment-method:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
         .payment-method.selected {
-            border-color: var(--color-primary);
-            background: rgba(139, 92, 246, 0.1);
+            border-color: var(--accent);
+            background: rgba(99, 102, 241, 0.1);
         }
-        
-        .payment-method:hover:not(.selected) {
-            background: rgba(30, 41, 59, 0.5);
-            transform: translateY(-2px);
-        }
-        
+
         .payment-method-icon {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-            color: var(--color-text-muted);
+            color: var(--accent);
         }
-        
-        .payment-method.selected .payment-method-icon {
-            color: var(--color-primary-light);
-        }
-        
+
         .payment-method-name {
-            font-size: 0.85rem;
+            flex: 1;
             font-weight: 500;
-            color: var(--color-text);
-            text-align: center;
+            color: var(--text-primary);
         }
-        
+
         .payment-method-fee {
-            font-size: 0.75rem;
-            color: var(--color-text-muted);
-            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
         }
-        
+
+        /* Кнопки */
         .button {
             padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
+            border: none;
+            border-radius: var(--radius);
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            display: inline-flex;
+            display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
         }
-        
+
         .button-primary {
-            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+            background: var(--accent);
             color: white;
         }
-        
+
         .button-primary:hover {
-            background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary-dark));
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+            background: var(--accent-light);
+            transform: translateY(-1px);
         }
-        
-        .button-secondary {
-            background: rgba(30, 41, 59, 0.5);
-            color: var(--color-text);
-            border: 1px solid var(--color-border);
+
+        .w-full {
+            width: 100%;
         }
-        
-        .button-secondary:hover {
-            background: rgba(30, 41, 59, 0.7);
-            transform: translateY(-2px);
+
+        /* История транзакций */
+        .transactions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
         }
-        
-        /* Будет продолжено в дополнительных стилях */
+
+        .transactions-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .transactions-filter {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: calc(var(--radius) / 2);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .filter-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .transactions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition: all 0.3s ease;
+        }
+
+        .transaction-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .transaction-icon.deposit {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .transaction-icon.withdraw {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .transaction-details {
+            flex: 1;
+        }
+
+        .transaction-title {
+            font-weight: 500;
+            color: var(--text-primary);
+            display: block;
+        }
+
+        .transaction-date {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .transaction-amount {
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        .transaction-amount.deposit {
+            color: var(--success);
+        }
+
+        .transaction-amount.withdraw {
+            color: var(--danger);
+        }
+
+        .transaction-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: calc(var(--radius) / 2);
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .transaction-status.completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .transaction-status.pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .transaction-status.failed {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        /* Пустое состояние */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .finances-container {
+                margin: 1rem auto;
+                padding: 0 1rem;
+            }
+
+            .finances-title {
+                font-size: 2rem;
+            }
+
+            .finances-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .finance-tabs {
+                flex-direction: column;
+            }
+
+            .transactions-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .transactions-filter {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .filter-btn {
+                flex: 1;
+                text-align: center;
+            }
+        }
+
+        /* CryptoBot специальные стили */
+        .cryptobot-method {
+            border: 2px solid transparent;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05));
+        }
+
+        .cryptobot-method:hover {
+            border-color: var(--accent);
+        }
+
+        .payment-method-img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+
+        .payment-method-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-left: auto;
+        }
+
+        .cryptobot-info {
+            display: none;
+            padding: 1rem;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: var(--radius);
+            margin-top: 1rem;
+        }
+
+        .cryptobot-info.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .cryptobot-info h4 {
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .cryptobot-info p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
+    <div class="finances-bg"></div>
+    
     {% include 'components/simple_navbar.html' %}
     
-    <div class="container">
-        <header class="finance-header">
-            <h1 class="finance-title">Финансовый центр</h1>
-            <p class="finance-subtitle">Управляйте вашими финансами, пополняйте баланс и выводите средства</p>
-        </header>
+    <div class="finances-container">
+        <!-- Заголовок -->
+        <div class="finances-header">
+            <h1 class="finances-title">Финансовый центр</h1>
+            <p class="finances-subtitle">Управляйте вашими финансами, пополняйте баланс и выводите средства</p>
+            </div>
         
-        <div class="finance-grid">
-            <!-- Левая колонка: Баланс и быстрые действия -->
+        <div class="finances-grid">
+            <!-- Левая колонка: Баланс и статистика -->
             <div class="finance-column">
-                <div class="finance-card">
-                    <div class="finance-card-header">
-                        <i data-lucide="wallet" class="finance-card-icon" width="24" height="24"></i>
-                        <h2 class="finance-card-title">Ваш баланс</h2>
+                <!-- Баланс -->
+                <div class="finance-card balance-card">
+                    <div class="card-header">
+                        <i data-lucide="wallet" class="card-icon" width="24" height="24"></i>
+                        <h2 class="card-title">Ваш баланс</h2>
                     </div>
                     
                     <div class="balance-display">
-                        <span class="balance-label">Доступно средств</span>
-                        <span class="balance-amount">{{ balance }} ₽</span>
+                        <div class="balance-label">Доступно средств</div>
+                        <div class="balance-amount">{{ balance }} ₽</div>
+                        <div class="balance-actions">
+                            <button class="balance-action-btn deposit" onclick="document.getElementById('depositTab').click()" title="Пополнить">
+                                <i data-lucide="plus" width="18" height="18"></i>
+                            </button>
+                            <button class="balance-action-btn withdraw" onclick="document.getElementById('withdrawTab').click()" title="Вывести">
+                                <i data-lucide="minus" width="18" height="18"></i>
+                            </button>
+                        </div>
                     </div>
                     
-                    <div class="quick-actions">
-                        <button class="button button-primary w-full mb-3" onclick="document.getElementById('depositTab').click()">
-                            <i data-lucide="plus-circle" width="18" height="18"></i>
-                            Пополнить баланс
-                        </button>
-                        <button class="button button-secondary w-full" onclick="document.getElementById('withdrawTab').click()">
-                            <i data-lucide="minus-circle" width="18" height="18"></i>
-                            Вывести средства
-                        </button>
+                    <!-- Статистика -->
+                    <div class="stats-section">
+                        <div class="card-header">
+                            <i data-lucide="bar-chart-2" class="card-icon" width="20" height="20"></i>
+                            <h3 class="card-title" style="font-size: 1rem;">Статистика</h3>
+                        </div>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-icon deposit">
+                                    <i data-lucide="arrow-down" width="16" height="16"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-label">Пополнено за месяц</span>
+                                    <span class="stat-value">{{ monthly_deposit }} ₽</span>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon withdraw">
+                                    <i data-lucide="arrow-up" width="16" height="16"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-label">Выведено за месяц</span>
+                                    <span class="stat-value">{{ monthly_withdraw }} ₽</span>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon transactions">
+                                    <i data-lucide="repeat" width="16" height="16"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-label">Всего транзакций</span>
+                                    <span class="stat-value">{{ transactions_count }}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
-                <!-- Статистика -->
-                <div class="finance-card mt-6">
-                    <div class="finance-card-header">
-                        <i data-lucide="bar-chart" class="finance-card-icon" width="24" height="24"></i>
-                        <h2 class="finance-card-title">Статистика</h2>
+                <!-- Советы -->
+                <div class="finance-card tips-card">
+                    <div class="card-header">
+                        <i data-lucide="lightbulb" class="card-icon" width="24" height="24"></i>
+                        <h2 class="card-title">Советы</h2>
                     </div>
-                    
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <span class="stat-label">Пополнено за месяц</span>
-                            <span class="stat-value">{{ monthly_deposit }} ₽</span>
+                    <div class="tip-list">
+                        <div class="tip-item">
+                            <i data-lucide="shield-check" width="18" height="18"></i>
+                            <p>Используйте надежные способы оплаты для большей безопасности</p>
                         </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Выведено за месяц</span>
-                            <span class="stat-value">{{ monthly_withdraw }} ₽</span>
+                        <div class="tip-item">
+                            <i data-lucide="clock" width="18" height="18"></i>
+                            <p>Вывод средств обычно занимает до 24 часов в рабочие дни</p>
                         </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Всего транзакций</span>
-                            <span class="stat-value">{{ transactions_count }}</span>
+                        <div class="tip-item">
+                            <i data-lucide="info" width="18" height="18"></i>
+                            <p>При возникновении проблем обратитесь в службу поддержки</p>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Правая колонка: Операции с финансами -->
+            <!-- Правая колонка: Операции -->
             <div class="finance-column">
-                <div class="finance-card">
+                <div class="finance-card operations-card">
+                    <!-- Вкладки -->
                     <div class="finance-tabs">
-                        <div class="finance-tab active" id="depositTab" onclick="switchTab('deposit')">Пополнение</div>
-                        <div class="finance-tab" id="withdrawTab" onclick="switchTab('withdraw')">Вывод средств</div>
-                        <div class="finance-tab" id="historyTab" onclick="switchTab('history')">История операций</div>
+                        <button class="finance-tab active" id="depositTab" onclick="switchTab('deposit')">
+                            <i data-lucide="plus-circle" width="16" height="16"></i>
+                            Пополнение
+                        </button>
+                        <button class="finance-tab" id="withdrawTab" onclick="switchTab('withdraw')">
+                            <i data-lucide="minus-circle" width="16" height="16"></i>
+                            Вывод средств
+                        </button>
+                        <button class="finance-tab" id="historyTab" onclick="switchTab('history')">
+                            <i data-lucide="history" width="16" height="16"></i>
+                            История
+                        </button>
                     </div>
                     
+                    <!-- Контент -->
                     <div class="finance-content">
                         <!-- Пополнение -->
                         <div id="deposit" class="active">
                             <form class="finance-form" id="depositForm" action="/finances/deposit" method="post">
                                 <div class="form-group">
-                                    <label class="form-label">Сумма пополнения (₽)</label>
-                                    <input type="number" name="amount" class="form-input" placeholder="Введите сумму" min="100" required>
-                                    <small class="form-hint">Минимальная сумма: 100 ₽</small>
+                                    <label class="form-label">Сумма пополнения</label>
+                                    <div class="input-with-icon">
+                                        <i data-lucide="coins" width="18" height="18"></i>
+                                        <input type="number" name="amount" class="form-input" placeholder="Введите сумму" min="500" required>
+                                    </div>
+                                    <small class="form-hint">Минимальная сумма: 500 ₽</small>
                                 </div>
                                 
                                 <div class="form-group">
@@ -369,22 +856,35 @@
                                     <div class="payment-methods">
                                         {% for method in payment_methods %}
                                         {% if method.enabled and method.type == 'deposit' %}
+                                        {% if 'cryptobot' in method.name|lower or 'crypto bot' in method.name|lower %}
+                                        <div class="payment-method cryptobot-method" onclick="selectPaymentMethod(this, 'depositMethod')" data-method-id="{{ method.id }}">
+                                            <img src="{{ url_for('static', filename='images/cryptobot-logo.svg') }}" class="payment-method-img" alt="CryptoBot">
+                                            <span class="payment-method-name">{{ method.name }}</span>
+                                            <span class="payment-method-fee">{{ method.fee }}% комиссия</span>
+                                            <span class="payment-method-desc">Оплата через Telegram</span>
+                                        </div>
+                                        {% else %}
                                         <div class="payment-method" onclick="selectPaymentMethod(this, 'depositMethod')" data-method-id="{{ method.id }}">
                                             <i data-lucide="{{ method.icon }}" class="payment-method-icon" width="24" height="24"></i>
                                             <span class="payment-method-name">{{ method.name }}</span>
                                             <span class="payment-method-fee">{{ method.fee }}% комиссия</span>
                                         </div>
                                         {% endif %}
+                                        {% endif %}
                                         {% endfor %}
                                     </div>
                                     <input type="hidden" id="depositMethod" name="payment_method" required>
                                 </div>
                                 
-                                <div class="form-actions">
+                                <div id="cryptobot-info" class="cryptobot-info">
+                                    <h4>Пополнение через CryptoBot</h4>
+                                    <p>После нажатия кнопки "Пополнить" вы будете перенаправлены на сервис CryptoBot в Telegram, где сможете быстро и безопасно оплатить счёт используя различные криптовалюты.</p>
+                                </div>
+                                
                                     <button type="submit" class="button button-primary w-full">
+                                        <i data-lucide="arrow-right" width="18" height="18"></i>
                                         Пополнить
                                     </button>
-                                </div>
                             </form>
                         </div>
                         
@@ -392,8 +892,11 @@
                         <div id="withdraw">
                             <form class="finance-form" id="withdrawForm" action="/finances/withdraw" method="post">
                                 <div class="form-group">
-                                    <label class="form-label">Сумма вывода (₽)</label>
-                                    <input type="number" name="amount" class="form-input" placeholder="Введите сумму" min="500" max="{{ balance }}" required>
+                                    <label class="form-label">Сумма вывода</label>
+                                    <div class="input-with-icon">
+                                        <i data-lucide="coins" width="18" height="18"></i>
+                                        <input type="number" name="amount" class="form-input" placeholder="Введите сумму" min="500" max="{{ balance }}" required>
+                                    </div>
                                     <small class="form-hint">Минимальная сумма: 500 ₽. Доступно: {{ balance }} ₽</small>
                                 </div>
                                 
@@ -415,31 +918,41 @@
                                 
                                 <div class="form-group">
                                     <label class="form-label">Реквизиты для вывода</label>
-                                    <input type="text" name="details" class="form-input" placeholder="Номер карты / кошелька / счета" required>
+                                    <div class="input-with-icon">
+                                        <i data-lucide="credit-card" width="18" height="18"></i>
+                                        <input type="text" name="details" class="form-input" placeholder="Номер карты / кошелька / счета" required>
+                                    </div>
                                 </div>
                                 
-                                <div class="form-actions">
                                     <button type="submit" class="button button-primary w-full">
+                                        <i data-lucide="arrow-right" width="18" height="18"></i>
                                         Вывести средства
                                     </button>
-                                </div>
                             </form>
                         </div>
                         
                         <!-- История операций -->
                         <div id="history">
+                            <div class="transactions-header">
+                                <h3 class="transactions-title">История операций</h3>
+                                <div class="transactions-filter">
+                                    <button class="filter-btn active" data-filter="all">Все</button>
+                                    <button class="filter-btn" data-filter="deposit">Пополнения</button>
+                                    <button class="filter-btn" data-filter="withdraw">Выводы</button>
+                                </div>
+                            </div>
                             <div class="transactions-container">
                                 {% if transactions|length > 0 %}
                                 <div class="transactions-list">
                                     {% for transaction in transactions %}
-                                    <div class="transaction-item">
-                                        <div class="transaction-icon">
+                                    <div class="transaction-item" data-type="{{ transaction.type }}">
+                                        <div class="transaction-icon {{ transaction.type }}">
                                             {% if transaction.type == 'deposit' %}
-                                            <i data-lucide="arrow-down-circle" class="transaction-icon-deposit" width="20" height="20"></i>
+                                            <i data-lucide="arrow-down-circle" width="20" height="20"></i>
                                             {% elif transaction.type == 'withdraw' %}
-                                            <i data-lucide="arrow-up-circle" class="transaction-icon-withdraw" width="20" height="20"></i>
+                                            <i data-lucide="arrow-up-circle" width="20" height="20"></i>
                                             {% else %}
-                                            <i data-lucide="circle" class="transaction-icon-other" width="20" height="20"></i>
+                                            <i data-lucide="circle" width="20" height="20"></i>
                                             {% endif %}
                                         </div>
                                         <div class="transaction-details">
@@ -480,11 +993,35 @@
                     'stroke-width': 1.5
                 }
             });
+            
+            // Добавляем обработчики для фильтров истории транзакций
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const filterValue = this.getAttribute('data-filter');
+                    filterTransactions(filterValue);
+                });
+            });
         });
+        
+        // Фильтрация транзакций
+        function filterTransactions(filter) {
+            const transactions = document.querySelectorAll('.transaction-item');
+            
+            transactions.forEach(transaction => {
+                if (filter === 'all' || transaction.getAttribute('data-type') === filter) {
+                    transaction.style.display = 'flex';
+                } else {
+                    transaction.style.display = 'none';
+                }
+            });
+        }
         
         // Переключение вкладок
         function switchTab(tabId) {
-            // Убираем активный класс у всех вкладок и контента
             document.querySelectorAll('.finance-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
@@ -492,23 +1029,27 @@
                 content.classList.remove('active');
             });
             
-            // Добавляем активный класс выбранной вкладке и соответствующему контенту
             document.getElementById(tabId + 'Tab').classList.add('active');
             document.getElementById(tabId).classList.add('active');
         }
         
         // Выбор способа оплаты
         function selectPaymentMethod(element, inputId) {
-            // Убираем выделение у всех методов в той же группе
-            element.parentNode.querySelectorAll('.payment-method').forEach(method => {
+            const methods = document.querySelectorAll('.payment-method');
+            methods.forEach(method => {
                 method.classList.remove('selected');
             });
             
-            // Выделяем выбранный метод
             element.classList.add('selected');
-            
-            // Устанавливаем значение в скрытом поле
             document.getElementById(inputId).value = element.getAttribute('data-method-id');
+            
+            // Показываем или скрываем информацию о CryptoBot
+            const cryptobotInfo = document.getElementById('cryptobot-info');
+            if (element.classList.contains('cryptobot-method')) {
+                cryptobotInfo.classList.add('active');
+            } else {
+                cryptobotInfo.classList.remove('active');
+            }
         }
     </script>
 </body>

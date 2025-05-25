@@ -1,0 +1,19 @@
+/* Главный файл для шрифтов ROXIN */
+
+@font-face {
+    font-family: 'Widock';
+    src: url('../fonts/WidockBold.otf') format('opentype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: block;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Запасной вариант для старых браузеров */
+@font-face {
+    font-family: 'Widock';
+    src: local('Arial Black');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}

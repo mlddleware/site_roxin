@@ -1,381 +1,1074 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мои заказы</title>
+    <title>Мои заказы | ROXIN Studio</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">    
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="{{ url_for('static', filename='icons/lucide/dist/umd/lucide.js') }}"></script>
     <script src="{{ url_for('static', filename='js/update_last_visit.js') }}"></script>
     <style>
-        /* Core styles */
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background-color: var(--color-background);
-            color: var(--color-text);
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #111118;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #6366f1;
+            --accent-light: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --radius: 16px;
+        }
+
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
         }
-        
-        /* Container layout */
-        .container {
-            max-width: 1200px;
+
+        .orders-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            margin: 0 auto;
-            padding: 2rem 1.5rem;
-            flex: 1;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0f 0%, #111118 50%, #0a0a0f 100%);
+            z-index: -1;
         }
-        
-        /* Header with gradient */
-        .header {
+
+        .orders-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .orders-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 2rem;
-            text-align: center;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
-        
-        .header h1 {
+
+        .orders-title {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            font-weight: 800;
+            font-weight: 700;
             font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(90deg, var(--color-text), var(--color-primary-light));
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        
-        .header p {
-            color: var(--color-text-muted);
-            font-size: 1.1rem;
-            margin-top: 0;
+
+        .orders-count {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            font-weight: 600;
+            color: var(--text-secondary);
         }
-        
-        /* Orders grid */
+
         .orders-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
             gap: 1.5rem;
-            margin-top: 2rem;
         }
-        
-        /* Order card styling */
+
         .order-card {
-            background: linear-gradient(135deg, rgba(11, 17, 32, 0.7), rgba(11, 17, 32, 0.9));
-            backdrop-filter: blur(10px);
-            border-radius: 1rem;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.5s ease;
         }
-        
+
         .order-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            border-color: var(--accent);
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.15);
         }
-        
-        /* Order status bar */
+
         .order-header {
-            padding: 1.25rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            padding: 1.5rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            position: relative;
         }
-        
-        .order-header::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+
+        .service-type {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: white;
         }
-        
-        /* Status indicator styling */
+
         .status-badge {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.5rem 0.75rem;
-            border-radius: 2rem;
-            font-size: 0.85rem;
-            font-weight: 500;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            backdrop-filter: blur(10px);
         }
-        
-        .status-badge.status-created {
-            background-color: rgba(59, 130, 246, 0.2);
-            color: #60a5fa;
-        }
-        
-        .status-badge.status-under_review {
-            background-color: rgba(245, 158, 11, 0.2);
-            color: #fbbf24;
-        }
-        
-        .status-badge.status-accepted {
-            background-color: rgba(16, 185, 129, 0.2);
-            color: #34d399;
-        }
-        
-        .status-badge.status-rejected {
-            background-color: rgba(239, 68, 68, 0.2);
-            color: #f87171;
-        }
-        
-        .status-badge.status-payment_pending {
-            background-color: rgba(139, 92, 246, 0.2);
-            color: #a78bfa;
-        }
-        
-        .status-badge.status-in_progress {
-            background-color: rgba(139, 92, 246, 0.2);
-            color: #a78bfa;
-        }
-        
-        /* Service section */
-        .service-info {
-            flex: 1;
-        }
-        
-        .service-info h3 {
-            margin: 0 0 0.25rem 0;
-            font-size: 1.25rem;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-weight: 700;
-        }
-        
-        .duration {
-            font-size: 0.85rem;
-            color: var(--color-text-muted);
-        }
-        
-        .service-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 42px;
-            height: 42px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 50%;
-            margin-right: 1rem;
-            color: var(--color-primary);
-        }
-        
-        /* Order content section */
+
         .order-content {
-            padding: 1.25rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
         }
-        
-        .tech-assignment {
-            margin: 0 0 1rem 0;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            color: var(--color-text-secondary);
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+
+        .order-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
         }
-        
-        .expand-button {
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .info-label {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .order-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .btn {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            background: none;
-            border: none;
-            color: var(--color-primary);
-            font-size: 0.875rem;
-            padding: 0.5rem 0;
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
             cursor: pointer;
-            transition: color 0.3s ease;
+            transition: all 0.2s ease;
+            border: none;
+            text-decoration: none;
         }
-        
-        .expand-button:hover {
-            color: var(--color-primary-light);
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            color: white;
         }
-        
-        /* Order footer */
-        .order-footer {
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning), #f97316);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Review Section */
+        .review-section {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 12px;
             padding: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .review-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .review-stars {
+            display: flex;
+            gap: 0.25rem;
+            color: var(--warning);
+        }
+
+        .review-meta {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .review-text {
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        /* Status colors */
+        .status-created { 
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
         }
         
-        .date-badge {
+        .status-accepted { 
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+        
+        .status-payment_pending { 
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        
+        .status-in_progress { 
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .status-completed { 
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+        
+        .status-cancelled { 
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            backdrop-filter: blur(20px);
+        }
+
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 0.85rem;
-            color: var(--color-text-muted);
-        }
-        
-        .budget {
-            font-weight: 600;
-            color: #a78bfa;
-            font-size: 1.1rem;
-        }
-        
-        /* Empty state styling */
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-            background: linear-gradient(135deg, rgba(11, 17, 32, 0.7), rgba(11, 17, 32, 0.9));
-            border-radius: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            margin-top: 2rem;
-        }
-        
-        .empty-icon {
+            justify-content: center;
             margin-bottom: 1.5rem;
-            color: var(--color-text-muted);
+            color: white;
         }
-        
-        .empty-state p {
-            font-size: 1.1rem;
-            margin: 0;
-            color: var(--color-text-secondary);
+
+        .empty-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            backdrop-filter: blur(20px);
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+            gap: 1rem;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            min-width: 120px;
+        }
+
+        .detail-value {
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .tech-assignment {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            word-break: break-word;
+            line-height: 1.5;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* Review Modal */
+        .rating-container {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .stars {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .star {
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.2s ease;
+        }
+
+        .star:hover,
+        .star.active {
+            color: var(--warning);
+            transform: scale(1.1);
+        }
+
+        .rating-text {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .review-form {
+            margin-bottom: 1rem;
+        }
+
+        .review-form textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .review-form textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .char-count {
+            text-align: right;
+            margin-top: 0.5rem;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--accent);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .orders-container {
+                margin: 1rem auto;
+                padding: 0 1rem;
+        }
+
+            .orders-header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .orders-title {
+                font-size: 2rem;
+            }
+
+            .orders-grid {
+                grid-template-columns: 1fr;
+        }
+
+            .order-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                justify-content: center;
+        }
+
+            .modal-content {
+                margin: 1rem;
+                max-width: calc(100vw - 2rem);
+            }
         }
              </style>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            fetch("/set_timezone", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ timezone: userTimezone }),
-            });
-            
-            // Initialize Lucide icons
-            lucide.createIcons();
-            
-            // Toggle dropdown menu
-            window.toggleDropdown = function() {
-                const dropdown = document.getElementById('userDropdown');
-                dropdown.classList.toggle('show');
-                
-                // Close dropdown when clicking outside
-                document.addEventListener('click', function(event) {
-                    const dropdown = document.getElementById('userDropdown');
-                    const button = document.querySelector('.user-dropdown-button');
-                    if (!button.contains(event.target) && !dropdown.contains(event.target)) {
-                        dropdown.classList.remove('show');
-                    }
-                });
-            }
-        });
-    </script>
 </head>
 <body>
+    <div class="orders-bg"></div>
+    
     {% include 'components/simple_navbar.html' %}
     
-    <div class="container">
-        <!-- Заголовок -->
-        <div class="header">
-            <h1>Мои заказы</h1>
-            <p>Просмотр и управление вашими заказами</p>
+    <div class="orders-container">
+        <div class="orders-header">
+            <h1 class="orders-title">Мои заказы</h1>
+            <div class="orders-count">
+                <i data-lucide="package" width="18" height="18"></i>
+                <span>Всего: {{ orders|length }}</span>
         </div>
-        
-        <!-- Содержимое заказов -->
-        {% if orders %}
+        </div>
+
+        {% if orders|length == 0 %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i data-lucide="package" width="40" height="40"></i>
+            </div>
+            <h2 class="empty-title">У вас пока нет заказов</h2>
+            <p class="empty-subtitle">Оформите первый заказ и начните работу с нашей командой</p>
+        </div>
+        {% else %}
         <div class="orders-grid">
             {% for order in orders %}
             <div class="order-card">
-                <div class="order-header">
-                    <div class="service-icon">
-                        <i data-lucide="globe" width="20" height="20"></i>
-                    </div>
-                    <div class="service-info">
-                        <h3>{{ order.service }}</h3>
-                        <span class="duration">Срок: 2 недели</span>
-                    </div>
-                    <div class="status-badge status-{{ order.status }}">
+                <div class="order-header status-{{ order.status|replace(' ', '_') }}">
+                    <div class="service-type">{{ order.service }}</div>
+                    <div class="status-badge">
                         {% if order.status == 'created' %}
-                            <i data-lucide="file-text" width="16" height="16"></i>
-                            <span>Создан</span>
-                        {% elif order.status == 'under_review' %}
-                            <i data-lucide="search" width="16" height="16"></i>
-                            <span>На рассмотрении</span>
-                        {% elif order.status == 'payment_pending' %}
-                            <i data-lucide="credit-card" width="16" height="16"></i>
-                            <span>Ожидание оплаты</span>
+                            <i data-lucide="file-text" width="16" height="16"></i>Создан
                         {% elif order.status == 'accepted' %}
-                            <i data-lucide="shield-check" width="16" height="16"></i>
-                            <span>Принят</span>
-                        {% elif order.status == 'rejected' %}
-                            <i data-lucide="x-circle" width="16" height="16"></i>
-                            <span>Отклонен</span>
+                            <i data-lucide="search" width="16" height="16"></i>На рассмотрении
+                        {% elif order.status == 'payment_pending' %}
+                            <i data-lucide="credit-card" width="16" height="16"></i>Ожидание оплаты
                         {% elif order.status == 'in_progress' %}
-                            <i data-lucide="code" width="16" height="16"></i>
-                            <span>В разработке</span>
+                            <i data-lucide="code" width="16" height="16"></i>В разработке
+                        {% elif order.status == 'completed' %}
+                            <i data-lucide="check-circle" width="16" height="16"></i>Завершен
+                        {% elif order.status == 'cancelled' %}
+                            <i data-lucide="x-circle" width="16" height="16"></i>Отменен
                         {% else %}
-                            <i data-lucide="help-circle" width="16" height="16"></i>
-                            <span>Неизвестный статус</span>
+                            <i data-lucide="help-circle" width="16" height="16"></i>Неизвестно
                         {% endif %}
                     </div>
                 </div>
 
                 <div class="order-content">
-                    <p class="tech-assignment">{{ order.tech_assignment }}</p>
-                    <button class="expand-button">
-                        <span>Подробнее</span>
-                        <i data-lucide="chevron-down" width="16" height="16"></i>
-                    </button>
-                </div>
-
-                <div class="order-footer">
-                    <div class="date-badge">
-                        <i data-lucide="clock" width="16" height="16"></i>
-                        <span>{{ order.created_at }}</span>
+                    <div class="order-info">
+                        <div class="info-item">
+                            <span class="info-label">Сумма</span>
+                            <span class="info-value">{{ order.budget }} ₽</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Дата создания</span>
+                            <span class="info-value">{{ order.created_at or 'Не указано' }}</span>
+                        </div>
+                        {% if order.status == 'in_progress' and order.opened_at %}
+                        <div class="info-item">
+                            <span class="info-label">Начало работы</span>
+                            <span class="info-value">{{ order.opened_at or 'Не указано' }}</span>
+                        </div>
+                        {% endif %}
                     </div>
-                    <span class="budget">{{ order.budget }}</span>
+
+                    <div class="order-actions">
+                        {% if order.status == 'payment_pending' %}
+                        <button class="btn btn-warning" onclick="processPayment({{ order.id }}, {{ order.budget }})">
+                            <i data-lucide="credit-card" width="16" height="16"></i>
+                            Оплатить {{ order.budget }} ₽
+                        </button>
+                        {% endif %}
+
+                        <button class="btn btn-secondary" onclick="showDetailsModal({{ order.id }})">
+                            <i data-lucide="info" width="16" height="16"></i>
+                            Подробнее
+                        </button>
+
+                        {% if order.status == 'in_progress' %}
+                        <button class="btn btn-success" onclick="showConfirmModal({{ order.id }})">
+                            <i data-lucide="check-circle" width="16" height="16"></i>
+                            Подтвердить выполнение
+                    </button>
+                        {% endif %}
+                    </div>
+
+                    {% if order.status == 'completed' %}
+                        <div class="review-section">
+                            {% if order.review %}
+                        <div class="review-header">
+                                    <div class="review-stars">
+                                {% for i in range(order.rating or 0) %}
+                                <i data-lucide="star" width="16" height="16" style="fill: currentColor"></i>
+                                {% endfor %}
+                                {% for i in range(5 - (order.rating or 0)) %}
+                                <i data-lucide="star" width="16" height="16"></i>
+                                {% endfor %}
+                                    </div>
+                            <div class="review-meta">{{ order.review_time or 'Не указано' }}</div>
+                                </div>
+                        <div class="review-text">{{ order.review }}</div>
+                        <button class="btn btn-secondary review-edit-btn" 
+                                data-order-id="{{ order.id }}" 
+                                data-rating="{{ order.rating or 0 }}" 
+                                data-review="{{ order.review or '' }}">
+                            <i data-lucide="edit-2" width="16" height="16"></i>
+                            Изменить отзыв
+                        </button>
+                            {% else %}
+                        <button class="btn btn-primary review-add-btn" 
+                                data-order-id="{{ order.id }}">
+                            <i data-lucide="star" width="16" height="16"></i>
+                            Оставить отзыв
+                        </button>
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
         </div>
-        {% else %}
-        <div class="empty-state">
-            <div class="empty-icon">
-                <i data-lucide="file-text" width="48" height="48"></i>
-            </div>
-            <p>У вас пока нет заказов.</p>
-        </div>
         {% endif %}
     </div>
     
-    <!-- Подключаем общий футер -->
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Подтверждение завершения заказа</h3>
+                <button class="modal-close" onclick="hideConfirmModal()">
+                    <i data-lucide="x" width="24" height="24"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Пожалуйста, внимательно проверьте качество выполненной работы перед подтверждением. После подтверждения:</p>
+                <ul style="margin-top: 1rem; padding-left: 1.5rem; color: var(--text-secondary);">
+                    <li>Заказ будет отмечен как завершенный</li>
+                    <li>Средства будут переведены разработчику</li>
+                    <li>Отменить это действие будет невозможно</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="hideConfirmModal()">Отмена</button>
+                <button class="btn btn-success" onclick="confirmOrder()">Подтвердить завершение</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Details Modal -->
+    <div class="modal" id="detailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Детали заказа</h3>
+                <button class="modal-close" onclick="hideDetailsModal()">
+                    <i data-lucide="x" width="24" height="24"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="order-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Тип услуги</span>
+                        <span class="detail-value" id="modalService"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Статус</span>
+                        <span class="detail-value" id="modalStatus"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Сумма</span>
+                        <span class="detail-value" id="modalBudget"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Дата создания</span>
+                        <span class="detail-value" id="modalCreatedAt"></span>
+                    </div>
+                    <div class="detail-item" id="modalOpenedAtContainer" style="display: none;">
+                        <span class="detail-label">Дата начала работы</span>
+                        <span class="detail-value" id="modalOpenedAt"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Техническое задание</span>
+                        <div class="detail-value">
+                        <div class="tech-assignment" id="modalTechAssignment"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Review Modal -->
+    <div class="modal" id="reviewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Оставить отзыв</h3>
+                <button class="modal-close" onclick="hideReviewModal()">
+                    <i data-lucide="x" width="24" height="24"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="rating-container">
+                    <div class="stars">
+                        {% for i in range(1, 6) %}
+                        <i data-lucide="star" width="32" height="32" class="star" data-rating="{{ i }}"></i>
+                        {% endfor %}
+                    </div>
+                    <div class="rating-text">Выберите оценку</div>
+                </div>
+                <div class="review-form">
+                    <textarea id="reviewText" placeholder="Напишите ваш отзыв (до 100 символов)" maxlength="100"></textarea>
+                    <div class="char-count"><span id="charCount">0</span>/100</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="hideReviewModal()">Отмена</button>
+                <button class="btn btn-primary" onclick="submitReview()">Отправить отзыв</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
     {% include 'components/footer.html' %}
     
     <script>
-        // Expand/collapse order details
-        document.querySelectorAll('.expand-button').forEach(button => {
-            button.addEventListener('click', function() {
-                const tech = this.parentElement.querySelector('.tech-assignment');
-                if (tech.style.webkitLineClamp === 'none' || !tech.style.webkitLineClamp) {
-                    tech.style.webkitLineClamp = 'none';
-                    this.querySelector('span').textContent = 'Свернуть';
-                    this.querySelector('i').setAttribute('data-lucide', 'chevron-up');
+        // Initialize Lucide icons
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof lucide !== 'undefined') {
                     lucide.createIcons();
+            }
+        });
+        
+        let currentOrderId = null;
+        let currentRating = 0;
+        let currentReviewOrderId = null;
+        
+        // Store orders data for modal
+        const orders = {{ orders|tojson|safe }};
+        console.log('Orders data:', orders);
+        
+        // Show loading overlay
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+        
+        // Hide loading overlay
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+        
+        // Process payment
+        async function processPayment(orderId, amount) {
+            try {
+                showLoading();
+                const response = await fetch(`/pay_order/${orderId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    window.location.href = '/my_orders?refresh=true';
                 } else {
-                    tech.style.webkitLineClamp = '3';
-                    this.querySelector('span').textContent = 'Подробнее';
-                    this.querySelector('i').setAttribute('data-lucide', 'chevron-down');
-                    lucide.createIcons();
+                    if (response.status === 402) {
+                        if (confirm(`Недостаточно средств на балансе. Требуется: ${amount} ₽\nПерейти на страницу пополнения?`)) {
+                            window.location.href = data.redirect;
+                        }
+                    } else {
+                        alert(data.error || 'Произошла ошибка при обработке платежа');
+                    }
+                }
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert('Произошла ошибка при обработке платежа');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // Show confirmation modal
+        function showConfirmModal(orderId) {
+            currentOrderId = orderId;
+            document.getElementById('confirmModal').classList.add('active');
+        }
+        
+        // Hide confirmation modal
+        function hideConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+            currentOrderId = null;
+        }
+        
+        // Show details modal
+        function showDetailsModal(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            
+            if (order) {
+                document.getElementById('modalService').textContent = order.service;
+                document.getElementById('modalStatus').textContent = getStatusText(order.status);
+                document.getElementById('modalBudget').textContent = `${order.budget} ₽`;
+                document.getElementById('modalCreatedAt').textContent = order.created_at;
+                document.getElementById('modalTechAssignment').textContent = order.tech_assignment || 'Не указано';
+                
+                const openedAtContainer = document.getElementById('modalOpenedAtContainer');
+                const openedAtElement = document.getElementById('modalOpenedAt');
+                
+                if (order.status === 'in_progress' && order.opened_at) {
+                    openedAtContainer.style.display = 'block';
+                    openedAtElement.textContent = order.opened_at;
+                } else {
+                    openedAtContainer.style.display = 'none';
+                }
+                
+                document.getElementById('detailsModal').classList.add('active');
+            }
+        }
+        
+        // Hide details modal
+        function hideDetailsModal() {
+            document.getElementById('detailsModal').classList.remove('active');
+        }
+        
+        // Get status text
+        function getStatusText(status) {
+            const statusMap = {
+                'created': 'Создан',
+                'accepted': 'На рассмотрении',
+                'payment_pending': 'Ожидание оплаты',
+                'in_progress': 'В разработке',
+                'completed': 'Завершен',
+                'cancelled': 'Отменен'
+            };
+            return statusMap[status] || 'Неизвестный статус';
+        }
+        
+        // Confirm order completion
+        async function confirmOrder() {
+            if (!currentOrderId) return;
+            
+            try {
+                showLoading();
+                const response = await fetch(`/complete_order/${currentOrderId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
+                }
+                
+                const data = await response.json();
+                if (response.ok) {
+                    window.location.href = '/my_orders?refresh=true';
+                } else {
+                    alert(data.error || 'Произошла ошибка при завершении заказа');
+                }
+            } catch (error) {
+                console.error('Completion error:', error);
+                alert('Произошла ошибка при завершении заказа');
+            } finally {
+                hideLoading();
+                hideConfirmModal();
+            }
+        }
+        
+        // Show review modal
+        function showReviewModal(orderId, rating, review) {
+            currentReviewOrderId = orderId;
+            currentRating = typeof rating === 'number' ? rating : (parseInt(rating) || 0);
+            const reviewText = (typeof review === 'string') ? review : (review ? String(review) : '');
+            
+            document.getElementById('reviewText').value = reviewText;
+            document.getElementById('charCount').textContent = reviewText.length;
+            updateStars(currentRating);
+            document.getElementById('reviewModal').classList.add('active');
+        }
+        
+        // Hide review modal
+        function hideReviewModal() {
+            document.getElementById('reviewModal').classList.remove('active');
+            currentReviewOrderId = null;
+            currentRating = 0;
+        }
+        
+        // Update stars display
+        function updateStars(rating) {
+            const stars = document.querySelectorAll('.star');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                    star.style.fill = 'currentColor';
+                } else {
+                    star.classList.remove('active');
+                    star.style.fill = 'none';
                 }
             });
+            document.querySelector('.rating-text').textContent = 
+                rating ? `Ваша оценка: ${rating} из 5` : 'Выберите оценку';
+        }
+        
+        // Initialize star rating
+        document.addEventListener('DOMContentLoaded', function() {
+            const stars = document.querySelectorAll('.star');
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    currentRating = parseInt(this.dataset.rating);
+                    updateStars(currentRating);
+                });
+            });
+            
+            // Character count for review text
+            const reviewText = document.getElementById('reviewText');
+            const charCount = document.getElementById('charCount');
+            
+            reviewText.addEventListener('input', function() {
+                charCount.textContent = this.value.length;
+            });
+            
+            // Add event listeners for review buttons
+            document.querySelectorAll('.review-edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const orderId = parseInt(this.dataset.orderId);
+                    const rating = parseInt(this.dataset.rating) || 0;
+                    const review = this.dataset.review || '';
+                    showReviewModal(orderId, rating, review);
+                });
+            });
+            
+            document.querySelectorAll('.review-add-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const orderId = parseInt(this.dataset.orderId);
+                    showReviewModal(orderId, 0, '');
+                });
+            });
         });
+        
+        // Submit review
+        async function submitReview() {
+            if (!currentReviewOrderId || !currentRating) {
+                alert('Пожалуйста, выберите оценку');
+                return;
+            }
+            
+            const reviewText = document.getElementById('reviewText').value.trim();
+            if (!reviewText) {
+                alert('Пожалуйста, напишите отзыв');
+                return;
+            }
+            
+            try {
+                showLoading();
+                
+                const response = await fetch(`/submit_review/${currentReviewOrderId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        rating: currentRating,
+                        review: reviewText
+                    })
+                });
+                
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('Отзыв успешно отправлен!');
+                    window.location.reload();
+                } else {
+                    alert(data.error || 'Произошла ошибка при отправке отзыва');
+                }
+            } catch (error) {
+                console.error('Review submission error:', error);
+                alert('Произошла ошибка при отправке отзыва');
+            } finally {
+                hideLoading();
+                hideReviewModal();
+            }
+        }
     </script>
 </body>
 </html>

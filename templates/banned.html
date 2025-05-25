@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аккаунт заблокирован | ROXIN Studio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ url_for('static', filename='icons/lucide/dist/umd/lucide.js') }}"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #111118;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #6366f1;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Фон с градиентом и частицами */
+        .banned-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0f 0%, #111118 50%, #0a0a0f 100%);
+            z-index: -2;
+        }
+
+        .banned-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 80%, rgba(239, 68, 68, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        /* Плавающие частицы */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(239, 68, 68, 0.6);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+
+        .particle:nth-child(2n) {
+            background: rgba(99, 102, 241, 0.6);
+            animation-duration: 25s;
+        }
+
+        .particle:nth-child(3n) {
+            background: rgba(255, 255, 255, 0.4);
+            animation-duration: 15s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0px) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Основной контент */
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            min-height: calc(100vh - 80px);
+        }
+
+        .banned-container {
+            max-width: 700px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .banned-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 3rem 2.5rem;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        .banned-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--error) 0%, rgba(255, 255, 255, 0.6) 50%, var(--error) 100%);
+            animation: pulse-border 3s ease-in-out infinite;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse-border {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Иконка и заголовок */
+        .banned-header {
+                text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .banned-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 2rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 3px solid rgba(239, 68, 68, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--error);
+            font-size: 2.5rem;
+            animation: pulse-icon 2s ease-in-out infinite;
+            position: relative;
+        }
+        
+        .banned-icon::after {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent, rgba(239, 68, 68, 0.2), transparent);
+            animation: rotate 3s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes pulse-icon {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .banned-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--error) 0%, rgba(255, 255, 255, 0.9) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .banned-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            }
+
+        /* Детали бана */
+        .ban-details {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ban-details::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--error), rgba(255, 255, 255, 0.7));
+        }
+        
+        .detail-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .detail-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(4px);
+        }
+
+        .detail-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .detail-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--error);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .detail-content {
+            flex: 1;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+        
+        .detail-value.permanent {
+            color: var(--error);
+            font-weight: 600;
+        }
+        
+        /* Кнопки */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+            color: white;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.4);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .banned-card {
+                padding: 2rem 1.5rem;
+            }
+            
+            .banned-title {
+                font-size: 2rem;
+        }
+        
+            .banned-icon {
+                width: 80px;
+                height: 80px;
+                font-size: 2rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+            width: 100%;
+                justify-content: center;
+        }
+        
+            .detail-item {
+                padding: 0.75rem;
+            }
+        }
+
+        /* Countdown для временного бана */
+        .countdown {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        
+        .countdown-timer {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.9);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        
+        .countdown-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="banned-bg"></div>
+    
+    <!-- Плавающие частицы -->
+    <div class="particles">
+        <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 20%; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 30%; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 40%; animation-delay: 6s;"></div>
+        <div class="particle" style="left: 50%; animation-delay: 8s;"></div>
+        <div class="particle" style="left: 60%; animation-delay: 10s;"></div>
+        <div class="particle" style="left: 70%; animation-delay: 12s;"></div>
+        <div class="particle" style="left: 80%; animation-delay: 14s;"></div>
+        <div class="particle" style="left: 90%; animation-delay: 16s;"></div>
+    </div>
+    
+    {% include 'components/simple_navbar.html' %}
+    
+    <div class="main-content">
+        <div class="banned-container">
+            <div class="banned-card">
+                <div class="banned-header">
+                    <div class="banned-icon">
+                        <i data-lucide="shield-alert"></i>
+                    </div>
+                    <h1 class="banned-title">Аккаунт заблокирован</h1>
+                    <p class="banned-subtitle">
+                        Ваш аккаунт был заблокирован администрацией ROXIN Studio
+                    </p>
+                </div>
+        
+        <div class="ban-details">
+                    <div class="detail-item">
+                        <i data-lucide="file-text" class="detail-icon"></i>
+                        <div class="detail-content">
+                            <div class="detail-label">Причина блокировки</div>
+                            <div class="detail-value">{{ ban_reason }}</div>
+                </div>
+            </div>
+            
+                    <div class="detail-item">
+                        <i data-lucide="calendar" class="detail-icon"></i>
+                        <div class="detail-content">
+                            <div class="detail-label">Дата блокировки</div>
+                            <div class="detail-value">{{ ban_date }}</div>
+                </div>
+            </div>
+            
+            {% if ban_expires %}
+                    <div class="detail-item">
+                        <i data-lucide="clock" class="detail-icon"></i>
+                        <div class="detail-content">
+                            <div class="detail-label">Срок действия</div>
+                            <div class="detail-value">До {{ ban_expires }}</div>
+                            <div class="countdown">
+                                <div class="countdown-timer" id="countdown">Загрузка...</div>
+                                <div class="countdown-label">до разблокировки</div>
+                            </div>
+                </div>
+            </div>
+            {% else %}
+                    <div class="detail-item">
+                        <i data-lucide="infinity" class="detail-icon"></i>
+                        <div class="detail-content">
+                            <div class="detail-label">Срок действия</div>
+                            <div class="detail-value permanent">Постоянная блокировка</div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+                <div style="text-align: center; margin: 2rem 0; color: var(--text-secondary);">
+                    Если вы считаете блокировку необоснованной или хотите обжаловать решение, 
+                    обратитесь в службу поддержки.
+                </div>
+        
+                <div class="action-buttons">
+                    <a href="https://t.me/roxinsupport" class="btn btn-primary">
+                        <i data-lucide="message-square"></i>
+            Связаться с поддержкой
+        </a>
+                    <a href="{{ url_for('logout.logout') }}" class="btn btn-secondary">
+                        <i data-lucide="log-out"></i>
+            Выйти из аккаунта
+        </a>
+                </div>
+            </div>
+    </div>
+    </div>
+    
+    <script>
+        lucide.createIcons();
+
+        {% if ban_expires %}
+        // Countdown timer для временного бана
+        function updateCountdown() {
+            const banExpires = new Date("{{ ban_expires }}".replace(/(\d{2})\.(\d{2})\.(\d{4}) (\d{2}):(\d{2})/, '$3-$2-$1T$4:$5:00'));
+            const now = new Date();
+            const timeLeft = banExpires - now;
+
+            if (timeLeft <= 0) {
+                document.getElementById('countdown').textContent = 'Блокировка истекла';
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
+                return;
+            }
+
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+            let countdown = '';
+            if (days > 0) countdown += `${days}д `;
+            if (hours > 0) countdown += `${hours}ч `;
+            if (minutes > 0) countdown += `${minutes}м `;
+            countdown += `${seconds}с`;
+
+            document.getElementById('countdown').textContent = countdown;
+        }
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+        {% endif %}
+
+        // Анимация частиц
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 20 + 's';
+            particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+            
+            document.querySelector('.particles').appendChild(particle);
+
+            setTimeout(() => {
+                particle.remove();
+            }, 25000);
+        }
+
+        // Добавляем новые частицы периодически
+        setInterval(createParticle, 3000);
+    </script>
+    
+    {% include 'components/footer.html' %}
+</body>
+</html>

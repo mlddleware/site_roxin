@@ -28,18 +28,32 @@
   --transition: all 0.3s ease;
 }
 
+/* Основная структура страницы */
+html, body {
+  height: 100%;
+}
+
 body {
   font-family: 'Inter', sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.6;
-  overflow: hidden;
-  height: 100vh;
+  margin: 0;
 }
 
-.app-container {
-  height: 100vh;
-  position: relative;
+/* Новая структура страницы */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.content-wrapper {
+  flex: 1;
+  padding: 20px 0;
+  max-width: 1200px; 
+  width: 100%;
+  margin: 0 auto;
 }
 
 /* Mobile navigation */
@@ -52,7 +66,7 @@ body {
   height: 60px;
   background-color: var(--bg-secondary);
   border-top: 1px solid var(--border-color);
-  z-index: 999;
+  z-index: 100;
   justify-content: space-around;
   align-items: center;
 }
@@ -80,8 +94,15 @@ body {
 /* Chat container */
 .chat-container {
   display: flex;
-  height: 100vh;
+  height: calc(100vh - 240px);
   position: relative;
+  width: 100%;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(139, 92, 246, 0.15);
+  background-color: var(--bg-secondary);
+  border: 1px solid rgba(139, 92, 246, 0.2);
 }
 
 /* Sidebar */
@@ -239,6 +260,8 @@ body {
   position: absolute;
   z-index: 5;
   height: 100%;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
 }
 
 .main-chat.active {
@@ -303,7 +326,22 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 140px); /* 70px header + 70px input */
+  height: calc(100% - 140px); /* 70px header + 70px input */
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-secondary) var(--bg-tertiary);
+}
+
+.messages-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+  background-color: var(--accent-secondary);
+  border-radius: 10px;
 }
 
 .welcome-message {
@@ -828,6 +866,21 @@ body {
 }
 
 /* Media queries for responsiveness */
+/* Специальные стили для footer */
+.footer {
+  width: 100%;
+  margin-top: 30px;
+  position: relative;
+  z-index: 10;
+}
+
+/* Дополнительные стили для footer в чате */
+.content-area + .footer {
+  flex-shrink: 0;
+  border-top: 1px solid rgba(139, 92, 246, 0.2);
+  background-color: rgba(10, 10, 18, 0.85);
+}
+
 @media (min-width: 768px) {
   .mobile-nav {
     display: none;
@@ -836,7 +889,7 @@ body {
   .chat-container {
     display: grid;
     grid-template-columns: 350px 1fr 300px;
-    height: 100vh;
+    height: calc(100vh - 240px);
   }
   
   .sidebar, .main-chat, .profile-sidebar {
@@ -884,6 +937,10 @@ body {
 }
 
 @media (max-width: 767px) {
+  .content-wrapper {
+    padding: 0;
+  }
+  
   .mobile-nav {
     display: flex;
   }
@@ -897,14 +954,22 @@ body {
     display: block;
   }
   
-  .app-container {
-    padding-bottom: 60px; /* Space for mobile nav */
+  .messages-container {
+    height: calc(100vh - 210px);
+    max-height: calc(100vh - 210px);
   }
   
-  .messages-container {
-    height: calc(100vh - 130px - 60px); /* Account for header, input, and nav */
-    max-height: calc(100vh - 130px - 60px - 70px);
-    transition: max-height 0.3s ease;
+  /* Адаптация для мобильных */
+  .footer {
+    padding-bottom: 70px; /* Место для mobile-nav */
+  }
+  
+  .chat-container {
+    height: calc(100vh - 160px);
+    margin: 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
   }
   
   /* На мобильных показываем поле ввода только при активном чате */

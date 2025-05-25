@@ -1,27 +1,58 @@
 services:
+  # PostgreSQL база данных
+  - type: pgsql
+    name: roxin-db
+    databaseName: roxin_studio
+    user: roxin_user
+    plan: free  # Бесплатный план для начала
+    
+  # Веб-сервис
   - type: web
     name: roxin-studio
-    env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 app:app
+    runtime: python3
+    plan: free  # Бесплатный план для начала
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 app:app
+    healthCheckPath: /
     envVars:
-      - key: DATABASE_URL
-        sync: false
-      - key: FLASK_SECRET_KEY
-        sync: false
-      - key: FLASK_APP
-        value: app.py
+      - key: PYTHON_VERSION
+        value: 3.11.0
       - key: FLASK_ENV
         value: production
-      - key: MAIL_SERVER
-        value: smtp.gmail.com
-      - key: MAIL_PORT
-        value: 587
-      - key: MAIL_USE_TLS
-        value: True
-      - key: MAIL_USERNAME
-        sync: false
-      - key: MAIL_PASSWORD
-        sync: false
-      - key: MAIL_DEFAULT_SENDER
-        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: roxin-db
+          property: connectionString
+      - key: REDIS_URL
+        value: redis://localhost:6379/0  # Placeholder, можно будет изменить позже
+      - key: CRYPTOBOT_API_KEY
+        value: demo_mode
+      - key: CRYPTOBOT_APP_NAME
+        value: ROXIN Studio
+        
+# Опциональные задачи для инициализации
+# (выполняются вручную после первого деплоя)
+jobs:
+  - type: worker
+    name: db-init
+    runtime: python3
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -c "
+      import psycopg2; 
+      import os; 
+      conn = psycopg2.connect(os.environ['DATABASE_URL']); 
+      cursor = conn.cursor(); 
+      with open('database/init_schema.sql', 'r') as f: 
+          cursor.execute(f.read()); 
+      conn.commit(); 
+      print('Database initialized successfully')
+    "
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: roxin-db
+          property: connectionString 

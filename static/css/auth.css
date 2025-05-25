@@ -1,24 +1,26 @@
 /* Основные стили и переменные */
 :root {
-  /* Цветовая схема из common.css */
+  /* Цветовая схема */
   --color-primary: #8B5CF6;
   --color-primary-dark: #7C3AED;
   --color-primary-light: #A78BFA;
   --color-secondary: #6366F1;
+  --color-secondary-dark: #4F46E5;
   
   /* Фон и поверхности */
   --color-background: #0A0A12;
-  --color-card-bg: rgba(15, 15, 25, 0.85);
-  --color-border: rgba(139, 92, 246, 0.2);
-  --color-primary-glow: rgba(139, 92, 246, 0.15);
+  --color-card-bg: rgba(15, 15, 25, 0.8);
+  --color-border: rgba(139, 92, 246, 0.25);
+  --color-primary-glow: rgba(139, 92, 246, 0.2);
   
   /* Градиенты */
   --gradient-purple: linear-gradient(135deg, #8B5CF6, #6366F1);
   --gradient-primary: linear-gradient(135deg, #8B5CF6, #6366F1);
+  --gradient-shine: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
   
   /* Накладки и эффекты */
-  --color-surface: rgba(139, 92, 246, 0.05);
-  --color-overlay: rgba(10, 10, 18, 0.85);
+  --color-surface: rgba(139, 92, 246, 0.08);
+  --color-overlay: rgba(10, 10, 18, 0.8);
   
   /* Текстовые цвета */
   --color-text: #FFFFFF;
@@ -32,10 +34,11 @@
   --color-info: #60A5FA;
   
   /* Тени */
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 15px var(--color-primary-glow);
-  --shadow-glow: 0 0 15px rgba(139, 92, 246, 0.3);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 20px var(--color-primary-glow);
+  --shadow-glow: 0 0 20px rgba(139, 92, 246, 0.4);
+  --shadow-glow-strong: 0 0 30px rgba(139, 92, 246, 0.6);
 }
 
 /* Reset и базовые стили */
@@ -52,6 +55,9 @@ body {
   background-color: var(--color-background);
   color: var(--color-text);
   overflow-x: hidden;
+  background-image: 
+    radial-gradient(circle at 10% 10%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 90% 90%, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
 }
 
 /* Контейнер */
@@ -63,33 +69,72 @@ body {
   padding: 1rem;
   position: relative;
   overflow: hidden;
+  perspective: 1000px;
 }
 
 /* Карточка */
 .card {
   background: var(--color-card-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
   border: 1px solid var(--color-border);
-  border-radius: 1.5rem;
+  border-radius: 1.25rem;
   box-shadow: var(--shadow-lg);
-  padding: 2.5rem;
+  padding: 2rem;
   width: 100%;
-  max-width: 28rem;
+  max-width: 26rem;
   position: relative;
   z-index: 1;
-  animation: fadeIn 0.6s ease-out forwards;
+  animation: cardAppear 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+  transform-style: preserve-3d;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--gradient-shine);
+  animation: cardShine 5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes cardAppear {
+  0% { opacity: 0; transform: translateY(-20px) rotateX(5deg); }
+  70% { opacity: 1; transform: translateY(5px) rotateX(-2deg); }
+  100% { opacity: 1; transform: translateY(0) rotateX(0); }
+}
+
+@keyframes cardShine {
+  0% { left: -100%; }
+  20%, 100% { left: 100%; }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  0% { opacity: 0; transform: translateY(-10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes floating {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 1; }
 }
 
 /* Заголовок */
 .header {
   text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
+  position: relative;
+  animation: floating 6s ease-in-out infinite;
 }
 
 .header h1 {
@@ -98,36 +143,65 @@ body {
   background: var(--gradient-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
   font-family: 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: -0.01em;
+  position: relative;
+  display: inline-block;
+}
+
+.header h1::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40%;
+  height: 3px;
+  background: var(--gradient-primary);
+  border-radius: 3px;
+  opacity: 0.7;
+  animation: pulse 3s ease-in-out infinite;
 }
 
 .header p {
   color: var(--color-text-secondary);
-  font-size: 1rem;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
 }
 
 /* Форма */
 form {
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  gap: 1.5rem;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
+  gap: 0.5rem;
+  transition: transform 0.3s ease;
+}
+
+.form-group:hover {
+  transform: translateY(-2px);
 }
 
 label {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--color-text-secondary);
+  transition: color 0.3s ease;
+}
+
+.form-group:focus-within label {
+  color: var(--color-primary-light);
 }
 
 .input-wrapper {
   position: relative;
+  transition: all 0.3s ease;
 }
 
 .icon {
@@ -138,7 +212,12 @@ label {
   width: 1.25rem;
   height: 1.25rem;
   color: var(--color-text-muted);
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
+}
+
+.form-group:focus-within .icon {
+  color: var(--color-primary);
+  filter: drop-shadow(0 0 2px rgba(139, 92, 246, 0.4));
 }
 
 input {
@@ -155,16 +234,37 @@ input {
 input::placeholder {
   color: var(--color-text-muted);
   opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+input:focus::placeholder {
+  opacity: 0.5;
 }
 
 input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25), 0 0 15px rgba(139, 92, 246, 0.15);
+  background: rgba(15, 15, 25, 0.6);
 }
 
-input:focus + .icon {
-  color: var(--color-primary);
+.input-wrapper::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 5%;
+  width: 90%;
+  height: 7px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  filter: blur(8px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.form-group:focus-within .input-wrapper::after {
+  opacity: 0.5;
 }
 
 /* Сообщение об ошибке */
@@ -174,9 +274,81 @@ input:focus + .icon {
   color: var(--color-error);
   padding: 0.75rem 1rem;
   margin-bottom: 1.5rem;
-  border-radius: 0.5rem;
+  border-radius: 0.375rem;
   font-size: 0.875rem;
   animation: fadeIn 0.3s ease-out;
+}
+
+.refresh-button {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.375rem 0.75rem;
+  background: rgba(248, 113, 113, 0.15);
+  color: var(--color-error);
+  border: 1px solid var(--color-error);
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.refresh-button:hover {
+  background: rgba(248, 113, 113, 0.25);
+  transform: translateY(-1px);
+}
+
+.refresh-button:active {
+  transform: translateY(1px);
+}
+
+/* Всплывающие уведомления */
+.toast-container {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+
+.toast {
+  background: rgba(15, 15, 25, 0.85);
+  backdrop-filter: blur(8px);
+  border-left: 4px solid var(--color-primary);
+  color: var(--color-text);
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  box-shadow: var(--shadow-lg);
+  max-width: 18rem;
+  opacity: 0;
+  transform: translateX(2rem);
+  animation: toastIn 0.3s forwards, toastOut 0.3s forwards 4s;
+  pointer-events: auto;
+}
+
+.toast.error {
+  border-color: var(--color-error);
+}
+
+.toast.warning {
+  border-color: var(--color-warning);
+}
+
+.toast.success {
+  border-color: var(--color-success);
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(2rem); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes toastOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(2rem); }
 }
 
 .message-display {
@@ -215,20 +387,19 @@ input:focus + .icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
-  width: 100%;
-  padding: 0.875rem 1.25rem;
+  gap: 0.625rem;
+  padding: 0.75rem 1.5rem;
   background: var(--gradient-primary);
-  color: white;
   border: none;
   border-radius: 0.75rem;
   font-size: 1rem;
   font-weight: 600;
+  color: white;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+  z-index: 1;
 }
 
 .submit-button::before {
@@ -238,17 +409,39 @@ input:focus + .icon {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: all 0.6s ease;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.7s ease;
+  z-index: -1;
+}
+
+.submit-button::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 10%;
+  width: 80%;
+  height: 10px;
+  background: var(--color-primary);
+  filter: blur(10px);
+  opacity: 0.5;
+  border-radius: 50%;
+  z-index: -2;
+  transition: all 0.3s ease;
 }
 
 .submit-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
 }
 
 .submit-button:hover::before {
   left: 100%;
+}
+
+.submit-button:hover::after {
+  opacity: 0.8;
+  filter: blur(12px);
+  width: 90%;
 }
 
 .submit-button:active {
@@ -327,7 +520,7 @@ input:focus + .icon {
   width: 100%;
 }
 
-/* Фоновое оформление */
+/* Фон и декорации */
 .background {
   position: absolute;
   top: 0;
@@ -336,13 +529,15 @@ input:focus + .icon {
   height: 100%;
   z-index: 0;
   overflow: hidden;
+  pointer-events: none;
 }
 
 .circle {
   position: absolute;
   border-radius: 50%;
-  opacity: 0.15;
-  filter: blur(100px);
+  opacity: 0.25;
+  filter: blur(80px);
+  transition: all 8s ease-in-out;
 }
 
 .circle-1 {
@@ -373,23 +568,208 @@ input:focus + .icon {
   animation: pulse 15s infinite alternate ease-in-out;
 }
 
+.circle-4 {
+  width: 15rem;
+  height: 15rem;
+  background-color: var(--color-secondary-dark);
+  top: 70%;
+  left: 20%;
+  animation: floating 18s infinite alternate ease-in-out;
+}
+
+.circle-5 {
+  width: 10rem;
+  height: 10rem;
+  background-color: var(--color-primary-light);
+  top: 20%;
+  right: 10%;
+  animation: pulse 12s infinite alternate-reverse ease-in-out;
+  opacity: 0.3;
+}
+
+.glow-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background-color: var(--color-primary-light);
+  border-radius: 50%;
+  box-shadow: 0 0 15px 5px rgba(139, 92, 246, 0.6);
+  opacity: 0.7;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.glow-dot:nth-child(1) {
+  top: 15%;
+  left: 20%;
+  animation: blink 4s infinite alternate ease-in-out;
+}
+
+.glow-dot:nth-child(2) {
+  top: 75%;
+  left: 65%;
+  animation: blink 7s infinite alternate-reverse ease-in-out;
+}
+
+.glow-dot:nth-child(3) {
+  top: 25%;
+  right: 15%;
+  animation: blink 5s infinite alternate ease-in-out 1s;
+}
+
+.glow-dot:nth-child(4) {
+  bottom: 20%;
+  left: 30%;
+  animation: blink 6s infinite alternate-reverse ease-in-out 2s;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 0.8; transform: scale(1.2); }
+}
+
 @keyframes float {
   0% { transform: translate(0, 0); }
-  100% { transform: translate(5%, 5%); }
+  50% { transform: translate(3%, 5%); }
+  100% { transform: translate(5%, 2%); }
 }
 
 @keyframes pulse {
-  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.1; }
-  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.2; }
-  100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.1; }
+  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.15; }
+  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.3; }
+  100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.15; }
 }
 
 /* Запомнить меня и забыли пароль */
-.remember-forgot {
+.remember-forgot, .terms-agreement {
   flex-direction: row !important;
   justify-content: space-between;
   align-items: center;
   margin-top: -0.5rem;
+}
+
+.remember-forgot {
+  align-items: flex-start;
+}
+
+.terms-agreement {
+  flex-wrap: wrap;
+}
+
+/* Новый кастомный квадратный чекбокс */
+.custom-checkbox-container {
+  display: flex;
+  position: relative;
+  max-width: 100%;
+  margin-bottom: 0.5rem;
+  align-items: flex-start;
+}
+
+.custom-checkbox-input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 20px;
+  width: 20px;
+  z-index: 10;
+  margin: 0;
+  top: 2px;
+  left: 0;
+}
+
+.custom-checkbox-box {
+  height: 20px;
+  width: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  background-color: rgba(15, 15, 25, 0.6);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  margin-right: 10px;
+  position: relative;
+  flex-shrink: 0;
+  margin-top: 2px;
+  pointer-events: none;
+}
+
+.custom-checkbox-label {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  user-select: none;
+  line-height: 1.4;
+  margin-top: 0;
+  cursor: default;
+  pointer-events: auto;
+}
+
+/* Специальные стили для текста "Запомнить меня" в форме входа */
+.remember-forgot .custom-checkbox-label {
+  display: flex;
+  align-items: center;
+  height: 20px;
+  margin-top: 2px;
+}
+
+.custom-checkbox-input:checked ~ .custom-checkbox-box {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 5px rgba(139, 92, 246, 0.5);
+}
+
+.custom-checkbox-input:checked ~ .custom-checkbox-box:after {
+  content: '';
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  width: 4px;
+  height: 8px;
+  border-right: 2px solid white;
+  border-bottom: 2px solid white;
+}
+
+.terms-agreement .checkbox-wrapper {
+  max-width: 100%;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: flex-start;
+}
+
+.terms-agreement label {
+  line-height: 1.4;
+  text-align: left;
+  display: inline-block;
+  max-width: 100%;
+  flex-wrap: wrap;
+  font-size: 0.875rem;
+}
+
+.terms-link {
+  color: var(--color-primary-light);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  position: relative;
+}
+
+.terms-link:hover {
+  color: var(--color-primary);
+}
+
+.terms-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--color-primary-light);
+  opacity: 0.5;
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.terms-link:hover::after {
+  transform: scaleX(1);
 }
 
 .checkbox-wrapper {
@@ -399,32 +779,36 @@ input:focus + .icon {
 }
 
 .checkbox-wrapper input[type="checkbox"] {
-  width: 1.125rem;
-  height: 1.125rem;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
   margin: 0;
   appearance: none;
   -webkit-appearance: none;
-  background-color: rgba(15, 15, 25, 0.5);
+  background-color: rgba(15, 15, 25, 0.6);
   border: 1px solid var(--color-border);
   border-radius: 0.25rem;
   cursor: pointer;
   position: relative;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .checkbox-wrapper input[type="checkbox"]:checked {
   background-color: var(--color-primary);
   border-color: var(--color-primary);
+  box-shadow: 0 0 5px rgba(139, 92, 246, 0.5);
 }
 
 .checkbox-wrapper input[type="checkbox"]:checked::after {
   content: '';
   position: absolute;
-  top: 30%;
+  top: 40%;
   left: 50%;
   transform: translate(-50%, -50%) rotate(45deg);
-  width: 0.25rem;
-  height: 0.5rem;
+  width: 0.2rem;
+  height: 0.4rem;
   border-right: 2px solid white;
   border-bottom: 2px solid white;
 }
@@ -439,6 +823,8 @@ input:focus + .icon {
   font-size: 0.875rem;
   color: var(--color-text-secondary);
   user-select: none;
+  margin-left: 0.25rem;
+  white-space: normal;
 }
 
 .forgot-link {
@@ -458,6 +844,7 @@ input:focus + .icon {
   font-size: 0.75rem;
   color: var(--color-text-muted);
   margin-top: 0.25rem;
+  display: none; /* Скрываем подсказки по умолчанию */
 }
 
 /* Индикатор силы пароля */
@@ -470,6 +857,7 @@ input:focus + .icon {
   font-weight: 500;
   transition: all 0.3s ease;
   user-select: none;
+  opacity: 0.8;
 }
 
 .password-strength.very-weak {

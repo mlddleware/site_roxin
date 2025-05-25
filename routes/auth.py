@@ -283,11 +283,42 @@ def logout():
 # Маршрут для запроса восстановления пароля
 @forgot_password_bp.route("/forgot-password", methods=["GET", "POST"])
 def forgot_password():
+    # Генерируем CSRF-токен для GET-запроса
+    if request.method == "GET":
+        csrf_token = generate_csrf_token()
+        return render_template("forgot_password.html", csrf_token=csrf_token)
+        
+    # Обработка POST-запроса
     if request.method == "POST":
+        # Проверка CSRF-токена
+        csrf_token = request.form.get('_csrf_token')
+        if not csrf_token or csrf_token != session.get('_csrf_token'):
+            logger.warning("CSRF-проверка не пройдена при восстановлении пароля")
+            AdminLogger.warning('auth', 'CSRF-проверка не пройдена при восстановлении пароля', 
+                              {'ip': request.headers.get('X-Forwarded-For', request.remote_addr)})
+                              
+            # Определяем, является ли запрос AJAX или обычным
+            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            if is_ajax:
+                return jsonify({
+                    'success': False, 
+                    'error': 'Истек токен безопасности. Пожалуйста, перезагрузите страницу и попробуйте снова.'
+                }), 400
+            else:
+                return render_template("forgot_password.html", message="Ошибка безопасности. Пожалуйста, попробуйте еще раз.", 
+                                    message_type="error", csrf_token=generate_csrf_token())
+        
         email = request.form.get("email", "").lower().strip()
         
+        # Проверка наличия email
         if not email:
-            return render_template("forgot_password.html", message="Пожалуйста, введите ваш email", message_type="error")
+            # Определяем, является ли запрос AJAX или обычным
+            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            if is_ajax:
+                return jsonify({'success': False, 'error': 'Пожалуйста, введите ваш email'}), 400
+            else:
+                return render_template("forgot_password.html", message="Пожалуйста, введите ваш email", 
+                                    message_type="error", csrf_token=generate_csrf_token())
         
         try:
             conn = get_db_connection()
@@ -298,8 +329,15 @@ def forgot_password():
             user = cursor.fetchone()
             
             if not user:
-                # Не раскрываем информацию о существовании аккаунта, но показываем успешное сообщение
-                return render_template("forgot_password.html", message="Если указанный email зарегистрирован, на него будет отправлена инструкция по восстановлению пароля.", message_type="success")
+                # Не раскрываем информацию о существовании аккаунта
+                is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+                success_message = "Если указанный email зарегистрирован, на него будет отправлена инструкция по восстановлению пароля."
+                
+                if is_ajax:
+                    return jsonify({'success': True, 'message': success_message})
+                else:
+                    return render_template("forgot_password.html", message=success_message, 
+                                        message_type="success", csrf_token=generate_csrf_token())
             
             # Генерируем токен для сброса пароля
             token = secrets.token_urlsafe(32)
@@ -383,20 +421,41 @@ def forgot_password():
             # Отправляем письмо
             email_sent = send_email(email, "Восстановление пароля в ROXIN Studio", html_content)
             
+            # Определяем, является ли запрос AJAX или обычным
+            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            
             if email_sent:
-                return render_template("forgot_password.html", message="Инструкции по восстановлению пароля отправлены на ваш email", message_type="success")
+                success_message = "Инструкции по восстановлению пароля отправлены на ваш email."
+                if is_ajax:
+                    return jsonify({'success': True, 'message': success_message})
+                else:
+                    return render_template("forgot_password.html", message=success_message, 
+                                        message_type="success", csrf_token=generate_csrf_token())
             else:
-                return render_template("forgot_password.html", message="Ошибка при отправке письма. Пожалуйста, попробуйте позже.", message_type="error")
-                
+                error_message = "Произошла ошибка при отправке инструкций. Пожалуйста, попробуйте позже."
+                if is_ajax:
+                    return jsonify({'success': False, 'error': error_message}), 500
+                else:
+                    return render_template("forgot_password.html", message=error_message, 
+                                        message_type="error", csrf_token=generate_csrf_token())
         except Exception as e:
+            # Логирование ошибки
             logger.error(f"Ошибка при запросе восстановления пароля: {str(e)}")
-            return render_template("forgot_password.html", message="Произошла ошибка. Пожалуйста, попробуйте позже.", message_type="error")
+            AdminLogger.error('auth', f"Ошибка при запросе восстановления пароля", 
+                           {'error': str(e)})
+            
+            # Определяем, является ли запрос AJAX или обычным
+            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            error_message = "Произошла ошибка при обработке запроса. Пожалуйста, попробуйте позже."
+            
+            if is_ajax:
+                return jsonify({'success': False, 'error': error_message}), 500
+            else:
+                return render_template("forgot_password.html", message=error_message, 
+                                    message_type="error", csrf_token=generate_csrf_token())
         finally:
-            cursor.close()
-            conn.close()
-    
-    # GET-запрос - просто показываем страницу
-    return render_template("forgot_password.html")
+            if 'conn' in locals() and conn:
+                release_db_connection(conn)
 
 # Маршрут для сброса пароля с использованием токена
 @forgot_password_bp.route("/reset-password/<token>", methods=["GET", "POST"])

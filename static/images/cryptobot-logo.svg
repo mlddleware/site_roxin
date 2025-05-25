@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800px" height="800px" viewBox="0 0 800 800" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>CryptoBot Logo</title>
+    <g id="logo" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M400,700 C566.27417,700 700,566.27417 700,400 C700,233.72583 566.27417,100 400,100 C233.72583,100 100,233.72583 100,400 C100,566.27417 233.72583,700 400,700 Z" id="base" fill="#4993F4"></path>
+        <path d="M520,300 C520,311.046 511.046,320 500,320 L300,320 C288.954,320 280,311.046 280,300 L280,220 C280,208.954 288.954,200 300,200 L500,200 C511.046,200 520,208.954 520,220 L520,300 Z" id="top" fill="#FFFFFF"></path>
+        <path d="M520,480 C520,491.046 511.046,500 500,500 L300,500 C288.954,500 280,491.046 280,480 L280,400 C280,388.954 288.954,380 300,380 L500,380 C511.046,380 520,388.954 520,400 L520,480 Z" id="bottom" fill="#FFFFFF"></path>
+        <path d="M520,580 C520,591.046 511.046,600 500,600 L300,600 C288.954,600 280,591.046 280,580 L280,500 L520,500 L520,580 Z" id="extra" fill="#FFFFFF"></path>
+        <circle id="dot1" fill="#4993F4" cx="355" cy="255" r="20"></circle>
+        <circle id="dot2" fill="#4993F4" cx="445" cy="255" r="20"></circle>
+        <circle id="dot3" fill="#4993F4" cx="355" cy="440" r="20"></circle>
+        <circle id="dot4" fill="#4993F4" cx="445" cy="440" r="20"></circle>
+    </g>
+</svg>

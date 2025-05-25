@@ -1,11 +1,14 @@
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for
-from database.connection import get_db_connection, release_db_connection
+from database.connection import DatabaseConnection, get_db_connection, release_db_connection
 from socketio_config import socketio
 from flask_socketio import emit
 from datetime import datetime, timedelta, timezone
 import pytz
 import json
+import time
+import threading
 from security.access_control import require_role, UserRole
+from database.redis_cache import cache_set, cache_get, invalidate_cache
 
 chat_bp = Blueprint('chat', __name__)
 
@@ -17,6 +20,14 @@ avatar_map = {
     "designer": "designer.png",
     "intern": "user.png"
 }
+
+def send_telegram_notification_async(sender_id, recipient_id, message):
+    """Асинхронная отправка уведомлений в телеграм"""
+    try:
+        from notifications.message_notifier import notify_new_message
+        notify_new_message(sender_id, recipient_id, message)
+    except Exception as e:
+        print(f"Ошибка при отправке уведомления в телеграм: {e}")
 
 @socketio.on("send_message")
 def handle_send_message(data):
@@ -34,8 +45,8 @@ def handle_send_message(data):
         return
 
     # Получаем имя отправителя
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    with DatabaseConnection() as db:
+        cursor = db.cursor()
     
     try:
         cursor.execute("SELECT username FROM users WHERE id = %s", (sender_id,))
@@ -67,25 +78,33 @@ def handle_send_message(data):
             VALUES (%s, %s, NOW(), %s, %s, %s, %s)
         """, (sender_id, message, sender_id, recipient_id, reply_to_json, message_id))
 
-        conn.commit()
+        db.commit()
+        
+        # Сначала отправляем сообщение на фронтенд для мгновенного отображения
+        emit("new_message", {
+            "sender_id": sender_id,
+            "recipient_id": recipient_id,
+            "sender": sender_username,
+            "message": message,
+            "reply_to": reply_to,
+            "message_id": message_id
+        }, broadcast=True)
+        
     except Exception as e:
-        conn.rollback()
+        db.rollback()
     finally:
-        cursor.close()
-        release_db_connection(conn)
+        # Инвалидируем кэш для чатов обоих пользователей
+        invalidate_cache(f"chat:{sender_id}:*")
+        invalidate_cache(f"chat:{recipient_id}:*")
+        invalidate_cache(f"chat_messages:{sender_id}_{recipient_id}:*")
+        invalidate_cache(f"chat_messages:{recipient_id}_{sender_id}:*")
 
-    # Добавляем вызов функции уведомлений
-    from notifications.message_notifier import notify_new_message
-    notify_new_message(sender_id, recipient_id, message)
-
-    emit("new_message", {
-        "sender_id": sender_id,
-        "recipient_id": recipient_id,
-        "sender": sender_username,
-        "message": message,
-        "reply_to": reply_to,
-        "message_id": message_id
-    }, broadcast=True)
+    # Асинхронно обрабатываем уведомления в телеграм после отправки на фронтенд
+    threading.Thread(
+        target=send_telegram_notification_async, 
+        args=(sender_id, recipient_id, message),
+        daemon=True
+    ).start()
 
 @chat_bp.route("/chat/get_user_by_chat_id/<int:chat_id>", methods=["GET"])
 @require_role(UserRole.USER)
@@ -94,8 +113,8 @@ def get_user_by_chat_id(chat_id):
     if not current_user_id:
         return jsonify({"error": "Необходима авторизация"}), 403
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    with DatabaseConnection() as db:
+        cursor = db.cursor()
 
     try:
         cursor.execute("""
@@ -121,19 +140,28 @@ def get_user_by_chat_id(chat_id):
             })
     finally:
         cursor.close()
-        release_db_connection(conn)
     
     return jsonify({"error": "Чат не найден"}), 404
 
 @chat_bp.route("/chat/info/<int:chat_id>", methods=["GET"])
 @require_role(UserRole.USER)
 def get_chat_info(chat_id):
+    start_time = time.time()
     user_id = request.cookies.get("user_id")
     if not user_id:
         return jsonify({"error": "Необходима авторизация"}), 403
+        
+    # Генерируем ключ кэша для информации о чате
+    cache_key = f"chat_info:{chat_id}:{user_id}"
+    
+    # Проверяем наличие данных в кэше
+    cached_data = cache_get(cache_key)
+    if cached_data:
+        print(f"Информация о чате {chat_id} получена из кэша ({time.time() - start_time:.6f} сек)")
+        return jsonify(cached_data)
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    with DatabaseConnection() as db:
+        cursor = db.cursor()
 
     try:
         # Проверяем, есть ли чат и кто собеседник
@@ -189,20 +217,39 @@ def get_chat_info(chat_id):
         })
     finally:
         cursor.close()
-        release_db_connection(conn)
 
 @chat_bp.route('/chat/<int:chat_id>')
 @require_role(UserRole.USER)
 def chat_with_user(chat_id):
+    start_time = time.time()
     user_id = request.cookies.get('user_id')
 
     if not user_id:
         return redirect(url_for('login.login'))
+        
+    # Генерируем ключ кэша для страницы чата
+    cache_key = f"chat_page:{chat_id}:{user_id}"
+    
+    # Проверяем наличие данных в кэше
+    cached_data = cache_get(cache_key)
+    if cached_data:
+        print(f"Страница чата {chat_id} получена из кэша ({time.time() - start_time:.6f} сек)")
+        return render_template("chat.html", **cached_data)
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    with DatabaseConnection() as db:
+        cursor = db.cursor()
 
     try:
+        # Получаем данные пользователя для navbar
+        cursor.execute("SELECT username, status, avatar FROM users WHERE id = %s", (user_id,))
+        user_data = cursor.fetchone()
+        
+        if not user_data:
+            return redirect(url_for('logout.logout'))
+            
+        username, status, user_avatar = user_data
+        avatar = user_avatar if user_avatar else avatar_map.get(status, "user.png")
+        
         # Проверяем, существует ли чат с таким chat_id и текущим пользователем
         cursor.execute("""
             SELECT user_id1, user_id2 FROM chats WHERE id = %s
@@ -219,9 +266,8 @@ def chat_with_user(chat_id):
             return redirect(url_for('chat.chat'))  # Если пользователь не в чате, редирект
     finally:
         cursor.close()
-        release_db_connection(conn)
     
-    return render_template('chat.html', chat_id=chat_id)
+    return render_template('chat.html', chat_id=chat_id, avatar=avatar, username=username, user_status=status, status=status)
 
 @chat_bp.route("/chat/get_chat_id/<int:user_id>", methods=["GET"])
 def get_chat_id(user_id):
@@ -229,8 +275,8 @@ def get_chat_id(user_id):
     if not current_user_id:
         return jsonify({"error": "Необходима авторизация"}), 403
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    with DatabaseConnection() as db:
+        cursor = db.cursor()
 
     try:
         cursor.execute("""
@@ -244,7 +290,6 @@ def get_chat_id(user_id):
         return jsonify({"chat_id": chat[0] if chat else None})
     finally:
         cursor.close()
-        release_db_connection(conn)
 
 @chat_bp.route('/chat')
 def chat():
@@ -254,9 +299,19 @@ def chat():
     if not user_id:
         return redirect(url_for('login.login'))
 
+    with DatabaseConnection() as db:
+        cursor = db.cursor()
+
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+        # Получаем данные пользователя для navbar
+        cursor.execute("SELECT username, status, avatar FROM users WHERE id = %s", (user_id,))
+        user_data = cursor.fetchone()
+        
+        if not user_data:
+            return redirect(url_for('logout.logout'))
+            
+        username, status, user_avatar = user_data
+        avatar = user_avatar if user_avatar else avatar_map.get(status, "user.png")
 
         # Получаем список чатов
         cursor.execute("""
@@ -278,13 +333,9 @@ def chat():
             WHERE c.user_id1 = %s OR c.user_id2 = %s
             ORDER BY last_message_time DESC
         """, (user_id, user_id, user_id))
-        
-        chats = cursor.fetchall()
 
-        # Получаем информацию о пользователе (аватар)
-        cursor.execute("SELECT avatar FROM users WHERE id = %s", (user_id,))
-        user_avatar = cursor.fetchone()
-        avatar = user_avatar[0] if user_avatar and user_avatar[0] else "user.png"
+        # Получаем список чатов из запроса
+        chats = cursor.fetchall()
 
         # Устанавливаем часовой пояс
         user_tz = pytz.timezone(user_timezone)
@@ -306,13 +357,13 @@ def chat():
                 'last_message_time': formatted_time
             })
 
-        return render_template('chat.html', chats=formatted_chats, avatar=avatar)
+        return render_template('chat.html', chats=formatted_chats, avatar=avatar, username=username, user_status=status, status=status)
 
-    except Exception:
-        return jsonify({"error": "Ошибка при загрузке чатов"}), 500
+    except Exception as e:
+        print(f"Ошибка при загрузке чатов: {e}")
+        return jsonify({"error": "Ошибка при загрузке чатов: " + str(e)}), 500
     finally:
         cursor.close()
-        release_db_connection(conn)
 
 @chat_bp.route("/chat/list", methods=["GET"])
 def chat_list():
@@ -322,8 +373,8 @@ def chat_list():
     if not user_id:
         return jsonify([])
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    with DatabaseConnection() as db:
+        cursor = db.cursor()
 
     try:
         cursor.execute("""
@@ -377,19 +428,37 @@ def chat_list():
         return jsonify(chat_list)
     finally:
         cursor.close()
-        release_db_connection(conn)
 
 @chat_bp.route("/chat/messages/<int:user_id>", methods=["GET"])
 def chat_messages(user_id):
-    current_user_id = int(request.cookies.get("user_id"))
+    start_time = time.time()
+    current_user_id = request.cookies.get("user_id")
     user_timezone = request.cookies.get("user_timezone", "UTC")
+    
+    # Преобразуем current_user_id в int для корректного сравнения
+    try:
+        current_user_id_int = int(current_user_id)
+    except (ValueError, TypeError):
+        return jsonify({"error": "Некорректный user_id"}), 400
+    
+    # Генерируем ключ кэша для сообщений
+    cache_key = f"chat_messages_api:{current_user_id}_{user_id}"
+    
+    # Временно инвалидируем кэш для исправления проблемы с отправителями
+    invalidate_cache(cache_key)
+    
+    # Проверяем наличие данных в кэше
+    cached_data = cache_get(cache_key)
+    if cached_data:
+        print(f"Сообщения чата {current_user_id}_{user_id} получены из кэша ({time.time() - start_time:.6f} сек)")
+        return jsonify(cached_data)
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    with DatabaseConnection() as db:
+        cursor = db.cursor()
 
     try:
         # Получаем имена пользователей
-        cursor.execute("SELECT username FROM users WHERE id = %s", (current_user_id,))
+        cursor.execute("SELECT username FROM users WHERE id = %s", (current_user_id_int,))
         current_user_name = cursor.fetchone()[0]
 
         cursor.execute("SELECT username FROM users WHERE id = %s", (user_id,))
@@ -401,7 +470,7 @@ def chat_messages(user_id):
             FROM messages
             WHERE (user_id1 = %s AND user_id2 = %s) OR (user_id1 = %s AND user_id2 = %s)
             ORDER BY created_at ASC
-        """, (current_user_id, user_id, user_id, current_user_id))
+        """, (current_user_id_int, user_id, user_id, current_user_id_int))
         
         messages = cursor.fetchall()
 
@@ -424,8 +493,12 @@ def chat_messages(user_id):
                     # Если не удалось разобрать JSON, оставляем как есть
                     reply_to_data = reply_to
 
+            # ИСПРАВЛЕНО: корректное сравнение sender_id с current_user_id_int
+            is_mine = sender_id == current_user_id_int
             messages_list.append({
-                "sender": current_user_name if sender_id == current_user_id else other_user_name, 
+                "sender": current_user_name if is_mine else other_user_name, 
+                "sender_id": sender_id,
+                "is_mine": is_mine,
                 "message": message, 
                 "timestamp": formatted_time,
                 "reply_to": reply_to_data,
@@ -440,16 +513,19 @@ def chat_messages(user_id):
         for msg in messages_list:
             if "created_at_raw" in msg:
                 del msg["created_at_raw"]
+        
+        # Сохраняем в кэш на короткое время (30 сек)
+        cache_set(cache_key, messages_list, 30)
+        print(f"Сообщения чата {current_user_id}_{user_id} сохранены в кэш ({time.time() - start_time:.6f} сек)")
 
         return jsonify(messages_list)
     finally:
-        cursor.close()
-        release_db_connection(conn)
+        pass
 
 @chat_bp.route("/chat/user/<int:user_id>", methods=["GET"])
 def chat_user_info(user_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    with DatabaseConnection() as db:
+        cursor = db.cursor()
 
     try:
         cursor.execute("""
@@ -488,8 +564,7 @@ def chat_user_info(user_id):
             "online_status": online_status
         })
     finally:
-        cursor.close()
-        release_db_connection(conn)
+        pass
 
 @chat_bp.route("/chat/send", methods=["POST"])
 def send_message():
@@ -524,13 +599,23 @@ def send_message():
         """, (sender_id, message, sender_id, recipient_id, reply_to_json, message_id))
 
         conn.commit()
+        
+        # Асинхронно обрабатываем уведомления в телеграм после сохранения в БД
+        threading.Thread(
+            target=send_telegram_notification_async, 
+            args=(sender_id, recipient_id, message),
+            daemon=True
+        ).start()
+            
         return jsonify({"status": "Message sent"})
     except Exception:
         conn.rollback()
         return jsonify({"error": "Ошибка отправки сообщения"}), 500
     finally:
-        cursor.close()
-        release_db_connection(conn)
+        if 'cursor' in locals() and cursor:
+            cursor.close()
+        if 'conn' in locals() and conn:
+            release_db_connection(conn)
 
 @chat_bp.route('/chat/start/<int:user_id>', methods=['POST'])
 def start_chat(user_id):
@@ -573,5 +658,7 @@ def start_chat(user_id):
         conn.rollback()
         return jsonify({"error": "Ошибка создания чата"}), 500
     finally:
-        cursor.close()
-        release_db_connection(conn)
+        if 'cursor' in locals() and cursor:
+            cursor.close()
+        if 'conn' in locals() and conn:
+            release_db_connection(conn)

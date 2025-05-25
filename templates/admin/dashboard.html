@@ -1,13 +1,8 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Админ-панель | ROXIN Studio</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+{% extends "admin/layout.html" %}
+
+{% block title %}Дашборд - Админ-панель ROXIN{% endblock %}
+
+{% block content %}
     <style>
         .admin-sidebar {
             background: linear-gradient(135deg, #6366F1, #8B5CF6);
@@ -454,33 +449,19 @@
             }
         }
         
-        // Мобильное меню
-        document.addEventListener('DOMContentLoaded', function() {
-            // Mobile menu toggle
-            const menuToggle = document.getElementById('menuToggle');
-            const sidebar = document.getElementById('sidebar');
-            
-            if (menuToggle && sidebar) {
-                menuToggle.addEventListener('click', function() {
-                    sidebar.classList.toggle('active');
-                });
-            }
-            
-            // Close sidebar when clicking outside on mobile
-            document.addEventListener('click', function(event) {
-                if (window.innerWidth <= 768 && 
-                    !sidebar.contains(event.target) && 
-                    !menuToggle.contains(event.target) && 
-                    sidebar.classList.contains('active')) {
-                    sidebar.classList.remove('active');
-                }
-            });
-            
-            // Инициализируем уведомления
-            initNotifications();
-            initSocketIO();
-            initCharts();
-        });
+    
     </script>
-</body>
-</html>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Инициализируем уведомления
+        initNotifications();
+        initSocketIO();
+        initCharts();
+    });
+</script>
+{% endblock %}

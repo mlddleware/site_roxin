@@ -6,6 +6,7 @@ class UserRole(Enum):
     GUEST = auto()
     USER = auto()
     CODER = auto()
+    PARTNER = auto()
     ADMIN = auto()
 
 # Маппинг строковых статусов в роли
@@ -13,6 +14,7 @@ STATUS_TO_ROLE = {
     None: UserRole.GUEST,
     "user": UserRole.USER,
     "coder": UserRole.CODER,
+    "partner": UserRole.PARTNER,
     "admin": UserRole.ADMIN
 }
 

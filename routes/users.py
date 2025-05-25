@@ -1,12 +1,18 @@
 from flask import Blueprint, make_response, render_template, request, redirect, url_for, jsonify
 from utils.logging import logging
-from database.connection import get_db_connection
+from database.connection import DatabaseConnection
+from database.redis_cache import cache_set, cache_get, invalidate_cache
 import pytz
 from datetime import datetime, timezone, timedelta
+import time
 
 users_bp = Blueprint('users', __name__)
 
 def format_last_visit(last_visit, user_tz):
+    # Приводим last_visit к timezone-aware формату, если он timezone-naive
+    if last_visit.tzinfo is None:
+        last_visit = last_visit.replace(tzinfo=timezone.utc)
+        
     now = datetime.now(timezone.utc)
     time_diff = now - last_visit
 
@@ -63,13 +69,23 @@ def get_user_timezone():
 
 @users_bp.route("/users/<int:user_id>/", methods=["GET"])
 def user_profile(user_id):
+    start_time = time.time()
     current_user_id = request.cookies.get('user_id')
     if not current_user_id:
         return redirect(url_for('login.login'))
+    
+    # Создаем ключ кэша, который учитывает ID просматриваемого профиля и текущего пользователя
+    cache_key = f"user_profile:{user_id}:{current_user_id}"
+    
+    # Проверяем наличие данных в кэше
+    cached_data = cache_get(cache_key)
+    if cached_data:
+        print(f"Данные профиля пользователя {user_id} получены из кэша ({time.time() - start_time:.6f} сек)")
+        return render_template("user_profile.html", **cached_data)
 
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+        with DatabaseConnection() as db:
+            cursor = db.cursor()
 
         # Получаем данные о пользователе и его профиле одним запросом
         cursor.execute("""
@@ -112,7 +128,8 @@ def user_profile(user_id):
         # Определяем, онлайн ли пользователь
         now = datetime.now(timezone.utc)
         # Определяем онлайн-статус с помощью новой функции
-        online_status = format_last_visit(last_visit, user_tz) if last_visit else "Последнее посещение неизвестно"
+        online_status_text = format_last_visit(last_visit, user_tz) if last_visit else "Последнее посещение неизвестно"
+        is_offline = online_status_text != "Онлайн"
 
         # Форматируем дату регистрации``
         registration_date_info = format_last_visit(created_at, user_tz) if created_at else "Нет данных"
@@ -123,28 +140,95 @@ def user_profile(user_id):
             cursor.execute("SELECT COUNT(*) FROM order_status")
             orders_count = cursor.fetchone()[0]
 
-        cursor.close()
-        conn.close()
+        # Получаем отзывы для разработчиков
+        reviews = []
+        if status == "coder":
+            cursor.execute("""
+                SELECT 
+                    ca.review, 
+                    ca.review_time, 
+                    ca.rating,
+                    co.user_id,
+                    u.username,
+                    u.avatar
+                FROM 
+                    order_status os
+                JOIN 
+                    customer_orders co ON os.order_id = co.id
+                JOIN 
+                    users u ON co.user_id = u.id
+                JOIN 
+                    coder_assignments ca ON os.order_id = ca.order_id
+                WHERE 
+                    os.coder = %s 
+                    AND ca.review IS NOT NULL 
+                    AND ca.review != ''
+                    AND ca.rating IS NOT NULL
+                ORDER BY 
+                    ca.review_time DESC
+                LIMIT 10
+            """, (user_id,))
+            
+            reviews_data = cursor.fetchall()
+            for review_text, review_date, review_rating, reviewer_id, reviewer_name, reviewer_avatar in reviews_data:
+                # Проверяем, есть ли у пользователя аватар
+                if not reviewer_avatar:
+                    reviewer_avatar = "user.png"
+                
+                # Форматируем дату отзыва в нормальном формате
+                if review_date:
+                    if review_date.tzinfo is None:
+                        review_date = review_date.replace(tzinfo=timezone.utc)
+                    review_date_local = review_date.astimezone(user_tz)
+                    months_ru = {
+                        1: "января", 2: "февраля", 3: "марта", 4: "апреля", 5: "мая", 6: "июня",
+                        7: "июля", 8: "августа", 9: "сентября", 10: "октября", 11: "ноября", 12: "декабря"
+                    }
+                    review_date_formatted = review_date_local.strftime(f"%d {months_ru[review_date_local.month]} %Y")
+                else:
+                    review_date_formatted = "Не указано"
+                    
+                reviews.append({
+                    'rating': review_rating or 0,
+                    'text': review_text,
+                    'date': review_date_formatted,
+                    'reviewer_name': reviewer_name,
+                    'reviewer_avatar': reviewer_avatar
+                })
 
-        return render_template(
-            "user_profile.html",
-            username=username,
-            avatar=avatar,
-            status=status,
-            user_id=user_id,
-            current_user_username=current_user_username,
-            current_user_avatar=current_user_avatar,
-            current_user_status=current_user_status,
-            direction=direction,
-            completed_orders=completed_orders,
-            reviews_count=reviews_count,
-            rating=rating,
-            avg_completion_time=avg_completion_time,
-            warn=warn,
-            online_status=online_status,
-            registration_date_info=registration_date_info,
-            orders_count=orders_count
-        )
+        # Готовим данные для шаблона и кэширования
+        template_data = {
+            # Данные просматриваемого пользователя
+            "target_username": username,
+            "target_avatar": avatar,
+            "target_status": status,
+            "target_user_id": user_id,
+            "target_direction": direction,
+            "target_completed_orders": completed_orders,
+            "target_reviews_count": reviews_count,
+            "target_rating": rating,
+            "target_avg_completion_time": avg_completion_time,
+            "target_warn": warn,
+            "target_online_status": online_status_text,
+            "target_registration_date_info": registration_date_info,
+            "target_orders_count": orders_count,
+            "target_reviews": reviews,
+            "target_is_offline": is_offline,
+            
+            # Данные текущего пользователя для navbar
+            "username": current_user_username,
+            "avatar": current_user_avatar,
+            "status": current_user_status,
+            "current_user_username": current_user_username,
+            "current_user_avatar": current_user_avatar,
+            "current_user_status": current_user_status
+        }
+        
+        # Сохраняем в кэш на 3 минуты
+        cache_set(cache_key, template_data, 180)
+        print(f"Данные профиля пользователя {user_id} сохранены в кэш ({time.time() - start_time:.6f} сек)")
+
+        return render_template("user_profile.html", **template_data)
     except Exception as e:
         logging.error(f"Ошибка при загрузке профиля пользователя {user_id}: {str(e)}")
         return jsonify({"error": "Ошибка при загрузке профиля"}), 500

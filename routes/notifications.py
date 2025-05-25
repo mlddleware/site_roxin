@@ -1,27 +1,35 @@
 from flask import Blueprint, jsonify, request
-from database.connection import get_db_connection, release_db_connection
+from database.connection import DatabaseConnection
+from database.redis_cache import cached, cache_set, cache_get, invalidate_cache
+from database.redis_config import CACHE_SETTINGS
 from utils.admin_logger import AdminLogger
 import traceback
+import time
 
 notifications_bp = Blueprint('notifications', __name__)
 
 # API для получения уведомлений текущего пользователя
 @notifications_bp.route("/api/notifications", methods=["GET"])
 def get_notifications():
+    start_time = time.time()
     user_id = request.cookies.get('user_id')
     if not user_id:
         return jsonify({"error": "Необходима авторизация"}), 401
+        
+    # Ключ кэша для уведомлений этого пользователя
+    cache_key = f"notifications:{user_id}"
+    
+    # Проверяем наличие данных в кэше
+    cached_data = cache_get(cache_key)
+    if cached_data:
+        print(f"Уведомления получены из кэша ({time.time() - start_time:.6f} сек)")
+        return jsonify(cached_data)
     
     try:
-        # Вместо возможного возникновения ошибки, давайте вернем пустой список уведомлений
-        # и добавим диагностическую информацию для отладки
-        conn = None  # Инициализируем переменную, чтобы использовать в блоке finally
-        cursor = None
-        
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            
+        # Используем контекстный менеджер для автоматического управления соединением
+        with DatabaseConnection() as db:
+            # Используем метод cursor() класса DatabaseConnection
+            cursor = db.cursor()
             # Получаем уведомления пользователя
             cursor.execute(
                 """
@@ -51,41 +59,31 @@ def get_notifications():
             )
             notifications_count = cursor.fetchone()[0]
             
-            return jsonify({
+            result = {
                 "notifications": all_notifications,
                 "unread_count": notifications_count
-            })
-        except Exception as db_error:
-            # Логируем ошибку, но возвращаем пустые данные вместо ошибки
-            print(f"Ошибка при запросе к БД в get_notifications: {str(db_error)}")
-            traceback.print_exc()
-            return jsonify({
-                "notifications": [],
-                "unread_count": 0,
-                "debug_info": {
-                    "user_id": user_id,
-                    "error_type": str(type(db_error)),
-                    "error_message": str(db_error)
-                }
-            })
+            }
+            
+            # Сохраняем результат в кэш на 1 минуту (60 сек)
+            cache_set(cache_key, result, CACHE_SETTINGS["notifications"]["ttl"])
+            print(f"Уведомления сохранены в кэш ({time.time() - start_time:.6f} сек)")
+            
+            return jsonify(result)
     except Exception as e:
-        print(f"Общая ошибка в get_notifications: {str(e)}")
+        # Логируем ошибку, но возвращаем пустые данные вместо ошибки
+        print(f"Ошибка при запросе к БД в get_notifications: {str(e)}")
         traceback.print_exc()
         return jsonify({
             "notifications": [],
             "unread_count": 0,
-            "error": "Ошибка при получении уведомлений",
             "debug_info": {
                 "user_id": user_id,
                 "error_type": str(type(e)),
                 "error_message": str(e)
             }
         })
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            release_db_connection(conn)
+    # Нижний блок except уже не нужен, так как мы обрабатываем все исключения 
+    # в одном блоке выше, и контекстный менеджер автоматически закрывает соединения
 
 # API для отметки уведомления как прочитанного
 @notifications_bp.route("/api/notifications/<int:notification_id>/read", methods=["POST"])
@@ -93,37 +91,34 @@ def mark_notification_read(notification_id):
     user_id = request.cookies.get('user_id')
     if not user_id:
         return jsonify({"error": "Необходима авторизация"}), 401
+        
+    # Инвалидируем кэш уведомлений при отметке как прочитанного
+    invalidate_cache(f"notifications:{user_id}")
     
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        # Проверяем, принадлежит ли уведомление пользователю
-        cursor.execute(
-            "SELECT id FROM user_notifications WHERE id = %s AND user_id = %s",
-            (notification_id, user_id)
-        )
-        
-        if not cursor.fetchone():
-            return jsonify({"error": "Уведомление не найдено"}), 404
-        
-        # Отмечаем уведомление как прочитанное
-        cursor.execute(
-            "UPDATE user_notifications SET is_read = TRUE WHERE id = %s",
-            (notification_id,)
-        )
-        
-        conn.commit()
-        
-        return jsonify({"success": True})
+        with DatabaseConnection() as db:
+            cursor = db.cursor()
+            # Проверяем, принадлежит ли уведомление пользователю
+            cursor.execute(
+                "SELECT id FROM user_notifications WHERE id = %s AND user_id = %s",
+                (notification_id, user_id)
+            )
+            
+            if not cursor.fetchone():
+                return jsonify({"error": "Уведомление не найдено"}), 404
+            
+            # Отмечаем уведомление как прочитанное
+            cursor.execute(
+                "UPDATE user_notifications SET is_read = TRUE WHERE id = %s",
+                (notification_id,)
+            )
+            
+            db.commit()
+            
+            return jsonify({"success": True})
     except Exception as e:
         print(f"Ошибка при отметке уведомления как прочитанного: {str(e)}")
         return jsonify({"error": "Ошибка при обновлении уведомления"}), 500
-    finally:
-        if 'cursor' in locals() and cursor:
-            cursor.close()
-        if 'conn' in locals() and conn:
-            release_db_connection(conn)
 
 # API для отметки всех уведомлений пользователя как прочитанных
 @notifications_bp.route("/api/notifications/read-all", methods=["POST"])
@@ -131,28 +126,25 @@ def mark_all_notifications_read():
     user_id = request.cookies.get('user_id')
     if not user_id:
         return jsonify({"error": "Необходима авторизация"}), 401
+        
+    # Инвалидируем кэш уведомлений при отметке всех как прочитанных
+    invalidate_cache(f"notifications:{user_id}")
     
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        # Отмечаем все уведомления пользователя как прочитанные
-        cursor.execute(
-            "UPDATE user_notifications SET is_read = TRUE WHERE user_id = %s AND is_read = FALSE",
-            (user_id,)
-        )
-        
-        conn.commit()
-        
-        # Получаем количество обновленных уведомлений
-        row_count = cursor.rowcount
-        
-        return jsonify({"success": True, "updated_count": row_count})
+        with DatabaseConnection() as db:
+            cursor = db.cursor()
+            # Отмечаем все уведомления пользователя как прочитанные
+            cursor.execute(
+                "UPDATE user_notifications SET is_read = TRUE WHERE user_id = %s AND is_read = FALSE",
+                (user_id,)
+            )
+            
+            db.commit()
+            
+            # Получаем количество обновленных уведомлений
+            row_count = cursor.rowcount
+            
+            return jsonify({"success": True, "updated_count": row_count})
     except Exception as e:
         print(f"Ошибка при отметке всех уведомлений как прочитанных: {str(e)}")
         return jsonify({"error": "Ошибка при обновлении уведомлений"}), 500
-    finally:
-        if 'cursor' in locals() and cursor:
-            cursor.close()
-        if 'conn' in locals() and conn:
-            release_db_connection(conn)

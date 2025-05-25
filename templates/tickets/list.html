@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тикеты поддержки | ROXIN Studio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ url_for('static', filename='icons/lucide/dist/umd/lucide.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/update_last_visit.js') }}"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #111118;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #6366f1;
+            --accent-light: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --radius: 16px;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .tickets-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0f 0%, #111118 50%, #0a0a0f 100%);
+            z-index: -1;
+        }
+        
+        .tickets-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .page-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            font-size: 2.5rem;
+            margin: 0;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .btn-new-ticket {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            color: white;
+            padding: 0.875rem 1.75rem;
+            border-radius: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-new-ticket:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(99, 102, 241, 0.4);
+        }
+        
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .stat-card.open { border-color: rgba(245, 158, 11, 0.3); }
+        .stat-card.answered { border-color: rgba(16, 185, 129, 0.3); }
+        .stat-card.closed { border-color: rgba(113, 113, 122, 0.3); }
+        .stat-card.total { border-color: rgba(99, 102, 241, 0.3); }
+
+        .stat-title {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .tickets-table-container {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            overflow: hidden;
+        }
+        
+        .ticket-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .ticket-table th {
+            text-align: left;
+            padding: 1.25rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: rgba(0, 0, 0, 0.3);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .ticket-table td {
+            padding: 1.25rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.95rem;
+            vertical-align: middle;
+        }
+
+        .ticket-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .ticket-link {
+            color: var(--accent-light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .ticket-link:hover {
+            color: var(--accent);
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+        
+        .status-badge.open {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        
+        .status-badge.answered {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        .status-badge.closed {
+            background: rgba(113, 113, 122, 0.1);
+            color: var(--text-muted);
+            border: 1px solid rgba(113, 113, 122, 0.3);
+        }
+
+        .message-count {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.8125rem;
+        }
+
+        .empty-tickets {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 4rem 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .empty-tickets:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .empty-tickets i {
+            font-size: 3rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            opacity: 0.7;
+        }
+
+        .empty-tickets h3 {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .empty-tickets p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .date {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 768px) {
+            .tickets-container {
+                margin: 1rem auto;
+                padding: 0 1rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .hide-on-mobile {
+                display: none;
+            }
+
+            .ticket-table th,
+            .ticket-table td {
+                padding: 1rem 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="tickets-bg"></div>
+    
+    {% include 'components/simple_navbar.html' %}
+    
+    <div class="tickets-container">
+            <div class="page-header">
+                <h1 class="page-title">Тикеты поддержки</h1>
+                <a href="{{ url_for('tickets.new_ticket') }}" class="btn-new-ticket">
+                <i data-lucide="plus" width="20" height="20"></i>
+                    <span>Создать тикет</span>
+                </a>
+            </div>
+            
+            {% if is_support and ticket_stats %}
+            <div class="stats-cards">
+                <div class="stat-card open">
+                    <span class="stat-title">Открытые</span>
+                    <span class="stat-value">{{ ticket_stats.open }}</span>
+                </div>
+                <div class="stat-card answered">
+                    <span class="stat-title">Отвеченные</span>
+                    <span class="stat-value">{{ ticket_stats.answered }}</span>
+                </div>
+                <div class="stat-card closed">
+                    <span class="stat-title">Закрытые</span>
+                    <span class="stat-value">{{ ticket_stats.closed }}</span>
+                </div>
+                <div class="stat-card total">
+                    <span class="stat-title">Всего</span>
+                    <span class="stat-value">{{ ticket_stats.total }}</span>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if tickets %}
+        <div class="tickets-table-container">
+            <table class="ticket-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Тема</th>
+                        <th>Статус</th>
+                        {% if is_support %}
+                        <th>Пользователь</th>
+                        {% endif %}
+                        <th class="hide-on-mobile">Дата создания</th>
+                        <th class="hide-on-mobile">Обновлено</th>
+                        <th>Сообщения</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                    <tr>
+                        <td>#{{ ticket.id }}</td>
+                        <td>
+                            <a href="{{ url_for('tickets.view_ticket', ticket_id=ticket.id) }}" class="ticket-link">
+                                {{ ticket.subject }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="status-badge {{ ticket.status }}">
+                                {% if ticket.status == 'open' %}
+                                Открыт
+                                {% elif ticket.status == 'answered' %}
+                                Отвечен
+                                {% elif ticket.status == 'closed' %}
+                                Закрыт
+                                {% endif %}
+                            </span>
+                        </td>
+                        {% if is_support %}
+                        <td>{{ ticket.username }}</td>
+                        {% endif %}
+                        <td class="date hide-on-mobile">{{ ticket.created_at }}</td>
+                        <td class="date hide-on-mobile">{{ ticket.last_update }}</td>
+                        <td><span class="message-count">{{ ticket.message_count }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+            {% else %}
+            <div class="empty-tickets">
+                <i data-lucide="inbox"></i>
+                <h3>Нет тикетов</h3>
+                <p>
+                    {% if is_support %}
+                    На данный момент у вас нет тикетов для обработки.
+                    {% else %}
+                    У вас пока нет активных обращений в службу поддержки.
+                    {% endif %}
+                </p>
+                <a href="{{ url_for('tickets.new_ticket') }}" class="btn-new-ticket">
+                <i data-lucide="plus" width="20" height="20"></i>
+                    <span>Создать тикет</span>
+                </a>
+            </div>
+            {% endif %}
+    </div>
+    
+    {% include 'components/footer.html' %}
+    
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>

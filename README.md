@@ -1,87 +1,69 @@
 # ROXIN Studio
 
-A Flask-based web application with PostgreSQL database and Socket.IO integration.
+Инновационная студия цифровой разработки. Создаем современные веб-приложения, мобильные приложения и цифровые решения.
 
-## Deployment Instructions
+## 🚀 Быстрый старт
 
-This application can be deployed to platforms that support Python web applications with PostgreSQL databases:
+### Локальная разработка
 
-### Option 1: Heroku Deployment
+1. Клонируйте репозиторий:
+```bash
+git clone https://github.com/ваш-юзернейм/roxin-studio.git
+cd roxin-studio
+```
 
-1. Create a Heroku account if you don't have one
-2. Install the Heroku CLI: https://devcenter.heroku.com/articles/heroku-cli
-3. Login to Heroku:
-   ```
-   heroku login
-   ```
-4. Create a new Heroku app:
-   ```
-   heroku create roxin-studio
-   ```
-5. Add a PostgreSQL database:
-   ```
-   heroku addons:create heroku-postgresql:hobby-dev
-   ```
-6. Set environment variables:
-   ```
-   heroku config:set FLASK_SECRET_KEY=your-secret-key
-   heroku config:set FLASK_ENV=production
-   ```
-7. Set email configuration for password reset:
-   ```
-   heroku config:set MAIL_SERVER=smtp.gmail.com
-   heroku config:set MAIL_PORT=587
-   heroku config:set MAIL_USE_TLS=True
-   heroku config:set MAIL_USERNAME=your_email@gmail.com
-   heroku config:set MAIL_PASSWORD=your_app_password
-   heroku config:set MAIL_DEFAULT_SENDER=your_email@gmail.com
-   ```
-8. Deploy the application:
-   ```
-   git init
-   git add .
-   git commit -m "Initial commit"
-   git push heroku master
-   ```
+2. Установите зависимости:
+```bash
+pip install -r requirements.txt
+```
 
-### Option 2: Render Deployment
+3. Создайте файл `.env`:
+```env
+FLASK_ENV=development
+DATABASE_URL=postgresql://username:password@localhost:5432/roxin_studio
+FLASK_SECRET_KEY=your-secret-key
+```
 
-1. Create a Render account
-2. Create a new Web Service and select your GitHub repository
-3. Choose "Python" as the environment
-4. Set the build command: `pip install -r requirements.txt`
-5. Set the start command: `gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 app:app`
-6. Add the required environment variables in the Render dashboard
-7. Create a PostgreSQL database service in Render
-8. Connect your web service to the PostgreSQL database using the provided connection string
+4. Запустите приложение:
+```bash
+python app.py
+```
 
-### Local Development
+### Деплой на Render
 
-1. Create a virtual environment:
-   ```
-   python -m venv venv
-   venv\Scripts\activate
-   ```
-2. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-3. Set up your .env file with the required environment variables
-4. Run the application:
-   ```
-   python app.py
-   ```
+Проект настроен для автоматического деплоя на Render.com:
 
-## Environment Variables
+1. Форкните этот репозиторий
+2. Подключите к Render через Blueprint
+3. Render автоматически прочитает `render.yaml`
 
-Make sure to set these environment variables:
+## 📋 Структура проекта
 
-- `DATABASE_URL`: PostgreSQL connection string
-- `FLASK_SECRET_KEY`: Secret key for Flask sessions
-- `FLASK_ENV`: Set to "production" for deployment
-- `MAIL_SERVER`: SMTP server for sending emails
-- `MAIL_PORT`: SMTP port
-- `MAIL_USE_TLS`: Whether to use TLS
-- `MAIL_USERNAME`: Email username
-- `MAIL_PASSWORD`: Email password
-- `MAIL_DEFAULT_SENDER`: Default sender email
+```
+roxin-studio/
+├── app.py                 # Главное приложение
+├── requirements.txt       # Зависимости Python
+├── render.yaml           # Конфигурация Render
+├── database/             # Модули базы данных
+├── routes/               # Маршруты Flask
+├── templates/            # HTML шаблоны
+├── static/              # Статические файлы
+├── utils/               # Утилиты
+└── security/            # Модули безопасности
+```
+
+## 🛠️ Технологии
+
+- **Backend**: Flask, Python 3.11
+- **Database**: PostgreSQL
+- **Frontend**: HTML5, CSS3, JavaScript
+- **Deployment**: Render.com
+- **Real-time**: Socket.IO
+
+## 📝 Лицензия
+
+Этот проект создан для демонстрационных целей.
+
+## 👨‍💻 Разработчик
+
+ROXIN Studio - Инновационная студия разработки 

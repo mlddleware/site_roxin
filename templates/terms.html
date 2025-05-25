@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пользовательское соглашение | ROXIN Studio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="{{ url_for('static', filename='icons/lucide/dist/umd/lucide.js') }}"></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            background-color: #0f0f1a;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .roxin-navbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+        
+        .content-area {
+            flex: 1 0 auto;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .footer {
+            flex-shrink: 0;
+            margin-top: 40px;
+            width: 100%;
+        }
+        
+        .terms-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: var(--color-card-bg);
+            backdrop-filter: blur(15px);
+            border-radius: 1rem;
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        /* Исправление для футера */
+        .footer {
+            flex-shrink: 0;
+            margin-top: 0 !important;
+        }
+        
+        .terms-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        .terms-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .terms-header::after {
+            content: '';
+            position: absolute;
+            bottom: -1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: var(--gradient-primary);
+            border-radius: 3px;
+        }
+        
+        .terms-content {
+            line-height: 1.7;
+        }
+        
+        .terms-content h2 {
+            font-size: 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: var(--color-primary-light);
+        }
+        
+        .terms-content p {
+            margin-bottom: 1rem;
+        }
+        
+        .terms-content ul {
+            margin-bottom: 1.5rem;
+            margin-left: 1.5rem;
+        }
+        
+        .terms-content li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .terms-footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--color-border);
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: var(--color-primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            color: var(--color-primary-light);
+            transform: translateX(-5px);
+        }
+        
+        .back-link svg {
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+        
+        /* Фоновые элементы */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            filter: blur(80px);
+        }
+        
+        .circle-1 {
+            width: 40rem;
+            height: 40rem;
+            background-color: var(--color-primary);
+            top: -20%;
+            left: -10%;
+        }
+        
+        .circle-2 {
+            width: 30rem;
+            height: 30rem;
+            background-color: var(--color-secondary);
+            bottom: -10%;
+            right: -10%;
+        }
+    </style>
+</head>
+<body>
+    <div class="background">
+        <div class="circle circle-1"></div>
+        <div class="circle circle-2"></div>
+    </div>
+    
+    <div class="roxin-navbar">
+        {% include 'components/simple_navbar.html' %}
+    </div>
+    
+    <div class="content-area">
+        <div class="terms-container">
+            <div class="terms-header">
+                <h1>Пользовательское соглашение</h1>
+                <p>Последнее обновление: {{ current_date }}</p>
+            </div>
+        
+        <div class="terms-content">
+            <p>Настоящее Пользовательское соглашение (далее — «Соглашение») регулирует отношения между ROXIN Studio (далее — «Администрация») и пользователем сети Интернет (далее — «Пользователь») по использованию сервисов ROXIN Studio.</p>
+            
+            <h2>1. Общие положения</h2>
+            <p>1.1. Используя сервисы ROXIN Studio, Пользователь соглашается с условиями настоящего Соглашения.</p>
+            <p>1.2. Использование сервисов ROXIN Studio регулируется настоящим Соглашением, Политикой конфиденциальности, а также условиями использования отдельных сервисов.</p>
+            <p>1.3. Соглашение может быть изменено Администрацией без какого-либо специального уведомления. Новая редакция Соглашения вступает в силу с момента ее размещения на сайте.</p>
+            
+            <h2>2. Регистрация пользователя</h2>
+            <p>2.1. Для использования сервисов ROXIN Studio Пользователь обязуется предоставить достоверную и полную информацию о себе по вопросам, предлагаемым в форме регистрации, и поддерживать эту информацию в актуальном состоянии.</p>
+            <p>2.2. Администрация оставляет за собой право отказать Пользователю в использовании сервисов ROXIN Studio в случае, если данные Пользователя, указанные в предоставленных им при регистрации сведениях, не соответствуют действительности.</p>
+            <p>2.3. Пользователь несет ответственность за безопасность своего логина и пароля, а также за все действия, выполненные при использовании его учетной записи.</p>
+            
+            <h2>3. Права и обязанности пользователя</h2>
+            <p>3.1. Пользователь имеет право:</p>
+            <ul>
+                <li>Использовать сервисы ROXIN Studio в соответствии с условиями настоящего Соглашения;</li>
+                <li>Прекратить использование сервисов ROXIN Studio в любой момент;</li>
+                <li>Обращаться в службу поддержки ROXIN Studio по вопросам использования сервисов.</li>
+            </ul>
+            
+            <p>3.2. Пользователь обязуется:</p>
+            <ul>
+                <li>Соблюдать условия настоящего Соглашения;</li>
+                <li>Не передавать третьим лицам свои учетные данные;</li>
+                <li>Не использовать сервисы ROXIN Studio для нарушения прав третьих лиц или для целей, противоречащих законодательству РФ;</li>
+                <li>Не осуществлять действия, направленные на дестабилизацию работы сервисов ROXIN Studio, не осуществлять попытки несанкционированного доступа к ресурсам сервисов.</li>
+            </ul>
+            
+            <h2>4. Ограничение ответственности</h2>
+            <p>4.1. Администрация не несет ответственности за:</p>
+            <ul>
+                <li>Любые убытки, упущенную выгоду, которые Пользователь может понести в случае умышленного или неосторожного нарушения любого положения настоящего Соглашения;</li>
+                <li>Любые действия третьих лиц, в том числе связанные с использованием учетной записи Пользователя;</li>
+                <li>Содержание размещаемой Пользователем информации при использовании сервисов ROXIN Studio;</li>
+                <li>Сбои и перерывы в работе сервисов ROXIN Studio, вызванные техническими причинами.</li>
+            </ul>
+            
+            <h2>5. Заключительные положения</h2>
+            <p>5.1. Настоящее Соглашение регулируется и толкуется в соответствии с законодательством Российской Федерации.</p>
+            <p>5.2. Все споры и разногласия, возникающие в связи с использованием сервисов ROXIN Studio, подлежат разрешению путем переговоров. В случае невозможности достижения согласия путем переговоров, споры подлежат разрешению в соответствующем суде по месту нахождения Администрации.</p>
+            <p>5.3. Если какое-либо положение настоящего Соглашения будет признано недействительным, это не влияет на действительность остальных положений.</p>
+            </div>
+            
+            <div class="terms-footer">
+                <p>© {{ current_year }} ROXIN Studio. Все права защищены.</p>
+                <a href="javascript:history.back()" class="back-link">
+                    <i data-lucide="arrow-left" width="18" height="18"></i> Вернуться назад
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        {% include 'components/footer.html' %}
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/update_last_visit.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons({
+                attrs: {
+                    'stroke-width': 1.5
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoBot Демо-оплата | ROXIN Studio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --color-primary: #4993F4;
+            --color-primary-dark: #3A75C4;
+            --color-bg-dark: #1E1E2E;
+            --color-bg-light: rgba(30, 30, 46, 0.8);
+            --color-text: #e2e8f0;
+            --color-text-muted: #94a3b8;
+            --color-border: rgba(73, 147, 244, 0.2);
+            --color-success: #10b981;
+        }
+        
+        body {
+            background-color: var(--color-bg-dark);
+            color: var(--color-text);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .cryptobot-card {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 1rem;
+            border: 1px solid var(--color-border);
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .cryptobot-logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            display: block;
+        }
+        
+        .cryptobot-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 1rem;
+            color: var(--color-text);
+        }
+        
+        .cryptobot-info {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(73, 147, 244, 0.1);
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: var(--color-text-muted);
+        }
+        
+        .info-value {
+            font-weight: 500;
+            color: var(--color-text);
+        }
+        
+        .payment-amount {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            margin: 1.5rem 0;
+            color: var(--color-primary);
+        }
+        
+        .cryptobot-button {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        .cryptobot-button:hover {
+            background: var(--color-primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .cryptobot-footer {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="cryptobot-card">
+            <img src="{{ url_for('static', filename='images/cryptobot-logo.svg') }}" alt="CryptoBot" class="cryptobot-logo">
+            <h1 class="cryptobot-title">CryptoBot Демо-оплата</h1>
+            
+            <div class="payment-amount">{{ amount }} ₽</div>
+            
+            <div class="cryptobot-info">
+                <div class="info-row">
+                    <span class="info-label">№ Счета:</span>
+                    <span class="info-value">{{ invoice_id }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Получатель:</span>
+                    <span class="info-value">ROXIN Studio</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Описание:</span>
+                    <span class="info-value">Пополнение баланса на сайте</span>
+                </div>
+            </div>
+            
+            <form action="/api/cryptobot/demo/complete" method="post">
+                <input type="hidden" name="transaction_id" value="{{ transaction_id }}">
+                <input type="hidden" name="user_id" value="{{ user_id }}">
+                <input type="hidden" name="amount" value="{{ amount }}">
+                
+                <button type="submit" class="cryptobot-button">
+                    Оплатить (Демо)
+                </button>
+            </form>
+            
+            <div class="cryptobot-footer">
+                <p>Это демо-версия страницы оплаты CryptoBot.</p>
+                <p>В реальном режиме вы будете перенаправлены на страницу оплаты в Telegram.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

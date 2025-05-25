@@ -156,6 +156,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Имя пользователя</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус бана</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дата регистрации</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Последний визит</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Действия</th>
@@ -189,6 +190,63 @@
         </div>
     </div>
     
+    <!-- Ban User Modal -->
+    <div id="banUserModal" class="fixed inset-0 z-50 overflow-y-auto hidden">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="banModalTitle">Заблокировать пользователя</h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500" id="banModalDescription">Вы собираетесь заблокировать пользователя <span id="banUsername" class="font-semibold"></span>. После блокировки пользователь не сможет использовать сайт до снятия бана.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <input type="hidden" id="banUserId">
+                        
+                        <div class="mb-4">
+                            <label for="banReason" class="block text-sm font-medium text-gray-700">Причина блокировки</label>
+                            <textarea id="banReason" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Укажите причину блокировки пользователя"></textarea>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="banDuration" class="block text-sm font-medium text-gray-700">Срок блокировки</label>
+                            <select id="banDuration" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <option value="0">Постоянная блокировка</option>
+                                <option value="1">1 день</option>
+                                <option value="3">3 дня</option>
+                                <option value="7">7 дней</option>
+                                <option value="14">14 дней</option>
+                                <option value="30">30 дней</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" id="confirmBanBtn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Заблокировать
+                    </button>
+                    <button type="button" id="closeBanModalBtn" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+                        Отмена
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Edit User Modal -->
     <div id="editUserModal" class="fixed inset-0 z-50 overflow-y-auto hidden">
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -198,37 +256,127 @@
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
             <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modalTitle">Редактировать пользователя</h3>
-                    <form id="editUserForm">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-user-edit text-indigo-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="editModalTitle">Редактировать пользователя</h3>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
                         <input type="hidden" id="editUserId">
+                        
                         <div class="mb-4">
-                            <label for="editUsername" class="block text-sm font-medium text-gray-700 mb-1">Имя пользователя</label>
-                            <input type="text" id="editUsername" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <label for="editUsername" class="block text-sm font-medium text-gray-700">Имя пользователя</label>
+                            <input type="text" id="editUsername" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                         </div>
+                        
                         <div class="mb-4">
-                            <label for="editEmail" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                            <input type="email" id="editEmail" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <label for="editEmail" class="block text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" id="editEmail" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                         </div>
+                        
                         <div class="mb-4">
-                            <label for="editStatus" class="block text-sm font-medium text-gray-700 mb-1">Статус</label>
-                            <select id="editStatus" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <label for="editStatus" class="block text-sm font-medium text-gray-700">Статус</label>
+                            <select id="editStatus" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                 <option value="user">Пользователь</option>
                                 <option value="coder">Исполнитель</option>
                                 <option value="admin">Администратор</option>
                             </select>
                         </div>
+                        
                         <div class="mb-4">
-                            <label for="editPassword" class="block text-sm font-medium text-gray-700 mb-1">Новый пароль (оставьте пустым, чтобы не менять)</label>
-                            <input type="password" id="editPassword" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                            <p class="mt-1 text-xs text-gray-500">Пароль должен содержать минимум 8 символов, включая заглавные и строчные буквы, цифры и специальные символы</p>
+                            <label for="editPassword" class="block text-sm font-medium text-gray-700">Новый пароль</label>
+                            <div class="mt-1 flex rounded-md shadow-sm">
+                                <input type="text" id="editPassword" class="flex-1 block w-full border border-gray-300 rounded-l-md py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <button type="button" id="generatePasswordBtn" class="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-gray-50 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    <i class="fas fa-key"></i>
+                                </button>
+                            </div>
                         </div>
-                    </form>
+                                                    </div>
                 </div>
+                
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <button id="saveUserBtn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    <button type="button" id="confirmEditBtn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
                         Сохранить
                     </button>
-                    <button id="closeModalBtn" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    <button type="button" id="closeEditModalBtn" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+                        Отмена
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Generator Modal -->
+    <div id="passwordGeneratorModal" class="fixed inset-0 z-50 overflow-y-auto hidden">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-key text-indigo-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">Генератор паролей</h3>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <div class="mb-4">
+                            <label for="passwordLength" class="block text-sm font-medium text-gray-700">Длина пароля</label>
+                            <div class="mt-1 flex items-center space-x-4">
+                                <input type="range" id="passwordLength" min="8" max="32" value="12" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                <span id="passwordLengthValue" class="text-sm text-gray-500">12</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="flex items-center space-x-4">
+                                <input type="checkbox" id="includeUppercase" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                <label for="includeUppercase" class="text-sm text-gray-700">Заглавные буквы (A-Z)</label>
+                            </div>
+                            <div class="flex items-center space-x-4 mt-2">
+                                <input type="checkbox" id="includeLowercase" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                <label for="includeLowercase" class="text-sm text-gray-700">Строчные буквы (a-z)</label>
+                            </div>
+                            <div class="flex items-center space-x-4 mt-2">
+                                <input type="checkbox" id="includeNumbers" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                <label for="includeNumbers" class="text-sm text-gray-700">Цифры (0-9)</label>
+                            </div>
+                            <div class="flex items-center space-x-4 mt-2">
+                                <input type="checkbox" id="includeSpecial" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                <label for="includeSpecial" class="text-sm text-gray-700">Специальные символы (!@#$%^&*)</label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700">Сгенерированный пароль</label>
+                            <div class="mt-1 flex rounded-md shadow-sm">
+                                <input type="text" id="generatedPassword" readonly class="flex-1 block w-full border border-gray-300 rounded-l-md py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <button type="button" id="copyPasswordBtn" class="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-gray-50 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" id="usePasswordBtn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Использовать пароль
+                    </button>
+                    <button type="button" id="generateNewBtn" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Сгенерировать новый
+                    </button>
+                    <button type="button" id="closeGeneratorModalBtn" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                         Отмена
                     </button>
                 </div>
@@ -315,56 +463,96 @@
                         
                         usersTableBody.innerHTML = '';
                         data.users.forEach(user => {
-                            // Определяем цвет для статуса
-                            let statusClass = 'bg-blue-100 text-blue-800';
-                            if (user.status === 'admin') statusClass = 'bg-purple-100 text-purple-800';
-                            if (user.status === 'coder') statusClass = 'bg-green-100 text-green-800';
-                            
-                            // Локализуем статусы
-                            const localizedStatus = {
-                                'user': 'Пользователь',
-                                'admin': 'Администратор',
-                                'coder': 'Исполнитель'
-                            }[user.status] || user.status;
-                            
+                            // Создаем строку для пользователя
                             const row = document.createElement('tr');
-                            row.innerHTML = `
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.id}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${user.username}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.email}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
-                                        ${localizedStatus}
+                            row.className = 'hover:bg-gray-50';
+                            
+                            // Определяем стили для статуса
+                            const statusClass = {
+                                'user': 'text-blue-700 bg-blue-100',
+                                'coder': 'text-green-700 bg-green-100',
+                                'admin': 'text-purple-700 bg-purple-100'
+                            };
+                            
+                            // Локализация статусов
+                            const statusText = {
+                                'user': 'Пользователь',
+                                'coder': 'Исполнитель',
+                                'admin': 'Администратор'
+                            };
+                            
+                            // Статус бана
+                            let banStatus = `
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full text-green-700 bg-green-100">
+                                        Активен
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.created_at}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.last_visit || 'Нет данных'}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <button class="text-indigo-600 hover:text-indigo-900 mr-3 edit-user" data-id="${user.id}">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="text-red-600 hover:text-red-900 delete-user" data-id="${user.id}">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
+                            `;
+                            
+                            // Если пользователь забанен
+                            if (user.is_banned) {
+                                banStatus = `
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full text-red-700 bg-red-100">
+                                            Заблокирован
+                                        </span>
+                                    </td>
+                                `;
+                            }
+                            
+                            const created = user.created_at ? new Date(user.created_at).toLocaleString('ru-RU') : 'Нет данных';
+                            const lastVisit = user.last_visit ? new Date(user.last_visit).toLocaleString('ru-RU') : 'Нет данных';
+                            
+                            // Кнопки бана/разбана
+                            let banButtons = '';
+                            if (user.status !== 'admin') { // Не показываем кнопки бана для админов
+                                if (user.is_banned) {
+                                    banButtons = `<button data-user-id="${user.id}" data-username="${user.username}" class="unban-user-btn text-green-600 hover:text-green-900 mr-3">
+                                        Разбанить
+                                    </button>`;
+                                } else {
+                                    banButtons = `<button data-user-id="${user.id}" data-username="${user.username}" class="ban-user-btn text-red-600 hover:text-red-900 mr-3">
+                                        Забанить
+                                    </button>`;
+                                }
+                            }
+                            
+                            row.innerHTML = `
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${user.id}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${user.username}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${user.email}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass[user.status] || 'text-gray-700 bg-gray-100'}">
+                                        ${statusText[user.status] || user.status}
+                                    </span>
+                                </td>
+                                ${banStatus}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${created}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${lastVisit}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    ${banButtons}
+                                    <button data-user-id="${user.id}" class="edit-user-btn text-indigo-600 hover:text-indigo-900 mr-3">Редактировать</button>
+                                    <button data-user-id="${user.id}" class="delete-user-btn text-red-600 hover:text-red-900">Удалить</button>
                                 </td>
                             `;
                             usersTableBody.appendChild(row);
                         });
                         
                         // Добавляем обработчики для кнопок редактирования и удаления
-                        document.querySelectorAll('.edit-user').forEach(button => {
-                            button.addEventListener('click', () => openEditModal(button.dataset.id));
+                        document.querySelectorAll('.edit-user-btn').forEach(button => {
+                            button.addEventListener('click', () => openEditModal(button.dataset.userId));
                         });
                         
-                        document.querySelectorAll('.delete-user').forEach(button => {
-                            button.addEventListener('click', () => confirmDeleteUser(button.dataset.id));
+                        document.querySelectorAll('.delete-user-btn').forEach(button => {
+                            button.addEventListener('click', () => confirmDeleteUser(button.dataset.userId));
                         });
                     })
                     .catch(error => {
                         console.error('Error loading users:', error);
                         usersTableBody.innerHTML = `
                             <tr>
-                                <td colspan="7" class="px-6 py-4 text-center text-sm text-red-500">
+                                <td colspan="8" class="px-6 py-4 text-center text-sm text-red-500">
                                     Ошибка при загрузке данных. Пожалуйста, попробуйте позже.
                                 </td>
                             </tr>
@@ -374,84 +562,121 @@
             
             // Функция для открытия модального окна редактирования
             function openEditModal(userId) {
-                // Получаем данные пользователя
+                const editUserId = document.getElementById('editUserId');
+                const editUsername = document.getElementById('editUsername');
+                const editEmail = document.getElementById('editEmail');
+                const editStatus = document.getElementById('editStatus');
+                const editPassword = document.getElementById('editPassword');
+                const modalTitle = document.getElementById('editModalTitle');
+                const editUserModal = document.getElementById('editUserModal');
+                
+                if (!editUserId || !editUsername || !editEmail || !editStatus || !editPassword || !modalTitle || !editUserModal) {
+                    console.error('One or more form elements not found');
+                    alert('Ошибка: не все элементы формы найдены');
+                    return;
+                }
+                
                 fetch(`/api/admin/users/${userId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Заполняем форму данными
-                        document.getElementById('editUserId').value = userId;
-                        document.getElementById('editUsername').value = data.username;
-                        document.getElementById('editEmail').value = data.email;
-                        document.getElementById('editStatus').value = data.status;
-                        document.getElementById('editPassword').value = '';
-                        
-                        // Показываем модальное окно
-                        document.getElementById('editUserModal').classList.remove('hidden');
-                    })
-                    .catch(error => {
-                        console.error('Error loading user data:', error);
-                        alert('Ошибка при загрузке данных пользователя');
-                    });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.user) {
+                        editUserId.value = data.user.id;
+                        editUsername.value = data.user.username;
+                        editEmail.value = data.user.email;
+                        editStatus.value = data.user.status;
+                        editPassword.value = '';
+                        modalTitle.textContent = 'Редактировать пользователя';
+                        editUserModal.classList.remove('hidden');
+                    } else {
+                        alert(data.error || 'Ошибка при загрузке данных пользователя');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading user data:', error);
+                    alert('Ошибка при загрузке данных пользователя');
+                });
             }
             
             // Функция для подтверждения удаления пользователя
             function confirmDeleteUser(userId) {
-                if (confirm('Вы уверены, что хотите удалить этого пользователя? Это действие нельзя отменить.')) {
-                    fetch(`/api/admin/users/${userId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert('Пользователь успешно удален');
-                            loadUsers(); // Перезагружаем список
-                        } else {
-                            alert(data.error || 'Ошибка при удалении пользователя');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error deleting user:', error);
-                        alert('Ошибка при удалении пользователя');
-                    });
+                if (!userId) {
+                    console.error('User ID is not provided for deletion');
+                    return;
+                }
+                if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+                    deleteUser(userId);
                 }
             }
             
-            // Обработчики событий
-            loadUsers();
+            // Функция для удаления пользователя
+            function deleteUser(userId) {
+                fetch(`/api/admin/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Пользователь успешно удален');
+                        loadUsers(); // Перезагружаем список
+                    } else {
+                        alert(data.error || 'Ошибка при удалении пользователя');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting user:', error);
+                    alert('Ошибка при удалении пользователя');
+                });
+            }
             
-            // Обработчик для кнопки "Применить фильтры"
-            document.getElementById('applyFilters').addEventListener('click', () => {
-                state.status = document.getElementById('statusFilter').value;
-                state.search = document.getElementById('searchInput').value;
-                state.sortBy = document.getElementById('sortBy').value;
-                state.page = 1; // Сбрасываем на первую страницу
-                loadUsers();
-            });
+            // Функция открытия модального окна для бана пользователя
+            function openBanModal(userId, username) {
+                document.getElementById('banUserId').value = userId;
+                document.getElementById('banUsername').textContent = username;
+                document.getElementById('banReason').value = '';
+                document.getElementById('banDuration').value = '7';
+                document.getElementById('banUserModal').classList.remove('hidden');
+            }
             
-            // Обработчики для кнопок пагинации
-            document.getElementById('prevPage').addEventListener('click', () => {
-                if (state.page > 1) {
-                    state.page--;
-                    loadUsers();
-                }
-            });
-            
-            document.getElementById('nextPage').addEventListener('click', () => {
-                if (state.page < state.totalPages) {
-                    state.page++;
-                    loadUsers();
-                }
-            });
+            // Функция для бана пользователя
+            function banUser(userId, reason, durationDays) {
+                fetch(`/api/admin/users/${userId}/ban`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        reason: reason,
+                        duration_days: parseInt(durationDays, 10)
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Пользователь успешно заблокирован');
+                        loadUsers(); // Перезагружаем список пользователей
+                    } else {
+                        alert(data.error || 'Ошибка при блокировке пользователя');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error banning user:', error);
+                    alert('Ошибка при блокировке пользователя');
+                });
+            }
             
             // Обработчики для модального окна
-            document.getElementById('closeModalBtn').addEventListener('click', () => {
+            document.getElementById('closeEditModalBtn').addEventListener('click', () => {
                 document.getElementById('editUserModal').classList.add('hidden');
             });
             
-            document.getElementById('saveUserBtn').addEventListener('click', () => {
+            // Обработчик для кнопки сохранения пользователя
+            document.getElementById('confirmEditBtn').addEventListener('click', saveUser);
+            
+            // Функция для сохранения данных пользователя
+            function saveUser() {
                 const userId = document.getElementById('editUserId').value;
                 const userData = {
                     username: document.getElementById('editUsername').value,
@@ -469,7 +694,7 @@
                 fetch(`/api/admin/users/${userId}`, {
                     method: 'PUT',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(userData)
                 })
@@ -487,7 +712,96 @@
                     console.error('Error updating user:', error);
                     alert('Ошибка при обновлении данных пользователя');
                 });
+            }
+            
+            // Добавляем обработчики для кнопок бана/разбана
+            // Обработчик для кнопки закрытия модального окна бана
+            document.getElementById('closeBanModalBtn').addEventListener('click', () => {
+                document.getElementById('banUserModal').classList.add('hidden');
             });
+            
+            // Обработчик для кнопки подтверждения бана
+            document.getElementById('confirmBanBtn').addEventListener('click', () => {
+                const userId = document.getElementById('banUserId').value;
+                const reason = document.getElementById('banReason').value;
+                const durationDays = document.getElementById('banDuration').value;
+                
+                if (!reason) {
+                    alert('Укажите причину блокировки');
+                    return;
+                }
+                
+                banUser(userId, reason, durationDays);
+                document.getElementById('banUserModal').classList.add('hidden');
+            });
+            
+            // Обработчики для кнопок бана/разбана в таблице
+            document.addEventListener('click', function(event) {
+                // Обработчик для кнопки бана
+                if (event.target.classList.contains('ban-user-btn')) {
+                    const userId = event.target.getAttribute('data-user-id');
+                    const username = event.target.getAttribute('data-username');
+                    openBanModal(userId, username);
+                }
+                
+                // Обработчик для кнопки разбана
+                if (event.target.classList.contains('unban-user-btn')) {
+                    const userId = event.target.getAttribute('data-user-id');
+                    if (confirm('Вы уверены, что хотите разблокировать пользователя?')) {
+                        unbanUser(userId);
+                    }
+                }
+            });
+            
+            // Добавляем функцию разбана пользователя
+            function unbanUser(userId) {
+                fetch(`/api/admin/users/${userId}/unban`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Пользователь успешно разблокирован');
+                        loadUsers(); // Перезагружаем список пользователей
+                    } else {
+                        alert(data.error || 'Ошибка при разблокировке пользователя');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error unbanning user:', error);
+                    alert('Ошибка при разблокировке пользователя');
+                });
+            }
+            
+            // Добавляем обработчики для пагинации
+            document.getElementById('prevPage').addEventListener('click', () => {
+                if (state.page > 1) {
+                    state.page--;
+                    loadUsers();
+                }
+            });
+            
+            document.getElementById('nextPage').addEventListener('click', () => {
+                if (state.page < state.totalPages) {
+                    state.page++;
+                    loadUsers();
+                }
+            });
+            
+            // Обработчик для кнопки "Применить фильтры"
+            document.getElementById('applyFilters').addEventListener('click', () => {
+                state.status = document.getElementById('statusFilter').value;
+                state.search = document.getElementById('searchInput').value;
+                state.sortBy = document.getElementById('sortBy').value;
+                state.page = 1; // Сбрасываем на первую страницу
+                loadUsers();
+            });
+            
+            // Загружаем пользователей при загрузке страницы
+            loadUsers();
             
             // Обработчик для добавления пользователя
             document.getElementById('addUserBtn').addEventListener('click', () => {
@@ -499,10 +813,97 @@
                 document.getElementById('editPassword').value = '';
                 
                 // Меняем заголовок
-                document.getElementById('modalTitle').textContent = 'Добавить пользователя';
+                document.getElementById('editModalTitle').textContent = 'Добавить пользователя';
                 
                 // Показываем модальное окно
                 document.getElementById('editUserModal').classList.remove('hidden');
+            });
+
+            // Password Generator functionality
+            const passwordGeneratorModal = document.getElementById('passwordGeneratorModal');
+            const generatePasswordBtn = document.getElementById('generatePasswordBtn');
+            const closeGeneratorModalBtn = document.getElementById('closeGeneratorModalBtn');
+            const passwordLength = document.getElementById('passwordLength');
+            const passwordLengthValue = document.getElementById('passwordLengthValue');
+            const includeUppercase = document.getElementById('includeUppercase');
+            const includeLowercase = document.getElementById('includeLowercase');
+            const includeNumbers = document.getElementById('includeNumbers');
+            const includeSpecial = document.getElementById('includeSpecial');
+            const generatedPassword = document.getElementById('generatedPassword');
+            const copyPasswordBtn = document.getElementById('copyPasswordBtn');
+            const usePasswordBtn = document.getElementById('usePasswordBtn');
+            const generateNewBtn = document.getElementById('generateNewBtn');
+            
+            // Update password length value display
+            passwordLength.addEventListener('input', function() {
+                passwordLengthValue.textContent = this.value;
+                generateNewPassword();
+            });
+            
+            // Generate new password when options change
+            [includeUppercase, includeLowercase, includeNumbers, includeSpecial].forEach(checkbox => {
+                checkbox.addEventListener('change', generateNewPassword);
+            });
+            
+            // Generate new password
+            function generateNewPassword() {
+                fetch('/api/admin/generate-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        length: parseInt(passwordLength.value),
+                        include_uppercase: includeUppercase.checked,
+                        include_lowercase: includeLowercase.checked,
+                        include_numbers: includeNumbers.checked,
+                        include_special: includeSpecial.checked
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        generatedPassword.value = data.password;
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+            
+            // Show password generator modal
+            generatePasswordBtn.addEventListener('click', function() {
+                passwordGeneratorModal.classList.remove('hidden');
+                generateNewPassword();
+            });
+            
+            // Close password generator modal
+            closeGeneratorModalBtn.addEventListener('click', function() {
+                passwordGeneratorModal.classList.add('hidden');
+            });
+            
+            // Copy password to clipboard
+            copyPasswordBtn.addEventListener('click', function() {
+                generatedPassword.select();
+                document.execCommand('copy');
+                this.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-copy"></i>';
+                }, 2000);
+            });
+            
+            // Use generated password
+            usePasswordBtn.addEventListener('click', function() {
+                document.getElementById('editPassword').value = generatedPassword.value;
+                passwordGeneratorModal.classList.add('hidden');
+            });
+            
+            // Generate new password
+            generateNewBtn.addEventListener('click', generateNewPassword);
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === passwordGeneratorModal) {
+                    passwordGeneratorModal.classList.add('hidden');
+                }
             });
         });
     </script>

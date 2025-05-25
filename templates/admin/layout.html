@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Админ-панель ROXIN{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}?v={{ range(1000, 9999) | random }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <script src="{{ url_for('static', filename='icons/lucide/dist/umd/lucide.js') }}"></script>
+    <style>
+        :root {
+            --admin-primary: #8B5CF6;
+            --admin-secondary: #6366F1;
+            --admin-dark: #0A0A12;
+            --admin-dark-lighter: #1F1F2E;
+            --admin-success: #10B981;
+            --admin-warning: #F59E0B;
+            --admin-danger: #EF4444;
+            --admin-info: #3B82F6;
+            --admin-text: #F9FAFB;
+            --admin-text-muted: #9CA3AF;
+            --admin-border: rgba(139, 92, 246, 0.2);
+            --admin-sidebar-width: 280px;
+            --admin-gradient: linear-gradient(135deg, var(--admin-primary), var(--admin-secondary));
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--admin-dark);
+            color: var(--admin-text);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 90% 90%, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
+        }
+
+        /* Глобальная сетка */
+        .admin-layout {
+            display: grid;
+            grid-template-columns: var(--admin-sidebar-width) 1fr;
+            min-height: 100vh;
+        }
+
+        /* Левый сайдбар */
+        .admin-sidebar {
+            background-color: rgba(15, 15, 25, 0.95);
+            border-right: 1px solid var(--admin-border);
+            padding: 1.5rem 0;
+            position: fixed;
+            width: var(--admin-sidebar-width);
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+
+        .admin-logo {
+            padding: 0.5rem 1.5rem 1.5rem;
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        .admin-logo h1 {
+            font-family: 'Widock', 'Arial Black', sans-serif;
+            font-size: 1.5rem;
+            margin: 0;
+            background: var(--admin-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-left: 0.75rem;
+        }
+
+        .admin-menu {
+            padding: 0;
+            margin: 0;
+            list-style-type: none;
+        }
+
+        .admin-menu-section {
+            color: var(--admin-text-muted);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1.25rem 1.5rem 0.5rem;
+        }
+
+        .admin-menu-item {
+            margin: 0.25rem 0;
+        }
+
+        .admin-menu-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: var(--admin-text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .admin-menu-link:hover, 
+        .admin-menu-link.active {
+            background-color: rgba(139, 92, 246, 0.1);
+            color: var(--admin-primary);
+        }
+
+        .admin-menu-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: var(--admin-gradient);
+            border-radius: 0 2px 2px 0;
+        }
+
+        .admin-menu-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .admin-menu-badge {
+            margin-left: auto;
+            background: var(--admin-primary);
+            color: white;
+            border-radius: 12px;
+            padding: 0.15rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .admin-badge-success {
+            background: var(--admin-success);
+        }
+
+        .admin-badge-warning {
+            background: var(--admin-warning);
+        }
+
+        .admin-badge-danger {
+            background: var(--admin-danger);
+        }
+
+        /* Основное содержимое */
+        .admin-content {
+            padding: 1.5rem 2rem;
+            margin-left: var(--admin-sidebar-width);
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        .admin-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .admin-card {
+            background-color: rgba(15, 15, 25, 0.8);
+            border: 1px solid var(--admin-border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .admin-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .admin-card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .admin-btn {
+            background-color: var(--admin-dark-lighter);
+            color: var(--admin-text);
+            border: 1px solid var(--admin-border);
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .admin-btn:hover {
+            background-color: rgba(31, 31, 46, 0.9);
+            border-color: var(--admin-primary);
+        }
+
+        .admin-btn-primary {
+            background: var(--admin-gradient);
+            border: none;
+        }
+
+        .admin-btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .admin-btn-success {
+            background-color: var(--admin-success);
+            border-color: var(--admin-success);
+        }
+
+        .admin-btn-warning {
+            background-color: var(--admin-warning);
+            border-color: var(--admin-warning);
+        }
+
+        .admin-btn-danger {
+            background-color: var(--admin-danger);
+            border-color: var(--admin-danger);
+        }
+
+        /* Таблицы */
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+        }
+
+        .admin-table th,
+        .admin-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        .admin-table th {
+            background-color: rgba(20, 20, 30, 0.6);
+            font-weight: 600;
+            color: var(--admin-text-muted);
+        }
+
+        .admin-table tr {
+            background-color: rgba(20, 20, 30, 0.3);
+            transition: background-color 0.2s;
+        }
+
+        .admin-table tr:hover {
+            background-color: rgba(20, 20, 30, 0.5);
+        }
+
+        .admin-table-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Статусы */
+        .admin-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .admin-status-icon {
+            width: 0.875rem;
+            height: 0.875rem;
+            margin-right: 0.375rem;
+        }
+
+        .admin-status-completed,
+        .admin-status-success {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--admin-success);
+        }
+
+        .admin-status-pending,
+        .admin-status-warning {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: var(--admin-warning);
+        }
+
+        .admin-status-cancelled,
+        .admin-status-danger {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: var(--admin-danger);
+        }
+
+        .admin-status-info {
+            background-color: rgba(59, 130, 246, 0.15);
+            color: var(--admin-info);
+        }
+
+        /* Модальные окна */
+        .admin-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .admin-modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .admin-modal {
+            background-color: var(--admin-dark-lighter);
+            border: 1px solid var(--admin-border);
+            border-radius: 0.75rem;
+            width: 90%;
+            max-width: 550px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transform: translateY(20px);
+            transition: transform 0.3s;
+        }
+
+        .admin-modal-overlay.show .admin-modal {
+            transform: translateY(0);
+        }
+
+        .admin-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        .admin-modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .admin-modal-close {
+            background: none;
+            border: none;
+            color: var(--admin-text-muted);
+            cursor: pointer;
+            padding: 0.25rem;
+            transition: color 0.2s;
+        }
+
+        .admin-modal-close:hover {
+            color: var(--admin-primary);
+        }
+
+        .admin-modal-body {
+            padding: 1.5rem;
+        }
+
+        .admin-modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            padding: 1.25rem 1.5rem;
+            border-top: 1px solid var(--admin-border);
+        }
+        
+        .admin-form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .admin-form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .admin-form-input,
+        .admin-form-select,
+        .admin-form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--admin-dark);
+            border: 1px solid var(--admin-border);
+            border-radius: 0.5rem;
+            color: var(--admin-text);
+            transition: border-color 0.2s;
+        }
+        
+        .admin-form-input:focus,
+        .admin-form-select:focus,
+        .admin-form-textarea:focus {
+            border-color: var(--admin-primary);
+            outline: none;
+        }
+        
+        .admin-form-textarea {
+            min-height: 6rem;
+            resize: vertical;
+        }
+        
+        /* Пагинация */
+        .admin-pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+        
+        .admin-pagination-item {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.5rem;
+            height: 2.5rem;
+            padding: 0 0.75rem;
+            border-radius: 0.375rem;
+            background-color: var(--admin-dark-lighter);
+            border: 1px solid var(--admin-border);
+            color: var(--admin-text);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .admin-pagination-item:hover {
+            border-color: var(--admin-primary);
+        }
+        
+        .admin-pagination-item.active {
+            background: var(--admin-gradient);
+            border: none;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 992px) {
+            :root {
+                --admin-sidebar-width: 240px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .admin-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+            
+            .admin-sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .admin-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .admin-mobile-menu-btn {
+                display: block;
+                position: fixed;
+                bottom: 1.5rem;
+                right: 1.5rem;
+                z-index: 99;
+                background: var(--admin-gradient);
+                border: none;
+                border-radius: 50%;
+                width: 3.5rem;
+                height: 3.5rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Левый сайдбар -->
+        <div class="admin-sidebar" id="adminSidebar">
+            <div class="admin-logo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="url(#grad1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-terminal">
+                    <defs>
+                        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#8B5CF6" />
+                            <stop offset="100%" style="stop-color:#6366F1" />
+                        </linearGradient>
+                    </defs>
+                    <polyline points="4 17 10 11 4 5"></polyline>
+                    <line x1="12" y1="19" x2="20" y2="19"></line>
+                </svg>
+                <h1>ROXIN Admin</h1>
+            </div>
+            
+            <ul class="admin-menu">
+                <li class="admin-menu-section">Главное</li>
+                <li class="admin-menu-item">
+                    <a href="{{ url_for('admin.admin_dashboard') }}" class="admin-menu-link {% if active_page == 'dashboard' %}active{% endif %}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="admin-menu-icon"><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect></svg>
+                        Дашборд
+                    </a>
+                </li>
+                <li class="admin-menu-item">
+                    <a href="{{ url_for('admin.admin_users') }}" class="admin-menu-link {% if active_page == 'users' %}active{% endif %}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="admin-menu-icon"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        Пользователи
+                    </a>
+                </li>
+                
+                <li class="admin-menu-section">Финансы</li>
+                <li class="admin-menu-item">
+                    <a href="{{ url_for('admin.admin_transactions') }}" class="admin-menu-link {% if active_page == 'transactions' %}active{% endif %}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="admin-menu-icon"><path d="M2 17a5 5 0 0 0 10 0c0-2.76-2.5-5-5-3-2.5-2-5 .24-5 3Z"></path><path d="M12 17a5 5 0 0 0 10 0c0-2.76-2.5-5-5-3-2.5-2-5 .24-5 3Z"></path><path d="M2 7a5 5 0 0 1 10 0c0-2.76-2.5-5-5-3-2.5-2-5 .24-5 3Z"></path><path d="M12 7a5 5 0 0 1 10 0c0-2.76-2.5-5-5-3-2.5-2-5 .24-5 3Z"></path></svg>
+                        Транзакции
+                        {% if transactions_count and transactions_count > 0 %}
+                        <span class="admin-menu-badge">{{ transactions_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="admin-menu-item">
+                    <a href="{{ url_for('admin.admin_withdrawals') }}" class="admin-menu-link {% if active_page == 'withdrawals' %}active{% endif %}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="admin-menu-icon"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 9v6"></path><path d="m21 15-3-3-3 3"></path></svg>
+                        Вывод средств
+                        {% if pending_withdrawals_count and pending_withdrawals_count > 0 %}
+                        <span class="admin-menu-badge admin-badge-warning">{{ pending_withdrawals_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                
+                <li class="admin-menu-section">Мониторинг</li>
+                <li class="admin-menu-item">
+                    <a href="{{ url_for('admin.admin_notifications') }}" class="admin-menu-link {% if active_page == 'notifications' %}active{% endif %}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="admin-menu-icon"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+                        Уведомления
+                        {% if notifications_count and notifications_count > 0 %}
+                        <span class="admin-menu-badge">{{ notifications_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="admin-menu-item">
+                    <a href="{{ url_for('admin.admin_logs') }}" class="admin-menu-link {% if active_page == 'logs' %}active{% endif %}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="admin-menu-icon"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" x2="8" y1="13" y2="13"></line><line x1="16" x2="8" y1="17" y2="17"></line><line x1="10" x2="8" y1="9" y2="9"></line></svg>
+                        Системные логи
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Основное содержимое -->
+        <div class="admin-content">
+            {% block content %}{% endblock %}
+        </div>
+        
+        <!-- Кнопка мобильного меню -->
+        <button class="admin-mobile-menu-btn" id="adminMobileMenuBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
+        </button>
+    </div>
+    
+    <script>
+        // Инициализация иконок Lucide
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+        
+        // Мобильное меню
+        const mobileMenuBtn = document.getElementById('adminMobileMenuBtn');
+        const sidebar = document.getElementById('adminSidebar');
+        
+        if (mobileMenuBtn && sidebar) {
+            mobileMenuBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('show');
+            });
+            
+            // Закрытие сайдбара при клике вне его
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth <= 768 && 
+                    !sidebar.contains(e.target) && 
+                    !mobileMenuBtn.contains(e.target) &&
+                    sidebar.classList.contains('show')) {
+                    sidebar.classList.remove('show');
+                }
+            });
+        }
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
