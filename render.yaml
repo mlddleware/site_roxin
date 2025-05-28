@@ -11,13 +11,5 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
-        fromDatabase:
-          name: roxin-db
-          property: connectionString
-    healthCheckPath: /
-  
-databases:
-  - name: roxin-db
-    databaseName: roxin
-    user: roxin_user
-    plan: free 
+        value: postgresql://postgres.lgaybwinuhssjoyyyxkn:UNFtXoJfQsL5E1py@aws-0-eu-central-1.pooler.supabase.com:6543/postgres
+    healthCheckPath: / 
