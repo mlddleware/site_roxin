@@ -18,7 +18,7 @@ services:
         value: 3.11.5
     healthCheckPath: /
   
-  - type: pgsql
+  - type: postgres
     name: roxin-db
     databaseName: roxin
     user: roxin_user
