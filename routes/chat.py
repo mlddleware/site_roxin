@@ -313,48 +313,29 @@ def chat():
         username, status, user_avatar = user_data
         avatar = user_avatar if user_avatar else avatar_map.get(status, "user.png")
 
-        # Получаем список чатов
+        # УПРОЩЕННЫЙ запрос - получаем только базовую информацию о чатах
+        # Сообщения загрузим через AJAX позже
         cursor.execute("""
             SELECT c.id, 
-                   CASE WHEN c.user_id1 = %s THEN u2.username ELSE u1.username END AS username,
-                   (SELECT message 
-                    FROM messages m 
-                    WHERE (m.user_id1 = c.user_id1 AND m.user_id2 = c.user_id2)
-                       OR (m.user_id1 = c.user_id2 AND m.user_id2 = c.user_id1)
-                    ORDER BY m.created_at DESC LIMIT 1) AS last_message,
-                   (SELECT created_at 
-                    FROM messages m 
-                    WHERE (m.user_id1 = c.user_id1 AND m.user_id2 = c.user_id2)
-                       OR (m.user_id1 = c.user_id2 AND m.user_id2 = c.user_id1)
-                    ORDER BY m.created_at DESC LIMIT 1) AS last_message_time
+                   CASE WHEN c.user_id1 = %s THEN u2.username ELSE u1.username END AS username
             FROM chats c
             JOIN users u1 ON c.user_id1 = u1.id
             JOIN users u2 ON c.user_id2 = u2.id
             WHERE c.user_id1 = %s OR c.user_id2 = %s
-            ORDER BY last_message_time DESC
+            LIMIT 50
         """, (user_id, user_id, user_id))
 
-        # Получаем список чатов из запроса
+        # Получаем базовый список чатов
         chats = cursor.fetchall()
-
-        # Устанавливаем часовой пояс
-        user_tz = pytz.timezone(user_timezone)
 
         formatted_chats = []
         for chat in chats:
-            chat_id, username, last_message, last_message_time = chat
-            if last_message_time:
-                last_message_time_utc = pytz.utc.localize(last_message_time) if last_message_time.tzinfo is None else last_message_time
-                local_time = last_message_time_utc.astimezone(user_tz)
-                formatted_time = local_time.strftime("%d.%m.%Y %H:%M:%S")
-            else:
-                formatted_time = "N/A"
-
+            chat_id, username = chat
             formatted_chats.append({
                 'chat_id': chat_id,
                 'username': username,
-                'last_message': last_message,
-                'last_message_time': formatted_time
+                'last_message': '',  # Загрузим через AJAX
+                'last_message_time': ''  # Загрузим через AJAX
             })
 
         return render_template('chat.html', chats=formatted_chats, avatar=avatar, username=username, user_status=status, status=status)
@@ -662,3 +643,54 @@ def start_chat(user_id):
             cursor.close()
         if 'conn' in locals() and conn:
             release_db_connection(conn)
+
+@chat_bp.route("/chat/list_fast", methods=["GET"])
+def chat_list_fast():
+    """Быстрая загрузка списка чатов для оптимизации производительности"""
+    user_id = request.cookies.get("user_id")
+    user_timezone = request.cookies.get("user_timezone", "UTC")
+
+    if not user_id:
+        return jsonify([])
+
+    with DatabaseConnection() as db:
+        cursor = db.cursor()
+
+    try:
+        # Упрощенный запрос - получаем чаты и пользователей
+        cursor.execute("""
+            SELECT c.id,
+                   CASE WHEN c.user_id1 = %s THEN u2.id ELSE u1.id END AS other_user_id,
+                   CASE WHEN c.user_id1 = %s THEN u2.username ELSE u1.username END AS username,
+                   CASE WHEN c.user_id1 = %s THEN u2.avatar ELSE u1.avatar END AS avatar,
+                   CASE WHEN c.user_id1 = %s THEN u2.status ELSE u1.status END AS user_status
+            FROM chats c
+            JOIN users u1 ON c.user_id1 = u1.id
+            JOIN users u2 ON c.user_id2 = u2.id
+            WHERE c.user_id1 = %s OR c.user_id2 = %s
+            ORDER BY c.id DESC
+            LIMIT 20
+        """, (user_id, user_id, user_id, user_id, user_id, user_id))
+
+        chats = cursor.fetchall()
+
+        chat_list = []
+        for row in chats:
+            chat_id, other_user_id, username, avatar, user_status = row
+            
+            # Логика выбора аватара
+            if not avatar or avatar == 'None':
+                avatar = avatar_map.get(user_status, "user.png")
+
+            chat_list.append({
+                "chat_id": chat_id,
+                "user_id": other_user_id,
+                "username": username,
+                "avatar": f"/static/images/{avatar}",
+                "last_message": "Загрузка...",
+                "last_message_date": ""
+            })
+
+        return jsonify(chat_list)
+    finally:
+        cursor.close()
