@@ -131,4 +131,15 @@ Thumbs.db
 
 # Local config files
 config_local.py
-local_config.py 
+local_config.py
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Large directories that shouldn't be in repo
+fonts/
+img/ 
