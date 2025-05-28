@@ -1,10 +1,17 @@
-import redis
 import json
 import os
 import logging
 from datetime import timedelta
 from functools import wraps
 from dotenv import load_dotenv
+
+# Попытка импорта Redis - если не удается, используем заглушки
+try:
+    import redis
+    REDIS_AVAILABLE = True
+except ImportError:
+    REDIS_AVAILABLE = False
+    redis = None
 
 # Загружаем переменные окружения
 load_dotenv()
@@ -15,18 +22,22 @@ logger = logging.getLogger('redis_cache')
 
 # Подключение к Redis
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+redis_client = None
 
-try:
-    redis_client = redis.from_url(REDIS_URL)
-    redis_client.ping()  # Проверяем соединение
-    logger.info("Успешное подключение к Redis")
-except Exception as e:
-    logger.warning(f"Не удалось подключиться к Redis: {str(e)}. Кэширование отключено.")
-    redis_client = None
+if REDIS_AVAILABLE:
+    try:
+        redis_client = redis.from_url(REDIS_URL)
+        redis_client.ping()  # Проверяем соединение
+        logger.info("Успешное подключение к Redis")
+    except Exception as e:
+        logger.warning(f"Не удалось подключиться к Redis: {str(e)}. Кэширование отключено.")
+        redis_client = None
+else:
+    logger.warning("Redis не установлен. Кэширование отключено.")
 
 def is_redis_available():
     """Проверяет доступность Redis"""
-    if redis_client is None:
+    if not REDIS_AVAILABLE or redis_client is None:
         return False
     
     try:
@@ -129,6 +140,7 @@ def cached(key_prefix, expiration=3600):
         @wraps(func)
         def wrapper(*args, **kwargs):
             if not is_redis_available():
+                # Если Redis недоступен, просто вызываем функцию без кэширования
                 return func(*args, **kwargs)
             
             # Создаем уникальный ключ на основе аргументов функции
