@@ -617,65 +617,53 @@ def orders_view():
         user_timezone = request.cookies.get("user_timezone", "UTC")
         filter_status = request.args.get("status", "")
 
-        # Получаем заказы
+        # ДЕБАГ: Сначала проверим, есть ли заказы вообще
+        cursor.execute("SELECT COUNT(*) FROM customer_orders")
+        total_orders = cursor.fetchone()[0]
+        print(f"ДЕБАГ: Всего заказов в customer_orders: {total_orders}")
+
+        # УПРОЩЕННЫЙ запрос - сначала получаем только заказы
         query = """
-            SELECT co.id, co.user_id, co.tech_assignment, co.budget, co.service, 
-                   os.status, os.created_at, os.coder, os.last_from, ca.coder_response, ca.coder_response_time
+            SELECT co.id, co.user_id, co.tech_assignment, co.budget, co.service, co.created_at
             FROM customer_orders co
-            LEFT JOIN order_status os ON co.id = os.order_id
-            LEFT JOIN coder_assignments ca ON co.id = ca.order_id
         """
 
         params = []
-        if filter_status:
-            if filter_status == "my_orders":
-                query += " WHERE os.last_from = %s"
-                params.append(user_id)
-            else:
-                query += " WHERE os.status = %s"
-                params.append(filter_status)
-
+        
         cursor.execute(query, params)
         orders = cursor.fetchall()
+        print(f"ДЕБАГ: Найдено заказов: {len(orders)}")
+
+        if not orders:
+            print("ДЕБАГ: Заказы не найдены, возвращаем пустой список")
+            return render_template("orders_view.html", orders=[], filter_status=filter_status, 
+                                username=current_username, avatar=avatar, status=status)
 
         formatted_orders = []
         for order in orders:
             cursor.execute("SELECT username FROM users WHERE id = %s", (order[1],))
-            user = cursor.fetchone()
-            username = user[0] if user else "Неизвестный пользователь"
+            user_result = cursor.fetchone()
+            username = user_result[0] if user_result else "Неизвестный пользователь"
 
-            cursor.execute("SELECT username FROM users WHERE id = %s", (order[7],))
-            coder = cursor.fetchone()
-            coder_name = coder[0] if coder else "Неизвестный кодер"
+            # Получаем статус заказа отдельно
+            cursor.execute("SELECT status, created_at FROM order_status WHERE order_id = %s", (order[0],))
+            status_result = cursor.fetchone()
+            order_status = status_result[0] if status_result else "created"
+            order_created_at = status_result[1] if status_result else order[5]
 
-            # Получаем информацию о правке, если она есть
-            cursor.execute("""
-                SELECT old_price, new_price, old_deadline, new_deadline, reason, status 
-                FROM revision_requests WHERE order_id = %s ORDER BY id DESC LIMIT 1
-            """, (order[0],))
-            revision = cursor.fetchone()
+            # Применяем фильтр если нужно
+            if filter_status and filter_status != order_status:
+                continue
 
-            revision_data = None
-            if revision:
-                revision_data = {
-                    "old_price": revision[0],
-                    "new_price": revision[1],
-                    "old_deadline": revision[2],
-                    "new_deadline": revision[3],
-                    "reason": revision[4],
-                    "status": revision[5]
-                }
-
-            created_at_utc = order[6]
-            if isinstance(created_at_utc, datetime):
-                if created_at_utc.tzinfo is None:
-                    created_at_utc = pytz.utc.localize(created_at_utc)
+            if isinstance(order_created_at, datetime):
+                if order_created_at.tzinfo is None:
+                    order_created_at = pytz.utc.localize(order_created_at)
             else:
-                created_at_utc = datetime.strptime(created_at_utc, "%Y-%m-%d %H:%M:%S")
-                created_at_utc = pytz.utc.localize(created_at_utc)
+                order_created_at = datetime.strptime(str(order_created_at), "%Y-%m-%d %H:%M:%S")
+                order_created_at = pytz.utc.localize(order_created_at)
 
             user_tz = pytz.timezone(user_timezone)
-            local_time = created_at_utc.astimezone(user_tz)
+            local_time = order_created_at.astimezone(user_tz)
 
             formatted_orders.append({
                 "id": order[0],
@@ -684,20 +672,18 @@ def orders_view():
                 "tech_assignment": order[2],
                 "budget": order[3],
                 "service": order[4],
-                "status": order[5],
-                "coder_name": coder_name,
+                "status": order_status,
                 "created_at": local_time.strftime("%d.%m.%Y %H:%M:%S"),
-                "coder_response": order[9],
-                "coder_response_time": order[10],
-                "revision": revision_data  # Добавляем данные о правке
             })
 
+        print(f"ДЕБАГ: Отформатировано заказов: {len(formatted_orders)}")
         cursor.close()
 
         return render_template("orders_view.html", orders=formatted_orders, filter_status=filter_status, 
                             username=current_username, avatar=avatar, status=status)
 
     except Exception as e:
+        print(f"ДЕБАГ: Ошибка в orders_view: {e}")
         traceback.print_exc()
         return jsonify({"error": "Ошибка при загрузке заказов"}), 500
 
