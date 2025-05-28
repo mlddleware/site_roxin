@@ -57,21 +57,21 @@
                 radial-gradient(circle at 25% 25%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 75% 75%, rgba(236, 72, 153, 0.08) 0%, transparent 50%);
         }
-
+        
         /* Utility Classes */
         .container {
             max-width: 1280px;
             margin: 0 auto;
             padding: 0 2rem;
         }
-
+        
         .glass-effect {
             background: var(--bg-card);
             backdrop-filter: var(--blur-glass);
             -webkit-backdrop-filter: var(--blur-glass);
             border: 1px solid var(--border);
             border-radius: 20px;
-        }
+            }
 
         .gradient-text {
             background: var(--gradient-primary);
@@ -79,7 +79,7 @@
             background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-
+        
         /* Animations */
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
@@ -90,7 +90,7 @@
             0%, 100% { box-shadow: var(--shadow-glow); }
             50% { box-shadow: 0 0 80px rgba(99, 102, 241, 0.25); }
         }
-
+        
         @keyframes slideUp {
             from {
                 opacity: 0;
@@ -106,7 +106,7 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
-
+        
         @keyframes scaleIn {
             from {
                 opacity: 0;
@@ -158,7 +158,7 @@
             gap: 2rem;
             list-style: none;
         }
-
+        
         .nav-link {
             color: var(--text-secondary);
             text-decoration: none;
@@ -219,7 +219,7 @@
             gap: 4rem;
             align-items: center;
         }
-
+        
         .hero-text {
             animation: slideUp 0.8s ease;
         }
@@ -238,7 +238,7 @@
             backdrop-filter: var(--blur-glass);
             animation: float 6s ease-in-out infinite;
         }
-
+        
         .hero-title {
             font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: clamp(2.5rem, 5vw, 4.5rem);
@@ -277,12 +277,12 @@
             box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
             cursor: pointer;
         }
-
+        
         .btn-primary:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
         }
-
+        
         .btn-secondary {
             background: transparent;
             color: var(--text-primary);
@@ -297,7 +297,7 @@
             transition: all 0.3s ease;
             backdrop-filter: var(--blur-glass);
         }
-
+        
         .btn-secondary:hover {
             background: var(--bg-card);
             border-color: var(--border-hover);
@@ -313,7 +313,7 @@
         .stat-item {
             text-align: center;
         }
-
+        
         .stat-number {
             font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 2.5rem;
@@ -330,7 +330,7 @@
             font-size: 0.9rem;
             margin-top: 0.5rem;
         }
-
+        
         .hero-visual {
             position: relative;
             animation: scaleIn 1s ease 0.3s both;
@@ -344,7 +344,7 @@
             box-shadow: var(--shadow-card);
             animation: float 8s ease-in-out infinite;
         }
-
+        
         .floating-card {
             position: absolute;
             background: var(--bg-card);
@@ -355,25 +355,25 @@
             box-shadow: var(--shadow-card);
             animation: float 6s ease-in-out infinite;
         }
-
+        
         .floating-card-1 {
             top: 10%;
             left: -10%;
             animation-delay: -2s;
         }
-
+        
         .floating-card-2 {
             bottom: 20%;
             right: -15%;
             animation-delay: -4s;
         }
-
+        
         .floating-card-3 {
             bottom: -10%;
             left: 20%;
             animation-delay: -6s;
         }
-
+        
         .card-icon {
             width: 40px;
             height: 40px;
@@ -384,7 +384,7 @@
             justify-content: center;
             margin-bottom: 0.5rem;
         }
-
+        
         .card-title {
             font-weight: 600;
             margin-bottom: 0.25rem;
@@ -486,14 +486,14 @@
             margin-bottom: 1.5rem;
             box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
         }
-
+        
         .service-title {
             font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 1.5rem;
             font-weight: 700;
             margin-bottom: 1rem;
         }
-
+        
         .service-description {
             color: var(--text-secondary);
             line-height: 1.7;
@@ -529,13 +529,13 @@
         .service-link:hover {
             gap: 1rem;
         }
-
+        
         /* Portfolio Section */
         .portfolio-section {
             padding: 100px 0;
             background: var(--bg-darker);
         }
-
+        
         .portfolio-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -598,13 +598,13 @@
         .portfolio-title {
             font-weight: 700;
             margin-bottom: 0.5rem;
-        }
-        
+            }
+            
         .portfolio-category {
             font-size: 0.9rem;
             opacity: 0.8;
-        }
-
+            }
+            
         .portfolio-content {
             padding: 1.5rem;
         }
@@ -630,7 +630,7 @@
             text-align: center;
             transition: all 0.3s ease;
         }
-
+        
         .team-card:hover {
             transform: translateY(-10px);
             box-shadow: var(--shadow-card);
@@ -643,7 +643,7 @@
             border-radius: 20px;
             display: flex;
             align-items: center;
-                justify-content: center;
+            justify-content: center;
             margin: 0 auto 1.5rem;
             font-size: 2rem;
             color: white;
@@ -655,7 +655,7 @@
             font-weight: 700;
             margin-bottom: 1rem;
         }
-
+        
         .team-description {
             color: var(--text-secondary);
             margin-bottom: 1.5rem;
@@ -666,7 +666,7 @@
             list-style: none;
             margin-bottom: 2rem;
         }
-
+        
         .team-requirements li {
             padding: 0.5rem 0;
             color: var(--text-secondary);
@@ -694,7 +694,7 @@
             text-decoration: none;
             display: inline-block;
         }
-
+        
         .team-cta:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
@@ -750,19 +750,19 @@
                 #ec4899);
             z-index: 2;
         }
-
+        
         .order-form-container:hover {
             transform: translateY(-5px);
             box-shadow: 
                 0 30px 60px rgba(0, 0, 0, 0.5), 
                 0 0 40px rgba(139, 92, 246, 0.2);
         }
-
+        
         .order-form-header {
             text-align: center;
             margin-bottom: 2rem;
         }
-
+        
         .order-form-header h3 {
             font-family: 'Plus Jakarta Sans', sans-serif;
             font-weight: 800;
@@ -776,7 +776,7 @@
             background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-
+        
         .order-form-header p {
             color: rgba(248, 250, 252, 0.8);
             margin: 0;
@@ -796,14 +796,14 @@
             color: rgba(248, 250, 252, 0.95);
             font-size: 0.9rem;
         }
-
+        
         .order-label-icon {
             color: #a78bfa;
             margin-right: 0.5rem;
             width: 16px;
             height: 16px;
         }
-
+        
         .order-form-control {
             width: 100%;
             padding: 0.75rem 1rem;
@@ -825,7 +825,7 @@
             box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25);
             transform: translateY(-1px);
         }
-
+        
         .order-form-control::placeholder {
             color: rgba(148, 163, 184, 0.7);
             font-size: 0.85rem;
@@ -847,7 +847,7 @@
             padding-right: 2.5rem;
             color: rgba(248, 250, 252, 0.95) !important;
         }
-
+        
         .order-select-container select.order-form-control option {
             background-color: #1e293b !important;
             color: #ffffff !important;
@@ -862,7 +862,7 @@
             background-color: #8b5cf6 !important;
             color: #ffffff !important;
         }
-
+        
         .order-btn-submit {
             width: 100%;
             padding: 0.875rem 1.5rem;
@@ -907,14 +907,14 @@
             border: 1px solid rgba(139, 92, 246, 0.2);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
+        
         .order-tech-specs-helper:hover {
             transform: translateY(-5px);
             box-shadow: 
                 0 30px 60px rgba(0, 0, 0, 0.4), 
                 0 0 40px rgba(139, 92, 246, 0.15);
         }
-
+        
         .order-tech-specs-helper h3 {
             font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 1.5rem;
@@ -937,7 +937,7 @@
             line-height: 1.6;
             margin: 0 0 1.5rem 0;
         }
-
+        
         .order-helper-tip {
             background: linear-gradient(135deg, 
                 rgba(139, 92, 246, 0.15), 
@@ -947,14 +947,14 @@
             padding: 1.25rem;
             margin-bottom: 1rem;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
+            }
+            
         .order-helper-tip:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
             border-color: rgba(139, 92, 246, 0.4);
-        }
-
+            }
+            
         .order-helper-tip h4 {
             font-size: 1rem;
             margin: 0 0 0.5rem 0;
@@ -964,7 +964,7 @@
             gap: 0.5rem;
             color: #c4b5fd;
         }
-
+        
         .order-helper-tip p {
             margin: 0;
             font-size: 0.85rem;
@@ -990,14 +990,14 @@
         .order-icon-purple {
             color: #a78bfa;
         }
-
+        
         .order-icon-gold {
             color: #f59e0b;
         }
 
         .order-icon-blue {
             color: #60a5fa;
-        }
+            }
 
         /* Footer */
         .footer {
@@ -1005,14 +1005,14 @@
             border-top: 1px solid var(--border);
             padding: 3rem 0 1rem;
         }
-
+        
         .footer-content {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 2rem;
             margin-bottom: 2rem;
         }
-
+        
         .footer-brand h3 {
             font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 1.5rem;
@@ -1045,7 +1045,7 @@
             display: block;
             padding: 0.25rem 0;
         }
-
+        
         .footer-links a:hover {
             color: var(--text-primary);
         }
@@ -1056,14 +1056,14 @@
             border-top: 1px solid var(--border);
             color: var(--text-secondary);
         }
-
+        
         .social-links {
             display: flex;
             gap: 1rem;
             justify-content: center;
             margin-bottom: 1rem;
         }
-
+        
         .social-link {
             width: 40px;
             height: 40px;
@@ -1071,13 +1071,13 @@
             border: 1px solid var(--border);
             border-radius: 10px;
             display: flex;
-                align-items: center;
+            align-items: center;
             justify-content: center;
             color: var(--text-secondary);
             text-decoration: none;
             transition: all 0.3s ease;
         }
-
+        
         .social-link:hover {
             background: var(--gradient-primary);
             color: white;
@@ -1088,8 +1088,8 @@
         @media (max-width: 768px) {
             .nav-links {
                 display: none;
-            }
-
+        }
+        
             .hero-content {
                 grid-template-columns: 1fr;
                 text-align: center;
@@ -1100,31 +1100,31 @@
                 grid-template-columns: repeat(3, 1fr);
                 gap: 1rem;
                 margin-top: 2rem;
-            }
-
+        }
+        
             .order-content {
                 grid-template-columns: 1fr;
                 gap: 2rem;
-            }
-
+        }
+        
             .services-grid {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
-            }
-
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
             .portfolio-grid {
                 grid-template-columns: 1fr;
-            }
-
+        }
+        
             .team-grid {
                 grid-template-columns: 1fr;
                 gap: 1.5rem;
-            }
-
+        }
+        
             .container {
                 padding: 0 1rem;
-            }
-
+        }
+        
             .hero-section {
                 padding: 100px 0 60px;
             }
@@ -1135,13 +1135,13 @@
 
             .floating-card {
                 display: none;
-            }
-
+        }
+        
             .interactive-tech-stack {
-                gap: 0.75rem;
+            gap: 0.75rem;
                 margin-top: 1.5rem;
-            }
-
+        }
+        
             .tech-icon {
                 width: 45px;
                 height: 45px;
@@ -1164,7 +1164,7 @@
 
             .hero-buttons {
                 flex-direction: column;
-                align-items: center;
+            align-items: center;
                 gap: 1rem;
             }
 
@@ -1173,17 +1173,17 @@
                 width: 100%;
                 max-width: 280px;
                 text-align: center;
-                justify-content: center;
+            justify-content: center;
             }
         }
 
         @media (max-width: 480px) {
             .container {
                 padding: 0 0.75rem;
-            }
+        }
 
             .hero-section {
-                padding: 80px 0 40px;
+            padding: 80px 0 40px;
             }
 
             .hero-title {
@@ -1194,8 +1194,8 @@
             .hero-description {
                 font-size: 1rem;
                 margin-bottom: 2rem;
-            }
-
+        }
+        
             .hero-stats {
                 grid-template-columns: repeat(3, 1fr);
                 gap: 0.75rem;
@@ -1203,16 +1203,16 @@
 
             .stat-number {
                 font-size: 2rem;
-            }
-
+        }
+        
             .stat-label {
                 font-size: 0.8rem;
             }
 
             .interactive-tech-stack {
                 gap: 0.5rem;
-            }
-
+        }
+        
             .tech-icon {
                 width: 40px;
                 height: 40px;
@@ -1220,14 +1220,14 @@
 
             .tech-icon i {
                 font-size: 1.1rem;
-            }
-
+        }
+        
             .section-title {
                 font-size: 2rem !important;
             }
 
             .section-description {
-                font-size: 1rem;
+            font-size: 1rem;
             }
 
             .services-section,
@@ -1235,14 +1235,14 @@
             .team-section,
             .contact-section {
                 padding: 60px 0;
-            }
-
+        }
+        
             .service-card {
                 padding: 1.5rem;
-            }
-
+        }
+        
             .service-title {
-                font-size: 1.25rem;
+            font-size: 1.25rem;
             }
 
             .service-features {
@@ -1253,8 +1253,8 @@
             .feature-tag {
                 font-size: 0.75rem;
                 padding: 0.2rem 0.6rem;
-            }
-
+        }
+        
             .order-form-container,
             .order-tech-specs-helper {
                 padding: 1.5rem;
@@ -1276,19 +1276,19 @@
                 width: 60px;
                 height: 60px;
                 font-size: 1.5rem;
-            }
-
+        }
+        
             .hero-buttons {
                 margin-bottom: 2rem;
-            }
-
+        }
+        
             .btn-primary,
             .btn-secondary {
                 padding: 0.875rem 1.5rem;
-                font-size: 0.95rem;
+            font-size: 0.95rem;
             }
         }
-
+        
         /* Scroll Animation */
         .scroll-animate {
             opacity: 0;
@@ -1322,19 +1322,19 @@
             transition: all 0.3s ease;
             cursor: pointer;
         }
-
+        
         .tech-icon:hover {
             background: var(--gradient-primary);
             transform: translateY(-5px) scale(1.1);
             box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
         }
-
+        
         .tech-icon i {
             font-size: 1.5rem;
             color: var(--text-secondary);
             transition: color 0.3s ease;
-        }
-
+            }
+            
         .tech-icon:hover i {
             color: white;
         }
@@ -1406,7 +1406,7 @@
                 </div>
                 <div class="hero-visual">
                     <img src="{{ url_for('static', filename='images/robot3.png') }}" alt="AI Technology" class="hero-image">
-                    
+                        
                     <div class="floating-card floating-card-1">
                         <div class="card-icon">
                             <i data-lucide="code" size="20" style="color: white;"></i>
@@ -1763,7 +1763,7 @@
                                 <i data-lucide="wallet" class="order-label-icon order-icon-gold"></i>
                                 Бюджет
                             </label>
-                            <input type="number" id="budget" name="budget" class="order-form-control" placeholder="Укажите предполагаемый бюджет в рублях" min="0" step="1" required>
+                            <input type="text" id="budget" name="budget" class="order-form-control" placeholder="Укажите предполагаемый бюджет в рублях" min="0" step="1" required>
                 </div>
                 
                         <div class="order-form-group">
@@ -1776,14 +1776,14 @@
                             
                         <!-- Скрытое поле для часового пояса -->
                         <input type="hidden" id="timezone" name="timezone" value="">
-
+                            
                         <button type="submit" class="order-btn-submit">
                             <i data-lucide="send" class="order-form-icon"></i>
                             Отправить заявку
                             </button>
                     </form>
                 </div>
-                
+    
                 <!-- Помощник по оформлению ТЗ -->
                 <div class="order-tech-specs-helper">
                     <h3>
